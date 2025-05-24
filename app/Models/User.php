@@ -21,8 +21,11 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        
         'number',
+        'FirstName',
+        'MiddleName',
+        'LastName'
         
     ];
     public function visits()

@@ -23,6 +23,6 @@ class PatientMiddleware
         }
 
         
-        abort(403, 'Unauthorized access – Only doctors allowed.');
+        abort(403, 'Unauthorized access – Only  Patient allowed.');
     }
 }

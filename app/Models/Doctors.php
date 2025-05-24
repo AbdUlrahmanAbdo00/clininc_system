@@ -8,7 +8,7 @@ class Doctors extends Model
 {
     protected $fillable = [
         'user_id',
-        'specialization', 
+        'specialization',
     ];
 
     public function user()
@@ -24,5 +24,9 @@ class Doctors extends Model
     public function testRequests()
     {
         return $this->hasMany(Test_requests::class, 'requested_by_doctor_id');
+    }
+    public function shifts()
+    {
+        return $this->belongsToMany(Shift::class,'doctor_shift', 'doctor_id', 'shift_id')->withTimestamps()->withPivot('day');
     }
 }

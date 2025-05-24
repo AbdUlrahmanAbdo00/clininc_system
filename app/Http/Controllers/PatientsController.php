@@ -21,19 +21,18 @@ class PatientsController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create(PatientRequest $request)
+    public function create() {}
+
+    public function check_fill(Request $request) ///check of the fill data
     {
         $user = Auth::user();
-        $user = User::where('id',$user->id)->first();
-        $patient = Patients::where('user_id',$user->id)->first();
-        if($patient){
-            return response()->json(['success' => 'The data already exists.'], 200);    
+        $user = User::where('id', $user->id)->first();
+        $patient = Patients::where('user_id', $user->id)->first();
+        if ($patient) {
+            return response()->json(['success' => 'The data already exists.'], 200);
+        } else {
+            return response()->json(['error' => 'you have to fill data.'], 200);
         }
-        else{
-        return response()->json(['error' => 'you have to fill data.'],200);
-        }
-
-
     }
 
     /**
@@ -42,21 +41,43 @@ class PatientsController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        $user = User::where('id',$user->id)->first();
+        $user = User::where('id', $user->id)->first();
         $request->merge([
-            'user_id'=>$user->id,
+            'user_id' => $user->id,
         ]);
-        $patient = Patients::create($request->validated());
+        
+        $validatedUser = $request->validate([
+            'FirstName' => 'required|string|max:255',
+            'MiddleName' => 'required|string|max:255',
+            'LastName' => 'required|string|max:255',
+        ]);
+        
+        $validatedPatient = $request->validate([
+            'MotherName' => 'required|string|max:255',
+            'BirthDay' => 'required|date|before:today',
+            'NationalNumber' => 'required|string|max:20|unique:patients,NationalNumber',
+            'Gender' => 'required|in:male,female',
+        ]);
+        // $user->FirstName =$validatedUser['FirstName'];
+        // $user->MiddleName =$validatedUser['MiddleName'];
+        // $user->LastName = $validatedUser['LastName'];
+        $user->update($validatedUser);
+        
+        $patient = Patients::create(array_merge(
+           [ 'user_id'=> $user->id],
+            // 'MotherName'=>$validatedPatient['MotherName'],
+            // 'BirthDay'=>$validatedPatient['BirthDay'],
+            // 'NationalNumber'=>$validatedPatient['NationalNumber'],
+            // 'Gender'=>$validatedPatient['Gender'],
+            $validatedPatient
+        ));
         return response()->json(['success' => 'Patient created successfly'], 200);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Patients $patients)
-    {
-        
-    }
+    public function show(Patients $patients) {}
 
     /**
      * Show the form for editing the specified resource.
@@ -69,19 +90,15 @@ class PatientsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Patients $patients)
-    {
-        
-    }
+    public function update(Request $request, Patients $patients) {}
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(Request $request)
     {
-        $patient = Patients::where('id',$request->id)->first();
+        $patient = Patients::where('id', $request->id)->first();
+        //we have to check if the patient has any visit and we should cancel it 
         $patient->delete();
-
-
     }
 }

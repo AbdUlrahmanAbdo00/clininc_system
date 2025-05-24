@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\DoctorsController;
 use App\Http\Controllers\PatientsController;
+use App\Http\Controllers\ShiftsController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Spatie\Permission\Contracts\Role;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -12,8 +15,11 @@ Route::post('/requestOtp', [UserController::class, 'requestOtp']);
 Route::post('/verif', [UserController::class, 'verif']);
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
-Route::resource('/patient',PatientsController::class);
+Route::apiResource('/patient',PatientsController::class);
 
 
 
 });
+Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('auth:sanctum');
+Route::post('/add_shift',[ShiftsController::class,'store']);
+Route::post('/assignShift',[ShiftsController::class,'assignShiftToDoctor']);

@@ -8,7 +8,11 @@ class Patients extends Model
 {
     protected $fillable = [
         'user_id',
-        'date_of_birth', // أو أي بيانات إضافية عن المريض
+        'date_of_birth', 
+        'MotherName', 
+        'BirthDay',
+        'NationalNumber',
+        'Gender'
     ];
 
     public function user()

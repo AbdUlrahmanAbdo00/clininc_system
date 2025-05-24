@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Doctors;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DoctorsController extends Controller
 {
@@ -12,7 +14,7 @@ class DoctorsController extends Controller
      */
     public function index()
     {
-        //
+      
     }
 
     /**
@@ -28,7 +30,15 @@ class DoctorsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $user = Auth::user();
+        // dd($user);
+        $user = User::where('id', $user->id)->first();
+        $validated= $request->validate( ['specialization'=>'required|string|max:255']);
+        $doctor = Doctors::create([
+            'user_id'=> $user->id,
+             'specialization'=>$validated['specialization']
+        ]);
+        return response()->json(['success' => 'doctor created successfly'], 200);
     }
 
     /**
