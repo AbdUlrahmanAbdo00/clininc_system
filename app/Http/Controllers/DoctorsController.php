@@ -33,10 +33,14 @@ class DoctorsController extends Controller
         $user = Auth::user();
         // dd($user);
         $user = User::where('id', $user->id)->first();
-        $validated= $request->validate( ['specialization'=>'required|string|max:255']);
+        $validated= $request->validate( [
+            'specialization'=>'required|string|max:255',
+            'consultation_duration'=>'required|integer|min:1|max:1440'
+    ]);
         $doctor = Doctors::create([
             'user_id'=> $user->id,
-             'specialization'=>$validated['specialization']
+             'specialization'=>$validated['specialization'],
+             'consultation_duration'=>$validated['consultation_duration']
         ]);
         return response()->json(['success' => 'doctor created successfly'], 200);
     }

@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('work_breaks', function (Blueprint $table) {
             $table->id();
-            $table->enum('type',['routine','emergency']);
-            $table->enum('day',['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])->nullable();
-            $table->date('date')->nullable();
+            // $table->enum('type',['routine','emergency']);
+            // $table->enum('day',['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])->nullable();
+            $table->foreignId('doctor_id')->constrainde()->onDelete('cascade');
+            $table->date('date');
             $table->time('start_time');
             $table->time('end_time');
             $table->string('reason')->nullable();   

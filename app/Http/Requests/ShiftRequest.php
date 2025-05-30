@@ -22,11 +22,14 @@ class ShiftRequest extends FormRequest
     public function rules(): array
     {
         return [
-          //  'day_of_week' => 'required|array|min:1',
-           // 'day_of_week.*' => 'in:Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
+            //  'day_of_week' => 'required|array|min:1',
+            // 'day_of_week.*' => 'in:Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'shift_type' => 'required|string|max:255|unique:shifts,shift_type',
+            'start_break_time' => 'required|date_format:H:i',
+            'end_break_time' => 'required|date_format:H:i|after:start_break_time',
+
         ];
     }
 }

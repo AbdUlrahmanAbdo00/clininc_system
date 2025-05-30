@@ -18,6 +18,8 @@ return new class extends Migration
             $table->date('BirthDay');
             $table->string('NationalNumber');
             $table->string('Gender');
+            $table->integer('daily_doses_number')->nullable();
+            $table->integer('taken_doses')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });

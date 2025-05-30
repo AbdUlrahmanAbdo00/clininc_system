@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('specialization');
+            $table->integer('escape_counter')->nullable();
+            $table->integer('consultation_duration');
             $table->timestamps();
         });
     }
