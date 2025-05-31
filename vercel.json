@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "api/index.php": { "runtime": "vercel-php@0.6.0" }
+    "api/index.php": { "runtime": "vercel-php@0.7.3" }
   },
   "routes": [
     {
@@ -13,7 +13,7 @@
     "APP_ENV": "production",
     "APP_DEBUG": "false",
     "APP_URL": "https://clininc-system-hne1282a2-abdulrahmanabdos-projects.vercel.app/",
-        "APP_KEY": "your-app-key",
+    "APP_KEY": "base64:vXTNhrU/mjPNLRPcpm7ytSEmt8aSrDu+iQXJ5SEGcHU=",
     "APP_CONFIG_CACHE": "/tmp/config.php",
     "APP_EVENTS_CACHE": "/tmp/events.php",
     "APP_PACKAGES_CACHE": "/tmp/packages.php",
