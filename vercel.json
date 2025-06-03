@@ -3,9 +3,19 @@
   "framework": null,
   "functions": {
     "api/index.php": {
-      "runtime": "vercel-php@0.7.3"
+      "runtime": "vercel-php@0.7.3",
+      "extensions": ["curl", "pgsql", "pdo_pgsql"]
     }
   },
+  "builds": [
+    {
+      "src": "**/*.php",
+      "use": "@vercel/php",
+      "config": {
+        "phpExtensions": ["curl", "pgsql", "pdo_pgsql"]
+      }
+    }
+  ],
   "routes": [
     {
       "src": "/build/assets/(.*)",
