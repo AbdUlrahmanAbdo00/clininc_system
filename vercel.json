@@ -1,28 +1,24 @@
 {
   "version": 2,
-  "framework": null,
   "functions": {
-    "api/index.php": {
+    "api/*.php": {
       "runtime": "vercel-php@0.7.3"
     }
   },
+  "builds": [
+    {
+      "src": "**/*.php",
+      "use": "@vercel/php",
+      "config": {
+        "phpVersion": "8.2",
+        "includePaths": ["**"]
+      }
+    }
+  ],
   "routes": [
-    {
-      "src": "/build/assets/(.*)",  
-      "dest": "/build/assets/$1"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "/public/images/$1"
-    },
-    {
-      "src": "/(.*\\.php)",
-      "dest": "/api/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "/api/index.php"
     }
-    
   ]
 }
