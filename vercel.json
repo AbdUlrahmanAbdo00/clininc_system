@@ -6,9 +6,6 @@
       "runtime": "vercel-php@0.6.0"
     }
   },
-  "require": {
-    "doctrine/dbal": "^4.2"
-  },
   "routes": [
     {
       "src": "/build/assets/(.*)",
