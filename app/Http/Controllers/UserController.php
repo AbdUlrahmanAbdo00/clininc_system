@@ -20,9 +20,16 @@ class UserController extends Controller
         $request->validate([
             'number' => 'required',
         ]);
-
+        $role = $request->role;
+        $check = "true";
+        if ($role != "doctor") {
+            $check = "false";
+        }
         $result = $this->sendOTP($request->number);
-        return response()->json($result);
+        return response()->json([
+            "result" => $result,
+            "check" => $check
+        ], 200);
     }
     public function verif(Request $request)
     {
@@ -42,7 +49,7 @@ class UserController extends Controller
         if (!$result['success']) {
             return response()->json($result, 401);
         }
-
+        $filled_data = true;
 
         $user = User::where('number', $request->number)->first();
         // dd($user);
@@ -51,6 +58,7 @@ class UserController extends Controller
                 'number' => $request->number
             ]);
             $user->assignRole('patient');
+            $filled_data = false;
         }
 
 
@@ -63,6 +71,7 @@ class UserController extends Controller
             return response()->json([
                 'token' => $token,
                 'token_type' => 'bearer',
+                'filled_data'=>$filled_data,
             ]);
         }
 
@@ -72,7 +81,7 @@ class UserController extends Controller
 
 
 
-    
+
     // public function selectMode(Request $request)
     // {
     //     $request->validate([
