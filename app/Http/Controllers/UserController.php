@@ -17,6 +17,11 @@ class UserController extends Controller
     use OtpTrait;
     public function requestOtp(Request $request)
     {
+        
+// $host = 'api.smsprovider.com'; // غيّرها لاسم المزود الحقيقي
+// $ip = gethostbyname($host);
+
+// echo "Resolved IP for $host: $ip\n";
         $request->validate([
             'number' => 'required',
         ]);
