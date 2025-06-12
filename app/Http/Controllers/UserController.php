@@ -17,24 +17,33 @@ class UserController extends Controller
     use OtpTrait;
     public function requestOtp(Request $request)
     {
-        
-// $host = 'api.smsprovider.com'; // غيّرها لاسم المزود الحقيقي
-// $ip = gethostbyname($host);
 
-// echo "Resolved IP for $host: $ip\n";
+        // $host = 'api.smsprovider.com'; // غيّرها لاسم المزود الحقيقي
+        // $ip = gethostbyname($host);
+
+        // echo "Resolved IP for $host: $ip\n";
         $request->validate([
             'number' => 'required',
+            'role' => 'string|max:255',
         ]);
         $role = $request->role;
         $check = "true";
-        if ($role != "doctor") {
-            $check = "false";
+        $user = User::where('phone', $request->number)->first();
+        if ($user::hasRole('doctor')) {
+
+            if ($role != "doctor") {
+                $check = "false";
+            }
         }
         $result = $this->sendOTP($request->number);
+        if ($result==true)
+        {$num=200;}
+        else
+        $num=400;
         return response()->json([
             "result" => $result,
             "check" => $check
-        ], 200);
+        ], $num);
     }
     public function verif(Request $request)
     {
@@ -57,8 +66,10 @@ class UserController extends Controller
         $filled_data = true;
 
         $user = User::where('number', $request->number)->first();
+          $messag="Logged in successfully.";
         // dd($user);
         if (!$user) {
+            $messag= "Account created successfully. Welcome!";
             $user = User::create([
                 'number' => $request->number
             ]);
@@ -74,10 +85,14 @@ class UserController extends Controller
             $token = $user->createToken('clinic_sys')->plainTextToken;
 
             return response()->json([
-                'token' => $token,
-                'token_type' => 'bearer',
-                'filled_data'=>$filled_data,
-            ]);
+                'success' => true,
+                'message' => $messag,
+                'data' => [
+                    'token' => $token,
+                    'token_type' => 'bearer',
+                    'filled_data' => $filled_data,
+                ]
+            ], 200);
         }
 
         return response()->json(['error' => 'Unauthorized'], 401);

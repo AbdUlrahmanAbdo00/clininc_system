@@ -71,7 +71,8 @@ class PatientsController extends Controller
             // 'Gender'=>$validatedPatient['Gender'],
             $validatedPatient
         ));
-        return response()->json(['success' => 'Patient created successfly'], 200);
+        return response()->json(['success' => true,
+                'message' => 'Patient created successfly'], 200);
     }
 
     /**
