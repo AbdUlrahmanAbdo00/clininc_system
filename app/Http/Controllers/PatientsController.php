@@ -7,7 +7,7 @@ use App\Models\Patients;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 class PatientsController extends Controller
 {
     /**
@@ -38,42 +38,60 @@ class PatientsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $user = Auth::user();
-        $user = User::where('id', $user->id)->first();
-        $request->merge([
-            'user_id' => $user->id,
-        ]);
-        
-        $validatedUser = $request->validate([
-            'FirstName' => 'required|string|max:255',
-            'MiddleName' => 'required|string|max:255',
-            'LastName' => 'required|string|max:255',
-        ]);
-        
-        $validatedPatient = $request->validate([
-            'MotherName' => 'required|string|max:255',
-            'BirthDay' => 'required|date|before:today',
-            'NationalNumber' => 'required|string|max:20|unique:patients,NationalNumber',
-            'Gender' => 'required|in:male,female',
-        ]);
-        // $user->FirstName =$validatedUser['FirstName'];
-        // $user->MiddleName =$validatedUser['MiddleName'];
-        // $user->LastName = $validatedUser['LastName'];
+
+
+public function store(Request $request)
+{
+    $user = Auth::user();
+    $user = User::where('id', $user->id)->first();
+
+    $request->merge([
+        'user_id' => $user->id,
+    ]);
+
+    $validatedUser = $request->validate([
+        'FirstName' => 'required|string|max:255',
+        'MiddleName' => 'required|string|max:255',
+        'LastName' => 'required|string|max:255',
+    ]);
+
+    $validatedPatient = $request->validate([
+        'MotherName' => 'required|string|max:255',
+        'BirthDay' => 'required|date|before:today',
+        'NationalNumber' => 'required|string|max:20|unique:patients,NationalNumber',
+        'Gender' => 'required|in:male,female',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        // تحديث بيانات المستخدم
         $user->update($validatedUser);
-        
+
+        // إنشاء سجل المريض
         $patient = Patients::create(array_merge(
-           [ 'user_id'=> $user->id],
-            // 'MotherName'=>$validatedPatient['MotherName'],
-            // 'BirthDay'=>$validatedPatient['BirthDay'],
-            // 'NationalNumber'=>$validatedPatient['NationalNumber'],
-            // 'Gender'=>$validatedPatient['Gender'],
+            ['user_id' => $user->id],
             $validatedPatient
         ));
-        return response()->json(['success' => true,
-                'message' => 'Patient created successfly'], 200);
+
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Patient created successfully.'
+        ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong. Please try again.',
+            'error' => $e->getMessage() // يمكن حذفه في الإنتاج
+        ], 500);
     }
+}
+
 
     /**
      * Display the specified resource.
