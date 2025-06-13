@@ -31,12 +31,15 @@ class UserController extends Controller
         $num = 400;
         $user = User::where('number', $request->number)->first();
         if ($user) {
-            if ($user->hasRole('doctor')) {
+            if ($role == "doctor") {
 
-                if ($role != "doctor") {
+                if (!$user->hasRole('doctor')) {
                     $check = "false";
                 }
             }
+        }else 
+        {if($role==="doctor")
+        $check = "false";
         }
         $result = $this->sendOTP($request->number);
 
