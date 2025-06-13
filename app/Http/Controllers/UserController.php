@@ -28,26 +28,26 @@ class UserController extends Controller
         ]);
         $role = $request->role;
         $check = "true";
+        $num = 400;
         $user = User::where('number', $request->number)->first();
-        if($user){
-        if ($user::hasRole('doctor')) {
+        if ($user) {
+            if ($user->hasRole('doctor')) {
 
-            if ($role != "doctor") {
-                $check = "false";
+                if ($role != "doctor") {
+                    $check = "false";
+                }
             }
-        }}
+        }
         $result = $this->sendOTP($request->number);
 
-        if ($result==true)
-        {$num=200;}
-        else
-        $num=400;
-    if (is_array($result['data'])) {
-    $result['data']['check'] = $check;
-}
+        if (isset($result['success']) && $result['success'] == true) {
+            $num = 200;
+        } 
+        if (isset($result['data']) && is_array($result['data'])) {
+            $result['data']['check'] = $check;
+        }
         return response()->json([
             "result" => $result,
-          
         ], $num);
     }
     public function verif(Request $request)
@@ -71,10 +71,10 @@ class UserController extends Controller
         $filled_data = true;
 
         $user = User::where('number', $request->number)->first();
-          $messag="Logged in successfully.";
+        $messag = "Logged in successfully.";
         // dd($user);
         if (!$user) {
-            $messag= "Account created successfully. Welcome!";
+            $messag = "Account created successfully. Welcome!";
             $user = User::create([
                 'number' => $request->number
             ]);
