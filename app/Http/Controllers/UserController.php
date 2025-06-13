@@ -28,21 +28,26 @@ class UserController extends Controller
         ]);
         $role = $request->role;
         $check = "true";
-        $user = User::where('phone', $request->number)->first();
+        $user = User::where('number', $request->number)->first();
+        if($user){
         if ($user::hasRole('doctor')) {
 
             if ($role != "doctor") {
                 $check = "false";
             }
-        }
+        }}
         $result = $this->sendOTP($request->number);
+
         if ($result==true)
         {$num=200;}
         else
         $num=400;
+    if (is_array($result['data'])) {
+    $result['data']['check'] = $check;
+}
         return response()->json([
             "result" => $result,
-            "check" => $check
+          
         ], $num);
     }
     public function verif(Request $request)
