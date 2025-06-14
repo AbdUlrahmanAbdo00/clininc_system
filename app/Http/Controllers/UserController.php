@@ -23,11 +23,12 @@ class UserController extends Controller
 
         // echo "Resolved IP for $host: $ip\n";
         $request->validate([
-            'number' => 'required',
+            'number' => ['required', 'regex:/^(\+963|09)\d{8}$/'],
             'role' => 'string|max:255',
         ], [
-    'number.required' => 'pleas enter your phon number.',
-]);
+            'number.required' => 'The phone number is required.',
+            'number.regex' => 'The phone number format is invalid.',
+        ]);
         $role = $request->role;
         $check = true;
         $num = 400;
@@ -39,22 +40,24 @@ class UserController extends Controller
                     $check = false;
                 }
             }
-        }else 
-        {if($role==="doctor")
-        $check = false;
-        }if($check)
- {       $result = $this->sendOTP($request->number);}
+        } else {
+            if ($role === "doctor")
+                $check = false;
+        }
+        if ($check) {
+            $result = $this->sendOTP($request->number);
+        }
 
         if (isset($result['success']) && $result['success'] == true) {
             $num = 200;
-        } 
+        }
         if (isset($result['data']) && is_array($result['data'])) {
             $result['data']['check'] = $check;
         }
         return response()->json([
-           "success" => $result['success'] ?? false,
-           "message"=>$result['message']??"change the role to Patient role",
-           "data"=>$result['data']??false,
+            "success" => $result['success'] ?? false,
+            "message" => $result['message'] ?? "change the role to Patient role",
+            "data" => $result['data'] ?? false,
         ], $num);
     }
     public function verif(Request $request)
