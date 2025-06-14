@@ -50,15 +50,15 @@ public function store(Request $request)
     ]);
 
     $validatedUser = $request->validate([
-        'FirstName' => 'required|string|max:255',
-        'MiddleName' => 'required|string|max:255',
-        'LastName' => 'required|string|max:255',
+        'First_name' => 'required|string|max:255',
+        'Middle_name' => 'required|string|max:255',
+        'Last_name' => 'required|string|max:255',
     ]);
 
     $validatedPatient = $request->validate([
-        'MotherName' => 'required|string|max:255',
-        'BirthDay' => 'required|date|before:today',
-        'NationalNumber' => 'required|string|max:20|unique:patients,NationalNumber',
+        'Mother_name' => 'required|string|max:255',
+        'Birth_day' => 'required|date|before:today',
+        'National_number' => 'required|string|max:20|unique:patients,National_number',
         'Gender' => 'required|in:male,female',
     ]);
 

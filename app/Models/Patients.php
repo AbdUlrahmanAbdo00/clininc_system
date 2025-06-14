@@ -9,9 +9,9 @@ class Patients extends Model
     protected $fillable = [
         'user_id',
         'date_of_birth', 
-        'MotherName', 
-        'BirthDay',
-        'NationalNumber',
+        'Mother_name', 
+        'Birth_day',
+        'National_number',
         'Gender'
     ];
 

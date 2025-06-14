@@ -14,7 +14,7 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 Route::post('/requestOtp', [UserController::class, 'requestOtp']);
-Route::post('/verif', [UserController::class, 'verif']);
+Route::post('/verify', [UserController::class, 'verif']);
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
 Route::apiResource('/patient',PatientsController::class);

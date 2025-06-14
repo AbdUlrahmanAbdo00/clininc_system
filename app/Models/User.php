@@ -23,9 +23,9 @@ class User extends Authenticatable
     protected $fillable = [
         
         'number',
-        'FirstName',
-        'MiddleName',
-        'LastName'
+        'First_name',
+        'Middle_name',
+        'Last_name'
         
     ];
     public function visits()

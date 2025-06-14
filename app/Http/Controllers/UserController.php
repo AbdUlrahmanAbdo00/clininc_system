@@ -25,23 +25,25 @@ class UserController extends Controller
         $request->validate([
             'number' => 'required',
             'role' => 'string|max:255',
-        ]);
+        ], [
+    'number.required' => 'pleas enter your phon number.',
+]);
         $role = $request->role;
-        $check = "true";
+        $check = true;
         $num = 400;
         $user = User::where('number', $request->number)->first();
         if ($user) {
             if ($role == "doctor") {
 
                 if (!$user->hasRole('doctor')) {
-                    $check = "false";
+                    $check = false;
                 }
             }
         }else 
         {if($role==="doctor")
-        $check = "false";
-        }
-        $result = $this->sendOTP($request->number);
+        $check = false;
+        }if($check)
+ {       $result = $this->sendOTP($request->number);}
 
         if (isset($result['success']) && $result['success'] == true) {
             $num = 200;
@@ -50,7 +52,9 @@ class UserController extends Controller
             $result['data']['check'] = $check;
         }
         return response()->json([
-            "result" => $result,
+           "success" => $result['success'] ?? false,
+           "message"=>$result['message']??"change the role to Patient role",
+           "data"=>$result['data']??false,
         ], $num);
     }
     public function verif(Request $request)
