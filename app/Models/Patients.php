@@ -19,9 +19,4 @@ class Patients extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-    public function visits()
-    {
-        return $this->hasMany(Visits::class, 'patient_id');
-    }
 }
