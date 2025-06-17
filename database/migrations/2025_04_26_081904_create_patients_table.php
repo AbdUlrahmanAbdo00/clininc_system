@@ -14,10 +14,7 @@ return new class extends Migration
         Schema::create('patients', function (Blueprint $table) {
             $table->id();
         
-            $table->string('mother_name');
-            $table->date('birth_day');
-            $table->string('national_number');
-            $table->string('gender');
+        
             $table->integer('daily_doses_number')->nullable();
             $table->integer('taken_doses')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');

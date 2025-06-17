@@ -25,13 +25,15 @@ class User extends Authenticatable
         'number',
         'first_name',
         'middle_name',
-        'last_name'
+        'last_name',  
+         'date_of_birth', 
+        'mother_name', 
+        'birth_day',
+        'national_number',
+        'gender'
         
     ];
-    public function visits()
-    {
-        return $this->hasMany(Visits::class);
-    }
+
 
     /**
      * The attributes that should be hidden for serialization.

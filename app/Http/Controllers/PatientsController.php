@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+
 class PatientsController extends Controller
 {
     /**
@@ -40,57 +41,51 @@ class PatientsController extends Controller
      */
 
 
-public function store(Request $request)
-{
-    $user = Auth::user();
-    $user = User::where('id', $user->id)->first();
+    public function store(Request $request)
+    {
+        $user = Auth::user();
+        $user = User::where('id', $user->id)->first();
 
-    $request->merge([
-        'user_id' => $user->id,
-    ]);
+        $request->merge([
+            'user_id' => $user->id,
+        ]);
 
-    $validatedUser = $request->validate([
-        'first_name' => 'required|string|max:255',
-        'middle_name' => 'required|string|max:255',
-        'last_name' => 'required|string|max:255',
-    ]);
+        $validatedUser = $request->validate([
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'mother_name' => 'required|string|max:255',
+            'birth_day' => 'required|date|before:today',
+            'national_number' => 'required|string|max:20|unique:patients,national_number',
+            'gender' => 'required|in:male,female',
+        ]);
 
-    $validatedPatient = $request->validate([
-        'mother_name' => 'required|string|max:255',
-        'birth_day' => 'required|date|before:today',
-        'national_number' => 'required|string|max:20|unique:patients,national_number',
-        'gender' => 'required|in:male,female',
-    ]);
+ 
 
-    try {
-        DB::beginTransaction();
+        try {
+            DB::beginTransaction();
 
-        // تحديث بيانات المستخدم
-        $user->update($validatedUser);
+            $user->update($validatedUser);
 
-        // إنشاء سجل المريض
-        $patient = Patients::create(array_merge(
-            ['user_id' => $user->id],
-            $validatedPatient
-        ));
+            
+        
 
-        DB::commit();
+            DB::commit();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Patient created successfully.'
-        ], 200);
+            return response()->json([
+                'success' => true,
+                'message' => 'Patient created successfully.'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
 
-    } catch (\Exception $e) {
-        DB::rollBack();
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Something went wrong. Please try again.',
-            'error' => $e->getMessage() // يمكن حذفه في الإنتاج
-        ], 500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again.',
+                'error' => $e->getMessage() 
+            ], 500);
+        }
     }
-}
 
 
     /**

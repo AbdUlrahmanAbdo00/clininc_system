@@ -8,11 +8,8 @@ class Patients extends Model
 {
     protected $fillable = [
         'user_id',
-        'date_of_birth', 
-        'mother_name', 
-        'birth_day',
-        'national_number',
-        'gender'
+     'daily_doses_number',
+     'taken_doses',
     ];
 
     public function user()
@@ -20,8 +17,5 @@ class Patients extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function visits()
-    {
-        return $this->hasMany(Visits::class, 'patient_id');
-    }
+
 }
