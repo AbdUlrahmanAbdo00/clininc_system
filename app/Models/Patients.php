@@ -16,6 +16,4 @@ class Patients extends Model
     {
         return $this->belongsTo(User::class);
     }
-
-
 }
