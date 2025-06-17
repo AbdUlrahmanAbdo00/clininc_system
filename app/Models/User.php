@@ -28,10 +28,6 @@ class User extends Authenticatable
         'last_name'
         
     ];
-    public function visits()
-    {
-        return $this->hasMany(Visits::class);
-    }
 
     /**
      * The attributes that should be hidden for serialization.
