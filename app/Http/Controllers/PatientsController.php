@@ -56,7 +56,7 @@ class PatientsController extends Controller
             'last_name' => 'required|string|max:255',
             'mother_name' => 'required|string|max:255',
             'birth_day' => 'required|date|before:today',
-            'national_number' => 'required|string|max:20|unique:patients,national_number',
+            'national_number' => 'required|string|max:20|unique:users,national_number',
             'gender' => 'required|in:male,female',
         ]);
 
