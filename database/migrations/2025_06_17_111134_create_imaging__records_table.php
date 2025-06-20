@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('imaging__records', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('medical_image_id')->constrained()->onDelete('cascade');
+            $table->foreignId('medical_record_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

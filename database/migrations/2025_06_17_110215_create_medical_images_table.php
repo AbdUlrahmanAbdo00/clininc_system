@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('medical_images', function (Blueprint $table) {
             $table->id();
+            $table->date('date');
+            $table->string('path');
             $table->timestamps();
         });
     }
