@@ -68,7 +68,7 @@ public function booking(Request $request)
         return $shiftsGroup->flatMap(function ($shift) {
             return collect(json_decode($shift->pivot->days, true));
         })->unique()->values();
-    });
+    }); 
 
     $dayShifts = collect();
     foreach ($shifts as $shift) {
@@ -120,16 +120,13 @@ public function booking(Request $request)
 
                 if (!$exists) {
                     
-                    $availableSlot = [
-                        'shift_type' => $shift->shift_type,
-                        'start' => $slotStart->format('H:i'),
-                        'end' => $slotEnd->format('H:i'),
-                    ];
+                    $availableSlot =true;
                     break 2; 
                 }
             }
         }
-
+        if ($availableSlot!=null)
+        $availableSlot=true;
 
         $dateShiftMap->put($current->format('Y-m-d'), $availableSlot);
     }
