@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Appointment extends Model
 {
     // use SoftDeletes;
+
     protected $fillable = ['doctor_id', 'patient_id', 'date', 'start_date', 'end_date'];
-        public function user()
+        
+
+
+    public function user()
+
     {
         return $this->belongsTo(User::class);
     }
@@ -18,10 +23,15 @@ class Appointment extends Model
         return $this->belongsTo(Doctors::class);
     }
 
- 
+    public function analytics() {
+        $this->hasMany(Analytics::class);
+    }
 
- 
+    public function medicalRecord() {
+        $this->hasMany(Analytics::class);
+    }
 
-  
-
+    public function medicineSchedule() {
+        $this->hasMany(Analytics::class);
+    }
 }

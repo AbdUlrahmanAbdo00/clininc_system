@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('medicine_schedules', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
+            $table->foreignId('medicine_id')->constrained()->onDelete('cascade');
+            $table->integer('total_number_of_doses');
+            $table->integer('number_of_taken_doses');
+            $table->float('difference_time');
+            $table->date('last_time_has_taken');
             $table->timestamps();
         });
     }
