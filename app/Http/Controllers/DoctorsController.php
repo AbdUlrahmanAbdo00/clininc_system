@@ -1,11 +1,12 @@
 <?php
 
 namespace App\Http\Controllers;
-
 use App\Models\Doctors;
+use App\Models\Specialization;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class DoctorsController extends Controller
 {
@@ -17,6 +18,34 @@ class DoctorsController extends Controller
       
     }
 
+public function uploadSpecializationImage(Request $request)
+{
+    $request->validate([
+        'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        'name' => 'required|string|unique:specializations,name'
+    ]);
+
+    $file = $request->file('image');
+
+    // إنشاء اسم مميز للصورة
+    $fileName = time() . '_' . $file->getClientOriginalName();
+
+    // حفظ الصورة داخل مجلد public/specialization
+    $file->move(public_path('specialization'), $fileName);
+
+    // تحديد المسار النسبي
+    $relativePath = 'specialization/' . $fileName;
+    Specialization::create([
+        'name'=>$request->name,
+        'path'=>$request->path,
+    ]);
+    return response()->json([
+        'success' => true,
+        'image_path' => $relativePath,
+        'image_url' => asset($relativePath),
+    ]);
+
+}
     /**
      * Show the form for creating a new resource.
      */
