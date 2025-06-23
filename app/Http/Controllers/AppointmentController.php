@@ -257,38 +257,49 @@ class AppointmentController extends Controller
     }
 
 
-    public function showBookedappointmentForDoctor(Request $request)
-    {
-        $request->validate([
+ public function showBookedappointmentForDoctor(Request $request)
+{
+    $request->validate([
+        'doctor_id' => 'required|exists:doctors,id',
+        'finished' => 'required|boolean'
+    ]);
 
-            'doctor_id' => 'required|exists:doctors,id',
-            'finished' => 'required|boolean'
-        ]);
-        $doctor = Doctors::where('id', $request->patient_id)->first();
-        $user = User::where('id', $doctor->user_id)->first();
-        $userFirstName = $user->first_name;
-        $appointments = Appointment::where('doctor_id', $request->doctor_id)->where('finished', $request->finished)->get();
-        if ($appointments->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'No appointments found.'
-            ], 200);
-        }
+    // صحح استدعاء الطبيب بالمعرف الصحيح
+    $doctor = Doctors::where('id', $request->doctor_id)->first();
+    if (!$doctor) {
         return response()->json([
-            'success' => true,
-            'data' => $appointments->map(function ($appointment) use ($userFirstName) {
-                $patient = Patients::where('id', $appointment->doctor_id)->first();
-                $user1 = user::where('id', $patient->user_id)->first();
-                return [
-                    'date' => $appointment->date,
-                    'appointment_id' => $appointment->id,
-                    'patient_name' => $user1->first_name,
-                    'doctor_name' => $userFirstName,
+            'success' => false,
+            'message' => 'Doctor not found.'
+        ], 404);
+    }
 
-                ];
-            })
+    $user = User::where('id', $doctor->user_id)->first();
+    $userFirstName = $user->first_name ?? 'Unknown';
 
+    $appointments = Appointment::where('doctor_id', $request->doctor_id)
+                    ->where('finished', $request->finished)
+                    ->get();
 
+    if ($appointments->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No appointments found.'
         ], 200);
     }
+
+    return response()->json([
+        'success' => true,
+        'data' => $appointments->map(function ($appointment) use ($userFirstName) {
+            $patient = Patients::where('id', $appointment->patient_id)->first();
+            $user1 = User::where('id', $patient->user_id)->first();
+            return [
+                'date' => $appointment->date,
+                'appointment_id' => $appointment->id,
+                'patient_name' => $user1->first_name ?? 'Unknown',
+                'doctor_name' => $userFirstName,
+            ];
+        })
+    ], 200);
+}
+
 }
