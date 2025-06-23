@@ -18,7 +18,7 @@ Route::post('/verify', [UserController::class, 'verif']);
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
 Route::apiResource('/patient',PatientsController::class);
-Route::get('/patient/getAllSpecializations',[DoctorsController::class,'getAllSpecializations']);
+Route::get('/getAllSpecializations',[DoctorsController::class,'getAllSpecializations']);
 Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoctorsBySpecialization']);
 Route::post('patient/book/apointment',[AppointmentController::class,'booking']);
 Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay']);

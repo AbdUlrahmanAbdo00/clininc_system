@@ -11,9 +11,17 @@ use Cloudinary\Cloudinary;
 class DoctorsController extends Controller
 {
 
- public function getAllSpecializations()
+public function getAllSpecializations(Request $request)
 {
     $specializations = Specialization::all(['id', 'name', 'path']); 
+
+    if ($specializations->isEmpty()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'No specializations found.',
+            'data' => []
+        ]);
+    }
 
     $formatted = $specializations->map(function ($specialization) {
         return [
@@ -29,6 +37,7 @@ class DoctorsController extends Controller
         'data' => $formatted,
     ]);
 }
+
 
 public function getDoctorsBySpecialization($specializationId)
 {
