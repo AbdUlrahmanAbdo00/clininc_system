@@ -135,7 +135,7 @@ class DoctorsController extends Controller
             'success' => true,
              'message' => 'The image was uploaded successfully.',
             'data' => [
-              'image_url' => $uploadedFileUrl,
+              'imageUrl' => $uploadedFileUrl,
             ],
             
         ]);
