@@ -27,6 +27,7 @@ Route::post('/appointments/patient', [AppointmentController::class, 'showBookeda
 Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
 });
 Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
+Route::post('doctor/upload-image', [DoctorsController::class, 'uploadDoctorImage']);
 
 Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('auth:sanctum');
 Route::post('/add_shift',[ShiftsController::class,'store']);
