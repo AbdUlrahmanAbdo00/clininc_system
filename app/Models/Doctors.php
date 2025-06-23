@@ -21,4 +21,9 @@ class Doctors extends Model
     {
         return $this->belongsToMany(Shift::class,'doctor_shift', 'doctor_id', 'shift_id')->withTimestamps()->withPivot('days');
     }
+    public function specialization()
+{
+    return $this->belongsTo(Specialization::class);
+}
+
 }
