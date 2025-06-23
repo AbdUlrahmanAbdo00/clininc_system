@@ -7,7 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-
+use Cloudinary\Cloudinary;
 class DoctorsController extends Controller
 {
     /**
@@ -22,29 +22,30 @@ public function uploadSpecializationImage(Request $request)
 {
     $request->validate([
         'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-        'name' => 'required|string|unique:specializations,name'
+        'name' => 'required|string|unique:specializations,name',
     ]);
 
-    $file = $request->file('image');
+    // استدعاء الكلاوديناري من الـ service container
+    $cloudinary = app(Cloudinary::class);
 
-    // إنشاء اسم مميز للصورة
-    $fileName = time() . '_' . $file->getClientOriginalName();
+    // رفع الصورة إلى Cloudinary
+    $uploadedFile = $cloudinary->uploadApi()->upload(
+        $request->file('image')->getRealPath(),
+        ['folder' => 'specializations'] // يمكنك تعديل اسم المجلد كما تريد
+    );
 
-    // حفظ الصورة داخل مجلد public/specialization
-    $file->move(public_path('specialization'), $fileName);
+    $uploadedFileUrl = $uploadedFile['secure_url'];
 
-    // تحديد المسار النسبي
-    $relativePath = 'specialization/' . $fileName;
+    // حفظ في قاعدة البيانات
     Specialization::create([
-        'name'=>$request->name,
-        'path'=>$request->path,
+        'name' => $request->name,
+        'path' => $uploadedFileUrl,
     ]);
+
     return response()->json([
         'success' => true,
-        'image_path' => $relativePath,
-        'image_url' => asset($relativePath),
+        'image_url' => $uploadedFileUrl,
     ]);
-
 }
     /**
      * Show the form for creating a new resource.
