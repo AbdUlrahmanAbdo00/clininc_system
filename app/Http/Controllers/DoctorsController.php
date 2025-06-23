@@ -32,11 +32,17 @@ class DoctorsController extends Controller
     {
         $user = Auth::user();
         // dd($user);
-        $user = User::where('id', $user->id)->first();
+        // $user = User::where('id', $user->id)->first();
+        
         $validated= $request->validate( [
             'specialization'=>'required|string|max:255',
-            'consultation_duration'=>'required|integer|min:1|max:1440'
+            'consultation_duration'=>'required|integer|min:1|max:1440',
+            'user_id'=>'required'
     ]);
+    $user= User::where('id',$validated['user_id'])->first();
+    if (!$user) {
+    return response()->json(['error' => 'User not found'], 404);
+}
         $doctor = Doctors::create([
             'user_id'=> $user->id,
              'specialization'=>$validated['specialization'],

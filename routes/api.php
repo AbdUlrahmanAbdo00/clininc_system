@@ -18,7 +18,7 @@ Route::post('/verify', [UserController::class, 'verif']);
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
 Route::apiResource('/patient',PatientsController::class);
-
+Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
 
 
 });
@@ -26,3 +26,4 @@ Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('au
 Route::post('/add_shift',[ShiftsController::class,'store']);
 Route::post('/assignShift',[ShiftsController::class,'assignShiftToDoctor']);
 Route::post('patient/book/apointment',[AppointmentController::class,'booking'])->middleware('auth:sanctum');
+Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay'])->middleware('auth:sanctum');
