@@ -22,7 +22,7 @@ Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
 
 
 });
-Route::post('/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
+Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
 
 Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('auth:sanctum');
 Route::post('/add_shift',[ShiftsController::class,'store']);
