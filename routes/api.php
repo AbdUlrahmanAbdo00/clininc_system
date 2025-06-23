@@ -23,6 +23,8 @@ Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoc
 Route::post('patient/book/apointment',[AppointmentController::class,'booking']);
 Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay']);
 Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
+Route::post('/appointments/patient', [AppointmentController::class, 'showBookedappointmentForPatient']);
+Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
 });
 Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
 

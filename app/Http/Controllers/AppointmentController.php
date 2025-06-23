@@ -17,6 +17,10 @@ class AppointmentController extends Controller
 
     public function booking(Request $request)
     {
+        $request->validate([
+            'date' => 'required|date_format:Y-m-d',    
+            'doctor_id' => 'required|integer|exists:doctors,id', 
+        ]);
         $date = $request->date;
         $user = Auth::user();
         $user = User::findOrFail($user->id);
@@ -101,6 +105,10 @@ class AppointmentController extends Controller
 
     public function getAvailableSlotsForDay(Request $request)
     {
+            $request->validate([
+            'date' => 'required|date_format:Y-m-d',    
+            'doctor_id' => 'required|integer|exists:doctors,id', 
+        ]);
         $date = Carbon::parse($request->date);
         $doctor = Doctors::findOrFail($request->doctor_id);
         $shifts = $doctor->shifts;
