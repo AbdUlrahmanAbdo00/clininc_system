@@ -10,13 +10,54 @@ use Illuminate\Support\Facades\Storage;
 use Cloudinary\Cloudinary;
 class DoctorsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-      
-    }
+
+ public function getAllSpecializations()
+{
+    $specializations = Specialization::all(['id', 'name', 'path']); 
+
+    $formatted = $specializations->map(function ($specialization) {
+        return [
+            'id' => (string) $specialization->id,
+            'name' => $specialization->name,
+            'iconUrl' => $specialization->path, 
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Specialities fetched successfully.',
+        'data' => $formatted,
+    ]);
+}
+
+public function getDoctorsBySpecialization($specializationId)
+{
+    $doctors = Doctors::with('specialization')
+        ->where('specialization_id', $specializationId)
+        ->get();
+
+    $formattedDoctors = $doctors->map(function ($doctor) {
+        $user = User::where('id',$doctor->user_id)->first();
+        $specialization = Specialization::where('id',$doctor->specialization_id)->first();
+        return [
+            'id' => (string) $doctor->id,
+            'imageUrl' => $doctor->image_url,
+            'name' => $user->first_name,
+            'bio' => $doctor->bio,
+            'speciality' => [
+                'id' => (string)  $specialization->id,
+                'name' =>  $specialization->name,
+                'iconUrl' =>  $specialization->path, 
+            ],
+        ];
+    });
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Doctors fetched successfully.',
+        'data' => $formattedDoctors,
+    ]);
+}
 
 public function uploadSpecializationImage(Request $request)
 {
@@ -25,18 +66,17 @@ public function uploadSpecializationImage(Request $request)
         'name' => 'required|string|unique:specializations,name',
     ]);
 
-    // استدعاء الكلاوديناري من الـ service container
     $cloudinary = app(Cloudinary::class);
 
-    // رفع الصورة إلى Cloudinary
+ 
     $uploadedFile = $cloudinary->uploadApi()->upload(
         $request->file('image')->getRealPath(),
-        ['folder' => 'specializations'] // يمكنك تعديل اسم المجلد كما تريد
+        ['folder' => 'specializations'] 
     );
 
     $uploadedFileUrl = $uploadedFile['secure_url'];
 
-    // حفظ في قاعدة البيانات
+  
     Specialization::create([
         'name' => $request->name,
         'path' => $uploadedFileUrl,
@@ -65,7 +105,7 @@ public function uploadSpecializationImage(Request $request)
         // $user = User::where('id', $user->id)->first();
         
         $validated= $request->validate( [
-            'specialization'=>'required|string|max:255',
+            'specialization_id'=>'required|exists:specializations,id',
             'consultation_duration'=>'required|integer|min:1|max:1440',
             'user_id'=>'required'
     ]);
@@ -75,7 +115,7 @@ public function uploadSpecializationImage(Request $request)
 }
         $doctor = Doctors::create([
             'user_id'=> $user->id,
-             'specialization'=>$validated['specialization'],
+             'specialization_id'=>$validated['specialization_id'],
              'consultation_duration'=>$validated['consultation_duration']
         ]);
         return response()->json(['success' => 'doctor created successfly'], 200);

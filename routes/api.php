@@ -18,14 +18,15 @@ Route::post('/verify', [UserController::class, 'verif']);
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
 Route::apiResource('/patient',PatientsController::class);
+Route::get('/patient/getAllSpecializations',[DoctorsController::class,'getAllSpecializations']);
+Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoctorsBySpecialization']);
+Route::post('patient/book/apointment',[AppointmentController::class,'booking']);
+Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay']);
 Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
-
-
 });
 Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
 
 Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('auth:sanctum');
 Route::post('/add_shift',[ShiftsController::class,'store']);
 Route::post('/assignShift',[ShiftsController::class,'assignShiftToDoctor']);
-Route::post('patient/book/apointment',[AppointmentController::class,'booking'])->middleware('auth:sanctum');
-Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay'])->middleware('auth:sanctum');
+
