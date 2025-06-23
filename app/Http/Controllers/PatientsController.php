@@ -60,15 +60,19 @@ class PatientsController extends Controller
             'gender' => 'required|in:male,female',
         ]);
 
- 
+
 
         try {
             DB::beginTransaction();
 
             $user->update($validatedUser);
 
-            
-        
+            $alreadyExists = Patients::where('user_id', $user->id)->exists();
+            if (!$alreadyExists) {
+                Patients::create([
+                    'user_id' => $user->id
+                ]);
+            }
 
             DB::commit();
 
@@ -82,7 +86,7 @@ class PatientsController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong. Please try again.',
-                'error' => $e->getMessage() 
+                'error' => $e->getMessage()
             ], 500);
         }
     }
