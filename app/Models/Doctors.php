@@ -8,7 +8,7 @@ class Doctors extends Model
 {
     protected $fillable = [
         'user_id',
-        'specialization',
+        'specialization_id',
         'consultation_duration',
         'imageUrl',
         'bio'
