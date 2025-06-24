@@ -98,7 +98,7 @@ class DoctorsController extends Controller
             'success' => true,
              'message' => 'The image was uploaded successfully.',
             'data' => [
-              'image_url' => $uploadedFileUrl,
+              'imageUrl' => $uploadedFileUrl,
             ],
             
         ]);
@@ -127,7 +127,7 @@ class DoctorsController extends Controller
         return response()->json(['success' => false, 'message' => 'Doctor not found.'], 404);
     }
 
-    $doctor->image_url = $uploadedFileUrl;
+    $doctor->imageUrl = $uploadedFileUrl;
     $doctor->save();
 
 
