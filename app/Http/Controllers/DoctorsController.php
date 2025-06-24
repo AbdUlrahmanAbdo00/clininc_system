@@ -226,11 +226,22 @@ class DoctorsController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Doctors $doctors)
-    {
-        //
+public function deleteSpecialization($id)
+{
+    $specialization = Specialization::find($id);
+
+    if (!$specialization) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Specialization not found.',
+        ], 404);
     }
+
+    $specialization->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Specialization deleted successfully.',
+    ]);
+}
 }
