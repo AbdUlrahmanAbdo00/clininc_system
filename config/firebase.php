@@ -1,5 +1,5 @@
 <?php 
 
 return [
-    'credentials' => storage_path('app/firebase/' . env('FIREBASE_CREDENTIALS'))
+    'credentials' => storage_path('app\firebase\\' . env('FIREBASE_CREDENTIALS'))
 ];
