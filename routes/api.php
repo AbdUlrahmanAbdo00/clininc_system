@@ -25,6 +25,10 @@ Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailab
 Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
 Route::post('/appointments/patient', [AppointmentController::class, 'showBookedappointmentForPatient']);
 Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
+Route::get('/doctors/{id}', [DoctorsController::class, 'getDoctorById']);
+Route::get('/patients/{id}', [PatientsController::class, 'getPatientById']);
+
+
 });
 Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
 Route::post('doctor/upload-image', [DoctorsController::class, 'uploadDoctorImage']);

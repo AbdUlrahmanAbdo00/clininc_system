@@ -94,13 +94,13 @@ class DoctorsController extends Controller
             'path' => $uploadedFileUrl,
         ]);
 
-         return response()->json([
+        return response()->json([
             'success' => true,
-             'message' => 'The image was uploaded successfully.',
+            'message' => 'The image was uploaded successfully.',
             'data' => [
-              'imageUrl' => $uploadedFileUrl,
+                'imageUrl' => $uploadedFileUrl,
             ],
-            
+
         ]);
     }
     public function uploadDoctorImage(Request $request)
@@ -121,23 +121,23 @@ class DoctorsController extends Controller
         $uploadedFileUrl = $uploadedFile['secure_url'];
 
 
-         $doctor = Doctors::find($request->doctor_id);
+        $doctor = Doctors::find($request->doctor_id);
 
-    if (!$doctor) {
-        return response()->json(['success' => false, 'message' => 'Doctor not found.'], 404);
-    }
+        if (!$doctor) {
+            return response()->json(['success' => false, 'message' => 'Doctor not found.'], 404);
+        }
 
-    $doctor->imageUrl = $uploadedFileUrl;
-    $doctor->save();
+        $doctor->imageUrl = $uploadedFileUrl;
+        $doctor->save();
 
 
         return response()->json([
             'success' => true,
-             'message' => 'The image was uploaded successfully.',
+            'message' => 'The image was uploaded successfully.',
             'data' => [
-              'imageUrl' => $uploadedFileUrl,
+                'imageUrl' => $uploadedFileUrl,
             ],
-            
+
         ]);
     }
 
@@ -168,12 +168,45 @@ class DoctorsController extends Controller
         return response()->json(['success' => 'doctor created successfly'], 200);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Doctors $doctors)
+    public function getDoctorById($id)
     {
-        //
+        $doctor = Doctors::where('id', $id)->first();
+     
+        $user = User::findOr($doctor->user_id, function () {
+            return null;
+        });
+        $specialization = Specialization::where('id',$doctor->specialization_id)->first();
+
+        if (!$user || !$doctor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'user not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'user data retrieved successfully.',
+            'data' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name,
+                'last_name' => $user->last_name,
+                'number' => $user->number,
+                'mother_name' => $user->mother_name,
+                'birth_day' => $user->birth_day,
+                'national_number' => $user->national_number,
+                'gender' => $user->gender,
+                'escape_counter' => $doctor->escape_counter,
+                'bio' => $doctor->bio,
+                'imageUrl' => $doctor->imageUrl,
+                'consultation_duration' => $doctor->consultation_duration,
+                'specialization'=>$specialization->name,
+
+
+
+            ]
+        ]);
     }
 
     /**
