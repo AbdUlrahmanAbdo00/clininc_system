@@ -73,7 +73,7 @@ class DoctorsController extends Controller
     public function uploadSpecializationImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml|max:2048',
             'name' => 'required|string|unique:specializations,name',
 
         ]);
@@ -106,7 +106,7 @@ class DoctorsController extends Controller
     public function uploadDoctorImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml|max:2048',
             'doctor_id' => 'required|integer|exists:doctors,id',
         ]);
 
@@ -154,16 +154,22 @@ class DoctorsController extends Controller
         $validated = $request->validate([
             'specialization_id' => 'required|exists:specializations,id',
             'consultation_duration' => 'required|integer|min:1|max:1440',
-            'user_id' => 'required'
+            'user_id' => 'required',
+            'bio' => 'required'
         ]);
         $user = User::where('id', $validated['user_id'])->first();
         if (!$user) {
             return response()->json(['error' => 'User not found'], 404);
-        }
+        }$path="https://res.cloudinary.com/dydpyygpw/image/upload/v1750772878/specializations/iwet7vfzzvkbg8liyp1t.png";
+        if($user->gender=="femal")
+    {$path="https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";}
         $doctor = Doctors::create([
             'user_id' => $user->id,
             'specialization_id' => $validated['specialization_id'],
-            'consultation_duration' => $validated['consultation_duration']
+            'consultation_duration' => $validated['consultation_duration'],
+            'bio' => $validated['bio'],
+            'imageUrl'=>$path
+
         ]);
         return response()->json(['success' => 'doctor created successfly'], 200);
     }
@@ -171,11 +177,12 @@ class DoctorsController extends Controller
     public function getDoctorById($id)
     {
         $doctor = Doctors::where('id', $id)->first();
-     
+
         $user = User::findOr($doctor->user_id, function () {
             return null;
         });
-        $specialization = Specialization::where('id',$doctor->specialization_id)->first();
+
+        $specialization = Specialization::where('id', $doctor->specialization_id)->first();
 
         if (!$user || !$doctor) {
             return response()->json([
@@ -201,7 +208,7 @@ class DoctorsController extends Controller
                 'bio' => $doctor->bio,
                 'imageUrl' => $doctor->imageUrl,
                 'consultation_duration' => $doctor->consultation_duration,
-                'specialization'=>$specialization->name,
+                'specialization' => $specialization->name,
 
 
 
@@ -225,11 +232,22 @@ class DoctorsController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Doctors $doctors)
+    public function deleteSpecialization($id)
     {
-        //
+        $specialization = Specialization::find($id);
+
+        if (!$specialization) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Specialization not found.',
+            ], 404);
+        }
+
+        $specialization->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Specialization deleted successfully.',
+        ]);
     }
 }

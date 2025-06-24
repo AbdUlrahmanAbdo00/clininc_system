@@ -102,6 +102,24 @@ class AppointmentController extends Controller
             ],
         ], 200);
     }
+    public function deleteAppointment($id)
+{
+    $appointment = Appointment::find($id);
+
+    if (!$appointment) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Appointment not found.',
+        ], 404);
+    }
+
+    $appointment->delete();
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Appointment deleted successfully.',
+    ]);
+}
 
     public function getAvailableSlotsForDay(Request $request)
     {
