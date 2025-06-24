@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DoctorsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ShiftsController;
 use App\Http\Controllers\UserController;
@@ -39,3 +40,4 @@ Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('au
 Route::post('/add_shift',[ShiftsController::class,'store']);
 Route::post('/assignShift',[ShiftsController::class,'assignShiftToDoctor']);
 
+Route::post('/notifications/send_notification', [NotificationController::class, 'sendTestNotification']);
