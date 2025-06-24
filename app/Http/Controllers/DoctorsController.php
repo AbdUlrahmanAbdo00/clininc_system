@@ -73,7 +73,7 @@ class DoctorsController extends Controller
     public function uploadSpecializationImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml|max:2048',
             'name' => 'required|string|unique:specializations,name',
 
         ]);
