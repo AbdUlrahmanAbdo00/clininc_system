@@ -145,34 +145,42 @@ class DoctorsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        $user = Auth::user();
-        // dd($user);
-        // $user = User::where('id', $user->id)->first();
+public function store(Request $request)
+{
+    $user = Auth::user();
 
-        $validated = $request->validate([
-            'specialization_id' => 'required|exists:specializations,id',
-            'consultation_duration' => 'required|integer|min:1|max:1440',
-            'user_id' => 'required',
-            'bio' => 'required'
-        ]);
-        $user = User::where('id', $validated['user_id'])->first();
-        if (!$user) {
-            return response()->json(['error' => 'User not found'], 404);
-        }$path="https://res.cloudinary.com/dydpyygpw/image/upload/v1750772878/specializations/iwet7vfzzvkbg8liyp1t.png";
-        if($user->gender=="femal")
-    {$path="https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";}
-        $doctor = Doctors::create([
-            'user_id' => $user->id,
+    $validated = $request->validate([
+        'specialization_id' => 'required|exists:specializations,id',
+        'consultation_duration' => 'required|integer|min:1|max:1440',
+        'user_id' => 'required',
+        'bio' => 'required'
+    ]);
+
+    $user = User::where('id', $validated['user_id'])->first();
+    if (!$user) {
+        return response()->json(['error' => 'User not found'], 404);
+    }
+
+    
+    $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750772878/specializations/iwet7vfzzvkbg8liyp1t.png";
+    if ($user->gender == "femal") {
+        $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";
+    }
+
+    
+    $doctor = Doctors::updateOrCreate(
+        ['user_id' => $user->id], 
+        [
             'specialization_id' => $validated['specialization_id'],
             'consultation_duration' => $validated['consultation_duration'],
             'bio' => $validated['bio'],
-            'imageUrl'=>$path
+            'imageUrl' => $path
+        ]
+    );
 
-        ]);
-        return response()->json(['success' => 'doctor created successfly'], 200);
-    }
+    return response()->json(['success' => 'Doctor data saved successfully'], 200);
+}
+
 
     public function getDoctorById($id)
     {
