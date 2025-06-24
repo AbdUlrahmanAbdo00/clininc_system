@@ -52,8 +52,8 @@ class DoctorsController extends Controller
             $specialization = Specialization::where('id', $doctor->specialization_id)->first();
             return [
                 'id' => (string) $doctor->id,
-                'imageUrl' => $doctor->image_url,
-                'name' => $user->first_name,
+                'imageUrl' => $doctor->imageUrl,
+                'name' => $user->first_name ?? 'Unknown',
                 'bio' => $doctor->bio,
                 'speciality' => [
                     'id' => (string)  $specialization->id,
