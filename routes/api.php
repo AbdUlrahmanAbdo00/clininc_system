@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\DoctorsController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ShiftsController;
 use App\Http\Controllers\UserController;
@@ -18,14 +19,23 @@ Route::post('/verify', [UserController::class, 'verif']);
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
 Route::apiResource('/patient',PatientsController::class);
+Route::get('/getAllSpecializations',[DoctorsController::class,'getAllSpecializations']);
+Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoctorsBySpecialization']);
+Route::post('patient/book/apointment',[AppointmentController::class,'booking']);
+Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay']);
 Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
+Route::post('/appointments/patient', [AppointmentController::class, 'showBookedappointmentForPatient']);
+Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
+Route::get('/doctors/{id}', [DoctorsController::class, 'getDoctorById']);
+Route::get('/patients/{id}', [PatientsController::class, 'getPatientById']);
 
 
 });
-Route::post('/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
+Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
+Route::post('doctor/upload-image', [DoctorsController::class, 'uploadDoctorImage']);
 
 Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('auth:sanctum');
 Route::post('/add_shift',[ShiftsController::class,'store']);
 Route::post('/assignShift',[ShiftsController::class,'assignShiftToDoctor']);
-Route::post('patient/book/apointment',[AppointmentController::class,'booking'])->middleware('auth:sanctum');
-Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay'])->middleware('auth:sanctum');
+
+Route::post('/notifications/send_notification', [NotificationController::class, 'sendTestNotification']);

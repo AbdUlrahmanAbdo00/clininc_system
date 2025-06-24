@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('specialization_id')->constrained()->onDelete('cascade');
             $table->integer('escape_counter')->nullable();
+            $table->string('bio')->nullable();
+            $table->string('imageUrl')->nullable();
             $table->integer('consultation_duration');
             $table->timestamps();
         });

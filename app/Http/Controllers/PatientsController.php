@@ -11,13 +11,42 @@ use Illuminate\Support\Facades\DB;
 
 class PatientsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+
+    public function getPatientById($id)
     {
-        //
+        $patient=Patients::where('id',$id)->first();
+        
+        $user = User::findOr($id, function () {
+            return null;
+        });
+
+        if (!$user||!$patient) {
+            return response()->json([
+                'success' => false,
+                'message' => 'user not found.'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'user data retrieved successfully.',
+            'data' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name,
+                'last_name' => $user->last_name,
+                'number' => $user->number,
+                'mother_name'=>$user->mother_name,
+                 'birth_day'=>$user->birth_day,
+                 'national_number'=>$user->national_number,
+                 'gender'=>$user->gender,
+                'daily_doses_number'=>$patient->daily_doses_number,
+                'taken_doses'=>$patient->taken_doses,
+
+            ]
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
