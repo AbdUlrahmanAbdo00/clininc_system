@@ -106,7 +106,7 @@ class DoctorsController extends Controller
     public function uploadDoctorImage(Request $request)
     {
         $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'required|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml|max:2048',
             'doctor_id' => 'required|integer|exists:doctors,id',
         ]);
 
@@ -171,11 +171,12 @@ class DoctorsController extends Controller
     public function getDoctorById($id)
     {
         $doctor = Doctors::where('id', $id)->first();
-     
+
         $user = User::findOr($doctor->user_id, function () {
             return null;
         });
-        $specialization = Specialization::where('id',$doctor->specialization_id)->first();
+
+        $specialization = Specialization::where('id', $doctor->specialization_id)->first();
 
         if (!$user || !$doctor) {
             return response()->json([
@@ -201,7 +202,7 @@ class DoctorsController extends Controller
                 'bio' => $doctor->bio,
                 'imageUrl' => $doctor->imageUrl,
                 'consultation_duration' => $doctor->consultation_duration,
-                'specialization'=>$specialization->name,
+                'specialization' => $specialization->name,
 
 
 
