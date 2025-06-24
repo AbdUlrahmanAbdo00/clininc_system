@@ -27,7 +27,7 @@ Route::post('/appointments/patient', [AppointmentController::class, 'showBookeda
 Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
 Route::get('/doctors/{id}', [DoctorsController::class, 'getDoctorById']);
 Route::get('/patients/{id}', [PatientsController::class, 'getPatientById']);
-
+Route::delete('/appointments/{id}', [AppointmentController::class, 'deleteAppointment']);
 
 });
 Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
