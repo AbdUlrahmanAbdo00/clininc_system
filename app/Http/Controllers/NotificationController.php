@@ -8,7 +8,8 @@ use App\Services\FirebaseService;
 class NotificationController extends Controller
 {
     public function sendTestNotification(FirebaseService $firebase, Request $request)
-    {
+    {dd(env('FIREBASE_CREDENTIALS'));
+
         $request->validate([
             'deviceToken' => 'required|string',
             'title' => 'required|string',
