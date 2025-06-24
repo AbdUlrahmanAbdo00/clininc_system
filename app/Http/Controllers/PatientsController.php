@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\PatientRequest;
 use App\Models\Patients;
 use App\Models\User;
+use App\Services\FirebaseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PatientsController extends Controller
 {
+
+
 
     public function getPatientById($id)
     {

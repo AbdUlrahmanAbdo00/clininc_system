@@ -27,7 +27,7 @@ Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
 Route::post('/appointments/patient', [AppointmentController::class, 'showBookedappointmentForPatient']);
 Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
 Route::delete('/specializations/{id}', [DoctorsController::class, 'deleteSpecialization']);
-
+Route::get('/send-notification', [PatientsController::class, 'sendTestNotification']);
 Route::get('/doctors/{id}', [DoctorsController::class, 'getDoctorById']);
 Route::get('/patients/{id}', [PatientsController::class, 'getPatientById']);
 Route::delete('/appointments/{id}', [AppointmentController::class, 'deleteAppointment']);

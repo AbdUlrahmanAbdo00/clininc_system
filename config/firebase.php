@@ -1,5 +1,5 @@
 <?php 
 
 return [
-    'credentials' => storage_path('app/firebase/' . env('FIREBASE_CREDENTIALS'))
+'credentials' => json_decode(env('FIREBASE_CREDENTIALS'), true),
 ];
