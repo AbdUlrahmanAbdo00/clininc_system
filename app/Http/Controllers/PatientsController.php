@@ -15,15 +15,58 @@ class PatientsController extends Controller
 
 
 
+public function getAuthenticatedPatientData()
+{
+    $user = Auth::user();
+
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not authenticated.'
+        ], 401);
+    }
+
+   
+    $patient = Patients::where('user_id', $user->id)->first();
+
+    if (!$patient) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Patient data not found.'
+        ], 404);
+    }
+
+    // إرجاع البيانات
+    return response()->json([
+        'success' => true,
+        'message' => 'User data retrieved successfully.',
+        'data' => [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'middle_name' => $user->middle_name,
+            'last_name' => $user->last_name,
+            'number' => $user->number,
+            'mother_name' => $user->mother_name,
+            'birth_day' => $user->birth_day,
+            'national_number' => $user->national_number,
+            'gender' => $user->gender,
+            'daily_doses_number' => $patient->daily_doses_number,
+            'taken_doses' => $patient->taken_doses,
+        ]
+    ]);
+}
+
+
     public function getPatientById($id)
     {
-        $patient=Patients::where('id',$id)->first();
-        
+        $patient = Patients::where('id', $id)->first();
+
         $user = User::findOr($id, function () {
             return null;
         });
 
-        if (!$user||!$patient) {
+        if (!$user || !$patient) {
             return response()->json([
                 'success' => false,
                 'message' => 'user not found.'
@@ -39,12 +82,12 @@ class PatientsController extends Controller
                 'middle_name' => $user->middle_name,
                 'last_name' => $user->last_name,
                 'number' => $user->number,
-                'mother_name'=>$user->mother_name,
-                 'birth_day'=>$user->birth_day,
-                 'national_number'=>$user->national_number,
-                 'gender'=>$user->gender,
-                'daily_doses_number'=>$patient->daily_doses_number,
-                'taken_doses'=>$patient->taken_doses,
+                'mother_name' => $user->mother_name,
+                'birth_day' => $user->birth_day,
+                'national_number' => $user->national_number,
+                'gender' => $user->gender,
+                'daily_doses_number' => $patient->daily_doses_number,
+                'taken_doses' => $patient->taken_doses,
 
             ]
         ]);
@@ -106,8 +149,11 @@ class PatientsController extends Controller
                 ]);
             }
 
+              if (!$user->hasRole('patient')) {
+                $user->assignRole('patient');
+            }
             DB::commit();
-
+          
             return response()->json([
                 'success' => true,
                 'message' => 'Patient created successfully.'
@@ -124,27 +170,7 @@ class PatientsController extends Controller
     }
 
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Patients $patients) {}
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Patients $patients)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Patients $patients) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
+  
     public function destroy(Request $request)
     {
         $patient = Patients::where('id', $request->id)->first();

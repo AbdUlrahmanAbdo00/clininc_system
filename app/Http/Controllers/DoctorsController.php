@@ -145,41 +145,44 @@ class DoctorsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-public function store(Request $request)
-{
-    $user = Auth::user();
+    public function store(Request $request)
+    {
+        $user = Auth::user();
 
-    $validated = $request->validate([
-        'specialization_id' => 'required|exists:specializations,id',
-        'consultation_duration' => 'required|integer|min:1|max:1440',
-        'user_id' => 'required',
-        'bio' => 'required'
-    ]);
+        $validated = $request->validate([
+            'specialization_id' => 'required|exists:specializations,id',
+            'consultation_duration' => 'required|integer|min:1|max:1440',
+            'user_id' => 'required',
+            'bio' => 'required'
+        ]);
 
-    $user = User::where('id', $validated['user_id'])->first();
-    if (!$user) {
-        return response()->json(['error' => 'User not found'], 404);
-    }
-
+        $user = User::where('id', $validated['user_id'])->first();
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+        if (!$user->hasRole('doctor')) {
+            $user->assignRole('doctor');
+        }
     
-    $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750772878/specializations/iwet7vfzzvkbg8liyp1t.png";
-    if ($user->gender == "femal") {
-        $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";
+
+        $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750772878/specializations/iwet7vfzzvkbg8liyp1t.png";
+        if ($user->gender == "femal") {
+            $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";
+        }
+
+
+        $doctor = Doctors::updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'specialization_id' => $validated['specialization_id'],
+                'consultation_duration' => $validated['consultation_duration'],
+                'bio' => $validated['bio'],
+                'imageUrl' => $path
+            ]
+        );
+
+        return response()->json(['success' => 'Doctor data saved successfully'], 200);
     }
-
-    
-    $doctor = Doctors::updateOrCreate(
-        ['user_id' => $user->id], 
-        [
-            'specialization_id' => $validated['specialization_id'],
-            'consultation_duration' => $validated['consultation_duration'],
-            'bio' => $validated['bio'],
-            'imageUrl' => $path
-        ]
-    );
-
-    return response()->json(['success' => 'Doctor data saved successfully'], 200);
-}
 
 
     public function getDoctorById($id)
@@ -223,6 +226,53 @@ public function store(Request $request)
             ]
         ]);
     }
+    public function getDoctorByToken(Request $request)
+    {
+
+        $user = auth('auth:sanctum')->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized.'
+            ], 401);
+        }
+
+
+        $doctor = Doctors::where('user_id', $user->id)->first();
+
+        if (!$doctor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Doctor not found for this user.'
+            ], 404);
+        }
+
+
+        $specialization = Specialization::find($doctor->specialization_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User data retrieved successfully.',
+            'data' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name,
+                'last_name' => $user->last_name,
+                'number' => $user->number,
+                'mother_name' => $user->mother_name,
+                'birth_day' => $user->birth_day,
+                'national_number' => $user->national_number,
+                'gender' => $user->gender,
+                'escape_counter' => $doctor->escape_counter,
+                'bio' => $doctor->bio,
+                'imageUrl' => $doctor->imageUrl,
+                'consultation_duration' => $doctor->consultation_duration,
+                'specialization' => $specialization->name ?? 'Unknown',
+            ]
+        ]);
+    }
+
 
     /**
      * Show the form for editing the specified resource.

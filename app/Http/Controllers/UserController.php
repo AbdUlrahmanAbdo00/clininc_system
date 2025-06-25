@@ -88,7 +88,7 @@ class UserController extends Controller
             $user = User::create([
                 'number' => $request->number
             ]);
-            $user->assignRole('patient');
+            // $user->assignRole('patient');
             $filled_data = false;
         }
 

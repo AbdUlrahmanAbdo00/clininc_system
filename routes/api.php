@@ -16,23 +16,38 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 Route::post('/requestOtp', [UserController::class, 'requestOtp']);
 Route::post('/verify', [UserController::class, 'verif']);
-Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoctorsBySpecialization']);
+Route::post('/patient',[PatientsController::class,'store'])->middleware('auth:sanctum');
+
+
+Route::middleware(['auth:sanctum', 'doctor'])->group(function () {
+Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);
+Route::get('/doctors/info', [DoctorsController::class, 'getDoctorByToken']);
+
+});
+
+
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {
-Route::apiResource('/patient',PatientsController::class);
+
 Route::get('/getAllSpecializations',[DoctorsController::class,'getAllSpecializations']);
 Route::post('patient/book/apointment',[AppointmentController::class,'booking']);
 Route::post('patient/book/apointment1',[AppointmentController::class,'getAvailableSlotsForDay']);
 Route::post('patient/book/apointment2',[AppointmentController::class,'book']);
 Route::post('/appointments/patient', [AppointmentController::class, 'showBookedappointmentForPatient']);
-Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);//هون في ميدل وير للدكتور لاتنسى تحطها 
 Route::delete('/specializations/{id}', [DoctorsController::class, 'deleteSpecialization']);
 Route::get('/send-notification', [PatientsController::class, 'sendTestNotification']);
-Route::get('/doctors/{id}', [DoctorsController::class, 'getDoctorById']);
-Route::get('/patients/{id}', [PatientsController::class, 'getPatientById']);
+Route::get('/doctors/info/{id}', [DoctorsController::class, 'getDoctorById']);
+Route::get('/patients/info/{id}', [PatientsController::class, 'getPatientById']);
+Route::get('/patients/info/', [PatientsController::class, 'getAuthenticatedPatientData']);
 Route::delete('/appointments/{id}', [AppointmentController::class, 'deleteAppointment']);
+Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoctorsBySpecialization']);
 
 });
+
+
+
+
+
 Route::post('admin/specialization/upload-image', [DoctorsController::class, 'uploadSpecializationImage']);
 Route::post('doctor/upload-image', [DoctorsController::class, 'uploadDoctorImage']);
 
