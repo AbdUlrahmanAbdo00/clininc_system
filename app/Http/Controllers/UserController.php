@@ -89,8 +89,28 @@ class UserController extends Controller
                 'number' => $request->number
             ]);
             // $user->assignRole('patient');
-            $filled_data = false;
+                $filled_data = false;
         }
+       
+
+        $requiredFields = [
+            'first_name',
+            'middle_name',
+            'last_name',
+            'number',
+            'mother_name',
+            'birth_day',
+            'national_number',
+            'gender'
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (empty($user->$field)) {
+                $filled_data = false;
+                break;
+            }
+        }
+
 
 
         $userOtp = Otp::where('phone', $request->number)->first();
