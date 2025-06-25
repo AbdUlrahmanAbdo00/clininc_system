@@ -229,7 +229,7 @@ class DoctorsController extends Controller
     public function getDoctorByToken(Request $request)
     {
 
-        $user = auth('auth:sanctum')->user();
+        $user = auth('sanctum')->user();
 
         if (!$user) {
             return response()->json([
