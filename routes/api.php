@@ -17,7 +17,12 @@ Route::get('/user', function (Request $request) {
 Route::post('/requestOtp', [UserController::class, 'requestOtp']);
 Route::post('/verify', [UserController::class, 'verif']);
 Route::post('/patient',[PatientsController::class,'store'])->middleware('auth:sanctum');
+Route::post('/logout', [UserController::class, 'logout'])
+    ->middleware('auth:sanctum');
 
+
+Route::post('/logout-all', [UserController::class, 'logoutFromAll'])
+    ->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum', 'doctor'])->group(function () {
 Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);

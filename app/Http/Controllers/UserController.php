@@ -89,9 +89,9 @@ class UserController extends Controller
                 'number' => $request->number
             ]);
             // $user->assignRole('patient');
-                $filled_data = false;
+            $filled_data = false;
         }
-       
+
 
         $requiredFields = [
             'first_name',
@@ -134,8 +134,29 @@ class UserController extends Controller
     }
 
 
+public function logout(Request $request)
+{
+    $request->user()->currentAccessToken()->delete();
+    
+ 
+    return response()->json([
+        'success' => true,
+        'message' => 'تم تسجيل الخروج بنجاح'
+    ], 200);
+}
 
 
+
+public function logoutFromAll(Request $request)
+{
+   
+    $request->user()->tokens()->delete();
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'تم تسجيل الخروج بنجاح'
+    ], 200);
+}
 
     // public function selectMode(Request $request)
     // {

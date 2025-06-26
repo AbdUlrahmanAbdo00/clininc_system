@@ -166,7 +166,7 @@ class DoctorsController extends Controller
     
 
         $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750772878/specializations/iwet7vfzzvkbg8liyp1t.png";
-        if ($user->gender == "femal") {
+        if ($user->gender === "female") {
             $path = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";
         }
 
