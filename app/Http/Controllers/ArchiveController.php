@@ -15,51 +15,51 @@ class ArchiveController extends Controller
     public function showUpcomingArchive_P() {
         $user = Auth::user();
         abort_unless($user, 404);
-        $totalItems = 0;
-
         $patient = Patients::where('user_id', $user->id)->first();
+        $perPage = request()->input('pageSize', 5);
 
         $appointments = Appointment::where([
                 ['patient_id', '=', $patient->id],
                 ['finished', '=', 0]
-            ])
-            ->get()
-            ->map(function ($appointment) {
-                $doctor = Doctors::where('id', $appointment->doctor_id)->first();
-                $doctorUser = User::where('id', $doctor->user_id)->first();
-                $patient = Patients::where('id', $appointment->patient_id)->first();
-                $patientUser = User::where('id', $patient->user_id)->first();
+            ])->paginate($perPage);
 
-                return [
-                    'id' => $appointment->id,
-                    'doctorName' => $doctorUser 
-                        ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
-                        : 'Doctor Not Found',
-                    'patientName' => $patientUser
-                        ? $patientUser->first_name . ' ' . $patientUser->last_name
-                        : 'Patient Not Found',
-                    'date' => $appointment->date,
-                    'recipe' => [
-                        'diagnostics' => [],
-                        'analyzes' => [],
-                        'medicines' => []
-                    ],
-                    'status' => 'upcoming'
-                ];
+        $transformedItems = $appointments->getCollection()->map(function ($appointment) {
+            $doctor = Doctors::where('id', $appointment->doctor_id)->first();
+            $doctorUser = User::where('id', $doctor->user_id)->first();
+            $patient = Patients::where('id', $appointment->patient_id)->first();
+            $patientUser = User::where('id', $patient->user_id)->first();
+
+            return [
+                'id' => $appointment->id,
+                'doctorName' => $doctorUser 
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
+                    : 'Doctor Not Found',
+                'patientName' => $patientUser
+                    ? $patientUser->first_name . ' ' . $patientUser->last_name
+                    : 'Patient Not Found',
+                'date' => $appointment->date,
+                'recipe' => [
+                    'diagnostics' => [],
+                    'analyzes' => [],
+                    'medicines' => []
+                ],
+                'status' => 'upcoming'
+            ];
         });
 
-        $totalItems = $appointments->count();
+        $appointments->setCollection($transformedItems);
+
 
         return response()->json([
-            'currentPage' => 1,
-            'pageSize' => 5,
-            'totalPages' => 1,
-            'totalItems' => $totalItems,
+            'currentPage' => $appointments->currentPage(),
+            'pageSize' => $appointments->perPage(),
+            'totalPages' => $appointments->lastPage(),
+            'totalItems' => $appointments->total(),
             'status' => true,
             'message' => $appointments->isEmpty() 
                 ? 'No upcoming appointments found' 
                 : 'Upcoming appointments loaded successfully',
-            'data' => $appointments
+            'data' => $appointments->items()
         ], 200);
     }
 
@@ -67,51 +67,51 @@ class ArchiveController extends Controller
     public function showUpcomingArchive_D() {
         $user = Auth::user();
         abort_unless($user, 404);
-        $totalItems = 0;
-
         $doctor = Doctors::where('user_id', $user->id)->first();
+        $perPage = request()->input('pageSize', 5);
 
         $appointments = Appointment::where([
                 ['doctor_id', '=', $doctor->id],
                 ['finished', '=', 0]
-            ])
-            ->get()
-            ->map(function ($appointment) {
-                $doctor = Doctors::where('id', $appointment->doctor_id)->first();
-                $doctorUser = User::where('id', $doctor->user_id)->first();
-                $patient = Patients::where('id', $appointment->patient_id)->first();
-                $patientUser = User::where('id', $patient->user_id)->first();
+            ])->paginate($perPage);
 
-                return [
-                    'id' => $appointment->id,
-                    'doctorName' => $doctorUser 
-                        ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
-                        : 'Doctor Not Found',
-                    'patientName' => $patientUser
-                        ? $patientUser->first_name . ' ' . $patientUser->last_name
-                        : 'Patient Not Found',
-                    'date' => $appointment->date,
-                    'recipe' => [
-                        'diagnostics' => [],
-                        'analyzes' => [],
-                        'medicines' => []
-                    ],
-                    'status' => 'upcoming'
-                ];
+        $transformedItems = $appointments->getCollection()->map(function ($appointment) {
+            $doctor = Doctors::where('id', $appointment->doctor_id)->first();
+            $doctorUser = User::where('id', $doctor->user_id)->first();
+            $patient = Patients::where('id', $appointment->patient_id)->first();
+            $patientUser = User::where('id', $patient->user_id)->first();
+
+            return [
+                'id' => $appointment->id,
+                'doctorName' => $doctorUser 
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
+                    : 'Doctor Not Found',
+                'patientName' => $patientUser
+                    ? $patientUser->first_name . ' ' . $patientUser->last_name
+                    : 'Patient Not Found',
+                'date' => $appointment->date,
+                'recipe' => [
+                    'diagnostics' => [],
+                    'analyzes' => [],
+                    'medicines' => []
+                ],
+                'status' => 'upcoming'
+            ];
         });
 
-        $totalItems = $appointments->count();
+        $appointments->setCollection($transformedItems);
+
 
         return response()->json([
-            'currentPage' => 1,
-            'pageSize' => 5,
-            'totalPages' => 1,
-            'totalItems' => $totalItems,
+            'currentPage' => $appointments->currentPage(),
+            'pageSize' => $appointments->perPage(),
+            'totalPages' => $appointments->lastPage(),
+            'totalItems' => $appointments->total(),
             'status' => true,
             'message' => $appointments->isEmpty() 
                 ? 'No upcoming appointments found' 
                 : 'Upcoming appointments loaded successfully',
-            'data' => $appointments
+            'data' => $appointments->items()
         ], 200);
     }
 }
