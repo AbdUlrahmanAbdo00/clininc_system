@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\DoctorsController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientsController;
@@ -60,4 +61,11 @@ Route::post('/Doctor/create',[DoctorsController::class,'store'])->middleware('au
 Route::post('/add_shift',[ShiftsController::class,'store']);
 Route::post('/assignShift',[ShiftsController::class,'assignShiftToDoctor']);
 
+// Notification APIs
 Route::post('/notifications/send_notification', [NotificationController::class, 'sendTestNotification']);
+
+// Archive APIs
+Route::get('/archive/patient/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_P'])
+    ->middleware('auth:sanctum');
+Route::get('/archive/doctor/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_D'])
+    ->middleware('auth:sanctum');
