@@ -26,9 +26,8 @@ Route::post('/logout-all', [UserController::class, 'logoutFromAll'])
     ->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum', 'doctor'])->group(function () {
-Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);
-Route::get('/doctors/info', [DoctorsController::class, 'getDoctorByToken']);
-
+    Route::post('/appointments/doctor', [AppointmentController::class, 'showBookedappointmentForDoctor']);
+    Route::get('/doctors/info', [DoctorsController::class, 'getDoctorByToken']);
 });
 
 
@@ -68,4 +67,4 @@ Route::post('/notifications/send_notification', [NotificationController::class, 
 Route::get('/archive/patient/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_P'])
     ->middleware('auth:sanctum');
 Route::get('/archive/doctor/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_D'])
-    ->middleware('auth:sanctum');
+    ->middleware('auth:sanctum', 'doctor');
