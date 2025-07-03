@@ -65,6 +65,6 @@ Route::post('/notifications/send_notification', [NotificationController::class, 
 
 // Archive APIs
 Route::get('/archive/patient/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_P'])
-    ->middleware('auth:sanctum');
+    ->middleware('auth:sanctum', 'pagination');
 Route::get('/archive/doctor/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_D'])
-    ->middleware('auth:sanctum', 'doctor');
+    ->middleware('auth:sanctum', 'doctor', 'pagination');
