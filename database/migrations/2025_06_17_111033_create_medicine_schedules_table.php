@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
             $table->foreignId('medicine_id')->constrained()->onDelete('cascade');
-            $table->integer('total_number_of_doses');
+            $table->integer('quantity');
             $table->integer('number_of_taken_doses');
-            $table->float('difference_time');
+            $table->float('rest_time');
             $table->date('last_time_has_taken');
+            $table->text('description')->nullable();
             $table->timestamps();
         });
     }

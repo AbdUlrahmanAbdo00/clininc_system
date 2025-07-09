@@ -10,7 +10,8 @@ class MedicalRecords extends Model
         'appointment_id',
         'name',
         'date',
-        'description'
+        'description',
+        'image_path'
     ];
 
     public function appointment() {

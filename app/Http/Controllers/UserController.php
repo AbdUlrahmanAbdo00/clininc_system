@@ -62,8 +62,6 @@ class UserController extends Controller
     }
     public function verif(Request $request)
     {
-
-
         $validator = Validator::make($request->all(), [
             // 'name'=>'required|string|max:255',
             'number' => 'required',
