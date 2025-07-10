@@ -120,7 +120,7 @@ class ExaminationController extends Controller
 
                 foreach ($validated['analysiss'] as $analysisData) {
                     $uploadedFile = $cloudinary->uploadApi()->upload(
-                        $analysisData->file('image')->getRealPath(),
+                        $analysisData->file('analysis_image')->getRealPath(),
                         ['folder' => 'analysis_images']
                     );
 
