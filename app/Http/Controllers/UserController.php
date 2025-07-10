@@ -63,7 +63,7 @@ class UserController extends Controller
     public function verif(Request $request)
     {
 
-
+// dd('ddddd');
         $validator = Validator::make($request->all(), [
             // 'name'=>'required|string|max:255',
             'number' => 'required',
@@ -76,7 +76,7 @@ class UserController extends Controller
         //  dd($result);
         //  dd($result['success']);
         if (!$result['success']) {
-            return response()->json($result, 401);
+            return response()->json($result, 400);
         }
         $filled_data = true;
 
@@ -130,7 +130,7 @@ class UserController extends Controller
             ], 200);
         }
 
-        return response()->json(['error' => 'Unauthorized'], 401);
+        return response()->json(['error' => 'Unauthorized'], 400);
     }
 
 
