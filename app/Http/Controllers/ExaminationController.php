@@ -85,8 +85,8 @@ class ExaminationController extends Controller
         $appointment = Appointment::where('doctor_id', $user->id)
         ->where('patient_id', $request['patient_id'])
         ->whereBetween('start_date', [
-            $now->copy()->subHour(),
-            $now->copy()->addHour()
+            $now->copy()->subMinutes(30),
+            $now->copy()->addMinutes(30)
         ])
         ->first();
         
