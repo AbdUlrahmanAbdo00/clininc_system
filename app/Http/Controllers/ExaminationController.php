@@ -128,7 +128,7 @@ class ExaminationController extends Controller
 
                     $uploadedFileUrl = $uploadedFile['secure_url'];
 
-                    $imagePath = $analysisData['analysis_image']->store('analysis_images', 'public');
+                    //$imagePath = $analysisData['analysis_image']->store('analysis_images', 'public');
                 
                     MedicalRecords::create([
                         'appointment_id' => $appointment->id,
