@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Appointment;
+use App\Models\Patients;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class AppointmentBookingService
 {
@@ -15,6 +17,7 @@ class AppointmentBookingService
         $date = $data['date']; 
         $startTime = $data['start_time'];
         $duration = $data['duration'] ?? 30;
+        
 
         return DB::transaction(function () use ($doctorId, $date, $startTime, $duration) {
            
@@ -33,12 +36,16 @@ class AppointmentBookingService
                 throw new \Exception("This appointment is already booked.");
             }
 
+            $user = Auth::user();
+            abort_unless($user, 404);
+            $patient = Patients::where('user_id', $user->id)->first();
+
             return Appointment::create([
                 'doctor_id' => $doctorId,
                 'date' => $date,
                 'start_date' => $startTime,
                 'end_date' => Carbon::parse("$date $startTime")->addMinutes($duration)->format('H:i:s'),
-                'patient_id' => auth('sanctum')->id(),
+                'patient_id' => $patient->id,
             ]);
         });
     }

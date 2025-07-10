@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Traits\OtpTrait;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-
 class UserController extends Controller
 {
     use OtpTrait;
@@ -62,9 +61,7 @@ class UserController extends Controller
     }
     public function verif(Request $request)
     {
-
-// dd('ddddd');
-        $validator = Validator::make($request->all(), [
+     $validator = Validator::make($request->all(), [
             // 'name'=>'required|string|max:255',
             'number' => 'required',
             'otp' => 'required'

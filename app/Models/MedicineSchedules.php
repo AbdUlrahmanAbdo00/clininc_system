@@ -9,10 +9,11 @@ class MedicineSchedules extends Model
     protected $fillable = [
         'appointment_id',
         'medicine_id',
-        'total_number_of_doses',
+        'quantity',
         'number_of_taken_doses',
-        'difference_time',
-        'last_time_has_taken'
+        'rest_time',
+        'last_time_has_taken',
+        'description'
     ];
 
     public function appointment() {

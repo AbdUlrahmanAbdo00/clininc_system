@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('appointment_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->date('date');
+            $table->string('image_path');
             $table->string('description');
             $table->timestamps();
         });
