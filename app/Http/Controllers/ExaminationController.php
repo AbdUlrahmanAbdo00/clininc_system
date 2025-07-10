@@ -18,9 +18,8 @@ class ExaminationController extends Controller
     // This function to add an examination
     public function addExamin(Request $request) {
         $user = Auth::user();
-        if (!$user) {
-            return response()->json(['error' => 'Unauthenticated'], 401);
-        }    
+        abort_unless($user, 404);
+
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'diagnoses' => [
