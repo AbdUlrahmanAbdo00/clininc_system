@@ -119,8 +119,10 @@ class ExaminationController extends Controller
                 $cloudinary = app(Cloudinary::class);
 
                 foreach ($validated['analysiss'] as $analysisData) {
+                    $file = $analysisData['analysis_image'];
+
                     $uploadedFile = $cloudinary->uploadApi()->upload(
-                        $analysisData->file('analysis_image')->getRealPath(),
+                        $file->getRealPath(),
                         ['folder' => 'analysis_images']
                     );
 
