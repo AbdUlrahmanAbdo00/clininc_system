@@ -20,8 +20,8 @@ return new class extends Migration
             $table->boolean('cancled')->default(false);
             // $table->softDeletes(); 
             $table->date('date');
-            $table->time('start_date')->default(Carbon::now());
-            $table->time('end_date')->default(Carbon::now());;
+            $table->time('start_date');
+            $table->time('end_date');
             $table->timestamps();
         });
     }

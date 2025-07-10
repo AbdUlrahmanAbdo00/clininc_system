@@ -85,8 +85,8 @@ class ExaminationController extends Controller
         $appointment = Appointment::where('doctor_id', $user->id)
         ->where('patient_id', $request['patient_id'])
         ->whereBetween('start_date', [
-            $now->copy()->subMinutes(30),
-            $now->copy()->addMinutes(30)
+            $now->copy()->subHours(1),
+            $now->copy()->addHours(1)
         ])
         ->first();
         
@@ -97,6 +97,8 @@ class ExaminationController extends Controller
                     'doctor_id' => $user->id,
                     'patient_id' => $validated['patient_id'],
                     'date' => $now->toDateString(),
+                    'start_date' => $now->toDateString(),
+                    'end_date' => $now->toDateString(),
                     'finished' => true,
                     'cancled' => false
                 ]);
