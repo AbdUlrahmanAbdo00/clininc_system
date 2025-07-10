@@ -12,6 +12,7 @@ use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Cloudinary\Cloudinary;
 
 class ExaminationController extends Controller
 {
@@ -115,14 +116,23 @@ class ExaminationController extends Controller
             }
 
             if ($validated['analysiss']) {
+                $cloudinary = app(Cloudinary::class);
+
                 foreach ($validated['analysiss'] as $analysisData) {
+                    $uploadedFile = $cloudinary->uploadApi()->upload(
+                        $analysisData->file('image')->getRealPath(),
+                        ['folder' => 'analysis_images']
+                    );
+
+                    $uploadedFileUrl = $uploadedFile['secure_url'];
+
                     $imagePath = $analysisData['analysis_image']->store('analysis_images', 'public');
                 
                     MedicalRecords::create([
                         'appointment_id' => $appointment->id,
                         'name' => $analysisData['analysis_name'],
                         'date' => Carbon::now(),
-                        'image_path' => $imagePath,
+                        'image_path' => $uploadedFileUrl,
                         'description' => $analysisData['description'] ?? null,
                     ]);
                 }   
