@@ -96,8 +96,6 @@ class ExaminationController extends Controller
                     'doctor_id' => $user->id,
                     'patient_id' => $validated['patient_id'],
                     'date' => $now->toDateString(),
-                    'start_date' => $now,
-                    'end_date' => $now->copy()->addMinutes(30),
                     'finished' => true,
                     'cancled' => false
                 ]);
