@@ -21,7 +21,6 @@ class ExaminationController extends Controller
         if (!$user) {
             return response()->json(['error' => 'Unauthenticated'], 401);
         }    
-    try {
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'diagnoses' => [
@@ -148,13 +147,5 @@ class ExaminationController extends Controller
         return response()->json([
             'success' => 'the addition has completed successfully'
         ]);
-    } catch (\Illuminate\Validation\ValidationException $e) {
-        return response()->json([
-            'errors' => $e->errors(),
-            'received_data' => $request->all(),
-            'files' => array_keys($request->file())
-        ], 422);
-    }
-        
     }
 }
