@@ -21,7 +21,7 @@ class MedicineController extends Controller
         if ($medicine) {
             return response()->json([
                 'message' => 'this medicine is already exists'
-            ], 500);
+            ], 200);
         }
 
         DB::transaction(function () use ($validated) {
