@@ -99,7 +99,7 @@ class ExaminationController extends Controller
                     'date' => $now->toDateString(),
                     'start_date' => $now->toDateString(),
                     'end_date' => $now->toDateString(),
-                    'finished' => true,
+                    'finished' => 1,
                     'cancled' => false
                 ]);
             }
@@ -154,6 +154,8 @@ class ExaminationController extends Controller
                 }
             }
         });
+
+        $appointment->finished = 1;
 
         return response()->json([
             'success' => 'the addition has completed successfully'

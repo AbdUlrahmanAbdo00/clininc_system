@@ -70,6 +70,10 @@ Route::get('/archive/patient/show_upcoming_appointments', [ArchiveController::cl
     ->middleware('auth:sanctum', 'pagination');
 Route::get('/archive/doctor/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_D'])
     ->middleware('auth:sanctum', 'doctor', 'pagination');
+Route::get('/archive/patient/show_finished_appointments', [ArchiveController::class, 'showFinishedArchive_P'])
+    ->middleware('auth:sanctum', 'pagination');
+Route::get('/archive/doctor/show_finished_appointments', [ArchiveController::class, 'showFinishedArchive_D'])
+    ->middleware('auth:sanctum', 'doctor', 'pagination');
 
 // Examination
 Route::post('examination/add_examination', [ExaminationController::class, 'addExamin'])
