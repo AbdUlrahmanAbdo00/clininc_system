@@ -48,7 +48,7 @@ class MedicineController extends Controller
                         ->select('id', 'name')
                         ->get();
     
-        if(isEmpty($medicines)) {
+        if($medicines->isEmpty()) {
             return response()->json([
                 'message' => 'no medicines found'
             ], 200);
