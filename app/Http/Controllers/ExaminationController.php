@@ -28,8 +28,8 @@ class ExaminationController extends Controller
                 'array',
                 function ($attributes, $value, $fail) {
                     foreach ($value as $diagnose) {
-                        if(!isset($diagnose['diagnose_name']) || !isset($diagnose['desease_id']) || !isset($diagnose['diagnose_type'])) {
-                            $fail('Each diagnose must contain : diagnose name, desease id, diagnose type.');
+                        if(!isset($diagnose['diagnose_name']) || !isset($diagnose['diagnose_type'])) {
+                            $fail('Each diagnose must contain : diagnose name, diagnose type.');
                         }
                     }
                 }
@@ -84,8 +84,8 @@ class ExaminationController extends Controller
         $appointment = Appointment::where('doctor_id', $user->id)
         ->where('patient_id', $request['patient_id'])
         ->whereBetween('start_date', [
-            $now->copy()->subHours(1)->toDateString(),
-            $now->copy()->addHours(1)->toDateString()
+            $now->copy()->subHours(1),
+            $now->copy()->addHours(1)
         ])
         ->first();
         
@@ -95,10 +95,10 @@ class ExaminationController extends Controller
                 $appointment = Appointment::create([
                     'doctor_id' => $user->id,
                     'patient_id' => $validated['patient_id'],
-                    'date' => $now->toDateString(),
-                    'start_date' => $now->toDateString(),
-                    'end_date' => $now->toDateString(),
-                    'finished' => 1,
+                    'date' => $now,
+                    'start_date' => $now,
+                    'end_date' => $now,
+                    'finished' => true,
                     'cancled' => false
                 ]);
             }
@@ -108,7 +108,6 @@ class ExaminationController extends Controller
                     Analytics::create([
                         'appointment_id' => $appointment->id,
                         'name' => $diagnose['diagnose_name'],
-                        'desease_id' => $diagnose['desease_id'],
                         'type' => $diagnose['diagnose_type'],
                         'date' => Carbon::now(),
                         'description' => $diagnose['description'] ?? null,
@@ -153,8 +152,6 @@ class ExaminationController extends Controller
                 }
             }
         });
-
-        $appointment->finished = 1;
 
         return response()->json([
             'success' => 'the addition has completed successfully'
