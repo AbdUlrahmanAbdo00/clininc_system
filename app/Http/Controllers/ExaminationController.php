@@ -35,7 +35,6 @@ class ExaminationController extends Controller
                 }
             ],
             'diagnoses.*.diagnose_name' => 'required|string|max:255',
-            'diagnoses.*.desease_id' => 'required',
             'diagnoses.*.diagnose_type' => 'required|in:temporary,non-temporary',
             'diagnoses.*.description' => 'nullable|string',
             'analysiss' => [
@@ -85,8 +84,8 @@ class ExaminationController extends Controller
         $appointment = Appointment::where('doctor_id', $user->id)
         ->where('patient_id', $request['patient_id'])
         ->whereBetween('start_date', [
-            $now->copy()->subHours(1),
-            $now->copy()->addHours(1)
+            $now->copy()->subHours(1)->toDateString(),
+            $now->copy()->addHours(1)->toDateString()
         ])
         ->first();
         
