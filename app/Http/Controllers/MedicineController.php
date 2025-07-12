@@ -33,8 +33,12 @@ class MedicineController extends Controller
         $medicine = Medicines::where('name', $request->medicine_name)->first();
 
         return response()->json([
-            'medicine_id' => $medicine->id,
-            'medicine_name' => $medicine->name
+            'success' => true,
+            'message' => 'fetched successfully',
+            'date' => [
+                'id' => $medicine->id,
+                'name' => $medicine->name
+            ]
         ], 200);
     }
 
@@ -55,7 +59,9 @@ class MedicineController extends Controller
         }
 
         return response()->json([
-            'medicines' => $medicines
+            'success' => true,
+            'message' => 'fetched successfully',
+            'date' => $medicines
         ], 200);
     }
 }
