@@ -35,7 +35,7 @@ class MedicineController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'fetched successfully',
-            'date' => [
+            'data' => [
                 'id' => $medicine->id,
                 'name' => $medicine->name
             ]
@@ -61,7 +61,7 @@ class MedicineController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'fetched successfully',
-            'date' => $medicines
+            'data' => $medicines
         ], 200);
     }
 }

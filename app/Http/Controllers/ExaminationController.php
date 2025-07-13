@@ -127,8 +127,6 @@ class ExaminationController extends Controller
                     );
 
                     $uploadedFileUrl = $uploadedFile['secure_url'];
-
-                    //$imagePath = $analysisData['analysis_image']->store('analysis_images', 'public');
                 
                     MedicalRecords::create([
                         'appointment_id' => $appointment->id,
@@ -154,7 +152,8 @@ class ExaminationController extends Controller
         });
 
         return response()->json([
-            'success' => 'the addition has completed successfully'
-        ]);
+            'success' => true,
+            'message' => 'Doctor data saved successfully'
+        ], 200);
     }
 }
