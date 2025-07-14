@@ -21,14 +21,13 @@ class ArchiveController extends Controller
         $patient = Patients::where('user_id', $user->id)->first();
 
         $perPage = $request->input('pageSize', 5);
-        $currentPage = $request->input('page', 1);
 
         $appointments = Appointment::where([
                 ['patient_id', '=', $patient->id],
                 ['finished', '=', 0]
             ])
             ->orderBy('date', 'asc')
-            ->paginate($perPage, ['*'], 'page', $currentPage);
+            ->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
@@ -71,11 +70,12 @@ class ArchiveController extends Controller
     }
 
     // This function shows the user who is in this case a doctor his all upcoming appointments
-    public function showUpcomingArchive_D() {
+    public function showUpcomingArchive_D(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
-        $perPage = request()->input('pageSize', 5);
+
+        $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
                 ['doctor_id', '=', $doctor->id],
@@ -123,11 +123,12 @@ class ArchiveController extends Controller
     }
 
     // This function shows the user who is in this case a patient his all finished appointments
-    public function showFinishedArchive_P() {
+    public function showFinishedArchive_P(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
         $patient = Patients::where('user_id', $user->id)->first();
-        $perPage = request()->input('pageSize', 5);
+
+        $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
                 ['patient_id', '=', $patient->id],
@@ -193,11 +194,12 @@ class ArchiveController extends Controller
     }
 
     // This function shows the user who is in this case a doctor his all upcoming appointments
-    public function showFinishedArchive_D() {
+    public function showFinishedArchive_D(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
-        $perPage = request()->input('pageSize', 5);
+
+        $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
                 ['doctor_id', '=', $doctor->id],
