@@ -15,16 +15,20 @@ use App\Models\User;
 class ArchiveController extends Controller
 {
     // This function shows the user who is in this case a patient his all upcoming appointments
-    public function showUpcomingArchive_P() {
+    public function showUpcomingArchive_P(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
         $patient = Patients::where('user_id', $user->id)->first();
-        $perPage = request()->input('pageSize', 5);
+
+        $perPage = $request->input('pageSize', 5);
+        $currentPage = $request->input('page', 1);
 
         $appointments = Appointment::where([
                 ['patient_id', '=', $patient->id],
                 ['finished', '=', 0]
-            ])->paginate($perPage);
+            ])
+            ->orderBy('date', 'asc')
+            ->paginate($perPage, ['*'], 'page', $currentPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();

@@ -98,8 +98,8 @@ class ExaminationController extends Controller
                     'date' => $now,
                     'start_date' => $now,
                     'end_date' => $now,
-                    'finished' => true,
-                    'cancled' => false
+                    'finished' => 1,
+                    'cancled' => 0
                 ]);
             }
 
