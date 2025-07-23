@@ -4,6 +4,7 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\DoctorsController;
 use App\Http\Controllers\ExaminationController;
+use App\Http\Controllers\MedicineController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PatientsController;
 use App\Http\Controllers\ShiftsController;
@@ -67,7 +68,17 @@ Route::get('/archive/patient/show_upcoming_appointments', [ArchiveController::cl
     ->middleware('auth:sanctum', 'pagination');
 Route::get('/archive/doctor/show_upcoming_appointments', [ArchiveController::class, 'showUpcomingArchive_D'])
     ->middleware('auth:sanctum', 'doctor', 'pagination');
+Route::get('/archive/patient/show_finished_appointments', [ArchiveController::class, 'showFinishedArchive_P'])
+    ->middleware('auth:sanctum', 'pagination');
+Route::get('/archive/doctor/show_finished_appointments', [ArchiveController::class, 'showFinishedArchive_D'])
+    ->middleware('auth:sanctum', 'doctor', 'pagination');
 
 // Examination
 Route::post('examination/add_examination', [ExaminationController::class, 'addExamin'])
+    ->middleware('auth:sanctum', 'doctor');
+
+// Medicines
+Route::post('medicine/add_medicine_db', [MedicineController::class, 'addMedicineToDB'])
+    ->middleware('auth:sanctum', 'doctor');
+Route::post('medicine/get_medicines_substring', [MedicineController::class, 'getMedicinesBySubstring'])
     ->middleware('auth:sanctum', 'doctor');

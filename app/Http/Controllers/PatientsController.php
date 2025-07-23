@@ -99,7 +99,7 @@ public function getAuthenticatedPatientData()
      */
     public function create() {}
 
-    public function check_fill(Request $request) ///check of the fill data
+    public function check_fill(PatientRequest $request) ///check of the fill data
     {
         $user = Auth::user();
         $user = User::where('id', $user->id)->first();

@@ -16,12 +16,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
-            $table->boolean('finished')->default(false);
-            $table->boolean('cancled')->default(false);
+            $table->boolean('finished');
+            $table->boolean('cancled');
             // $table->softDeletes(); 
             $table->date('date');
-            $table->time('start_date')->default(Carbon::now());
-            $table->time('end_date')->default(Carbon::now());;
+            $table->time('start_date');
+            $table->time('end_date');
             $table->timestamps();
         });
     }

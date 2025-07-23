@@ -46,6 +46,8 @@ class AppointmentBookingService
                 'start_date' => $startTime,
                 'end_date' => Carbon::parse("$date $startTime")->addMinutes($duration)->format('H:i:s'),
                 'patient_id' => $patient->id,
+                'finished' => 0,
+                'cancled' => 0
             ]);
         });
     }
