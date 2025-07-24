@@ -19,6 +19,10 @@ class Appointment extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function patient()
+{
+    return $this->belongsTo(Patients::class);
+}
     public function doctor(){
         return $this->belongsTo(Doctors::class);
     }
@@ -28,10 +32,10 @@ class Appointment extends Model
     }
 
     public function medicalRecord() {
-        $this->hasMany(Analytics::class);
+        $this->hasMany(MedicalRecords::class);
     }
 
     public function medicineSchedule() {
-        $this->hasMany(Analytics::class);
+        $this->hasMany(MedicineSchedules::class);
     }
 }

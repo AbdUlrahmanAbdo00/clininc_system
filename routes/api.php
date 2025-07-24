@@ -82,3 +82,6 @@ Route::post('medicine/add_medicine_db', [MedicineController::class, 'addMedicine
     ->middleware('auth:sanctum', 'doctor');
 Route::post('medicine/get_medicines_substring', [MedicineController::class, 'getMedicinesBySubstring'])
     ->middleware('auth:sanctum', 'doctor');
+
+//report 
+Route::get('/report/{id}', [PatientsController::class, 'report']);

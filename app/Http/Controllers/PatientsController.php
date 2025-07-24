@@ -6,56 +6,58 @@ use App\Http\Requests\PatientRequest;
 use App\Models\Patients;
 use App\Models\User;
 use App\Services\FirebaseService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+   use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class PatientsController extends Controller
 {
 
 
 
-public function getAuthenticatedPatientData()
-{
-    $user = Auth::user();
+    public function getAuthenticatedPatientData()
+    {
+        $user = Auth::user();
 
 
-    if (!$user) {
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not authenticated.'
+            ], 401);
+        }
+
+
+        $patient = Patients::where('user_id', $user->id)->first();
+
+        if (!$patient) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Patient data not found.'
+            ], 404);
+        }
+
+        // إرجاع البيانات
         return response()->json([
-            'success' => false,
-            'message' => 'User not authenticated.'
-        ], 401);
+            'success' => true,
+            'message' => 'User data retrieved successfully.',
+            'data' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'middle_name' => $user->middle_name,
+                'last_name' => $user->last_name,
+                'number' => $user->number,
+                'mother_name' => $user->mother_name,
+                'birth_day' => $user->birth_day,
+                'national_number' => $user->national_number,
+                'gender' => $user->gender,
+                'daily_doses_number' => $patient->daily_doses_number,
+                'taken_doses' => $patient->taken_doses,
+            ]
+        ]);
     }
-
-   
-    $patient = Patients::where('user_id', $user->id)->first();
-
-    if (!$patient) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Patient data not found.'
-        ], 404);
-    }
-
-    // إرجاع البيانات
-    return response()->json([
-        'success' => true,
-        'message' => 'User data retrieved successfully.',
-        'data' => [
-            'id' => $user->id,
-            'first_name' => $user->first_name,
-            'middle_name' => $user->middle_name,
-            'last_name' => $user->last_name,
-            'number' => $user->number,
-            'mother_name' => $user->mother_name,
-            'birth_day' => $user->birth_day,
-            'national_number' => $user->national_number,
-            'gender' => $user->gender,
-            'daily_doses_number' => $patient->daily_doses_number,
-            'taken_doses' => $patient->taken_doses,
-        ]
-    ]);
-}
 
 
     public function getPatientById($id)
@@ -149,11 +151,11 @@ public function getAuthenticatedPatientData()
                 ]);
             }
 
-              if (!$user->hasRole('patient')) {
+            if (!$user->hasRole('patient')) {
                 $user->assignRole('patient');
             }
             DB::commit();
-          
+
             return response()->json([
                 'success' => true,
                 'message' => 'Patient created successfully.'
@@ -170,11 +172,70 @@ public function getAuthenticatedPatientData()
     }
 
 
-  
+
     public function destroy(Request $request)
     {
         $patient = Patients::where('id', $request->id)->first();
-        //we have to check if the patient has any visit and we should cancel it 
         $patient->delete();
     }
+
+
+public function report($id)
+{
+    $lang = request()->query('lang', 'en');
+
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found.',
+            'data' => [],
+        ], 404);
+    }
+
+    $full_name = trim(
+        ($user->first_name ?? 'unknown') . ' ' .
+        ($user->middle_name ?? '') . ' ' .
+        ($user->last_name ?? '')
+    );
+
+    $age = $user->birth_day
+        ? Carbon::parse($user->birth_day)->age
+        : 'unknown';
+
+    $patient = Patients::where('user_id', $id)->first();
+
+    $diagnoses = $patient && $patient->analytics
+        ? $patient->analytics->pluck('name')
+        : collect(['unknown']);
+
+    $medicalRecord = $patient && $patient->medicalRecord
+        ? $patient->medicalRecord->pluck('name')
+        : collect(['unknown']);
+
+    $medicineSchedule = $patient && $patient->medicineSchedule
+        ? $patient->medicineSchedule->pluck('name')
+        : collect(['unknown']);
+
+    
+    $translator = new GoogleTranslate($lang);
+
+    $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
+    $translatedMedicalRecord = $medicalRecord->map(fn($item) => $translator->translate($item));
+    $translatedMedicineSchedule = $medicineSchedule->map(fn($item) => $translator->translate($item));
+
+    return response()->json([
+        'success' => true,
+        'message' => $translator->translate('User data retrieved successfully.'),
+        'data' => [
+            'full_name'        => $full_name ?: 'unknown',
+            'age'              => $age,
+            'diagnoses'        => $translatedDiagnoses,
+            'medicalRecord'    => $translatedMedicalRecord,
+            'medicineSchedule' => $translatedMedicineSchedule,
+        ]
+    ]);
+}
+
 }
