@@ -85,3 +85,7 @@ Route::post('medicine/get_medicines_substring', [MedicineController::class, 'get
 
 //report 
 Route::get('/report/{id}', [PatientsController::class, 'report']);
+//medicalInfo
+Route::get('/report/{id}', [PatientsController::class, 'medicalInfo']);
+//confirmTaken
+Route::get('/report/{id}', [PatientsController::class, 'confirmTaken']);

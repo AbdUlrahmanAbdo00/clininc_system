@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\PatientRequest;
+use App\Models\MedicineSchedules;
 use App\Models\Patients;
 use App\Models\User;
 use App\Services\FirebaseService;
@@ -219,14 +220,14 @@ class PatientsController extends Controller
             : collect(['unknown']);
 
        $medicalRecord = $patient && $patient->medicalRecord
-    ? $patient->medicalRecord
-        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-        ->pluck('name')
+    ? $patient->medicalRecord->pluck('name')
     : collect(['unknown']);
 
 
         $medicineSchedule = $patient && $patient->medicineSchedule
-            ? $patient->medicineSchedule->pluck('name')
+            ? $patient->medicineSchedule
+               ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+            ->pluck('name')
             : collect(['unknown']);
 
         $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
@@ -245,4 +246,78 @@ class PatientsController extends Controller
             ]
         ]);
     }
+
+    public function medicalInfo(){
+        $lan = request()->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
+
+
+            $user = auth('sanctum')->user();
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 401);
+    }
+
+        $patient = Patients::where('user_id', $user->id)->first();
+    $medicineSchedule = $patient && $patient->medicineSchedule
+            ? $patient->medicineSchedule
+               ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+            ->pluck('name')
+            : collect(['unknown']);
+
+        $translatedMedicineSchedule = $medicineSchedule->map(fn($item) => $translator->translate($item));
+
+
+     return response()->json([
+            'success' => true,
+            'message' => $translator->translate('User data retrieved successfully.'),
+            'data' => [
+               
+                'medicineSchedule' => $translatedMedicineSchedule,
+            ]
+        ]);
+        
+    }
+    public function confirmTaken(Request $request){
+        $lan = request()->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
+
+
+            $user = auth('sanctum')->user();
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 401);
+    }
+            $patient = Patients::where('user_id', $user->id)->first();
+            $medical=MedicineSchedules::find($request->MedicineSchedules_id);
+            if($medical->number_of_taken_doses<$medical->quantity){
+
+                $medical->number_of_taken_doses ++;
+            }else {
+                 return response()->json([
+            'success' => true,
+            'message' => $translator->translate(' number of taken doses did not update .'),
+            'data' => [
+               
+            ]
+        ]);
+            }
+
+     return response()->json([
+            'success' => true,
+            'message' => $translator->translate('number of taken doses  updated.'),
+            'data' => [
+               
+            ]
+        ]);
+
+    }
+
 }
+
