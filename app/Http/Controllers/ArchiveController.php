@@ -11,11 +11,20 @@ use App\Models\MedicalRecords;
 use App\Models\MedicineSchedules;
 use App\Models\Patients;
 use App\Models\User;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ArchiveController extends Controller
 {
-    // This function shows the user who is in this case a patient his all upcoming appointments
-    public function showUpcomingArchive_P(Request $request) {
+    // دالة مساعدة للترجمة
+    private function translateMessage(Request $request, string $message)
+    {
+        $lan = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
+        return $translator->translate($message);
+    }
+
+    public function showUpcomingArchive_P(Request $request)
+    {
         $user = Auth::user();
         abort_unless($user, 404);
         $patient = Patients::where('user_id', $user->id)->first();
@@ -37,8 +46,8 @@ class ArchiveController extends Controller
 
             return [
                 'id' => $appointment->id,
-                'doctorName' => $doctorUser 
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
+                'doctorName' => $doctorUser
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
@@ -55,22 +64,21 @@ class ArchiveController extends Controller
 
         $appointments->setCollection($transformedItems);
 
-
         return response()->json([
             'currentPage' => $appointments->currentPage(),
             'pageSize' => $appointments->perPage(),
             'totalPages' => $appointments->lastPage(),
             'totalItems' => $appointments->total(),
             'status' => true,
-            'message' => $appointments->isEmpty() 
-                ? 'No upcoming appointments found' 
-                : 'Upcoming appointments loaded successfully',
+            'message' => $this->translateMessage($request, $appointments->isEmpty()
+                ? 'No upcoming appointments found'
+                : 'Upcoming appointments loaded successfully'),
             'data' => $appointments->items()
         ], 200);
     }
 
-    // This function shows the user who is in this case a doctor his all upcoming appointments
-    public function showUpcomingArchive_D(Request $request) {
+    public function showUpcomingArchive_D(Request $request)
+    {
         $user = Auth::user();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -90,8 +98,8 @@ class ArchiveController extends Controller
 
             return [
                 'id' => $appointment->id,
-                'doctorName' => $doctorUser 
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
+                'doctorName' => $doctorUser
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
@@ -108,22 +116,21 @@ class ArchiveController extends Controller
 
         $appointments->setCollection($transformedItems);
 
-
         return response()->json([
             'currentPage' => $appointments->currentPage(),
             'pageSize' => $appointments->perPage(),
             'totalPages' => $appointments->lastPage(),
             'totalItems' => $appointments->total(),
             'status' => true,
-            'message' => $appointments->isEmpty() 
-                ? 'No upcoming appointments found' 
-                : 'Upcoming appointments loaded successfully',
+            'message' => $this->translateMessage($request, $appointments->isEmpty()
+                ? 'No upcoming appointments found'
+                : 'Upcoming appointments loaded successfully'),
             'data' => $appointments->items()
         ], 200);
     }
 
-    // This function shows the user who is in this case a patient his all finished appointments
-    public function showFinishedArchive_P(Request $request) {
+    public function showFinishedArchive_P(Request $request)
+    {
         $user = Auth::user();
         abort_unless($user, 404);
         $patient = Patients::where('user_id', $user->id)->first();
@@ -144,25 +151,25 @@ class ArchiveController extends Controller
             $diagnostics = Analytics::where('appointment_id', $appointment->id)
                             ->select('id', 'name', 'type')
                             ->get();
-                        
+
             $analyzes = MedicalRecords::where('appointment_id', $appointment->id)
                             ->select('id', 'name', 'image_path')
                             ->get();
 
             $medicines = MedicineSchedules::where('appointment_id', $appointment->id)
                             ->join('medicines', 'medicine_schedules.medicine_id', '=', 'medicines.id')
-                            ->select('medicine_schedules.id', 
-                            'medicines.name as medicine_name',
-                            'medicine_schedules.quantity',
-                            'medicine_schedules.number_of_taken_doses',
-                            'medicine_schedules.rest_time',
-                            'medicine_schedules.last_time_has_taken')
+                            ->select('medicine_schedules.id',
+                                'medicines.name as medicine_name',
+                                'medicine_schedules.quantity',
+                                'medicine_schedules.number_of_taken_doses',
+                                'medicine_schedules.rest_time',
+                                'medicine_schedules.last_time_has_taken')
                             ->get();
 
             return [
                 'id' => $appointment->id,
-                'doctorName' => $doctorUser 
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
+                'doctorName' => $doctorUser
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
@@ -173,12 +180,11 @@ class ArchiveController extends Controller
                     'analyzes' => $analyzes,
                     'medicines' => $medicines
                 ],
-                'status' => 'upcoming'
+                'status' => 'finished'
             ];
         });
 
         $appointments->setCollection($transformedItems);
-
 
         return response()->json([
             'currentPage' => $appointments->currentPage(),
@@ -186,15 +192,15 @@ class ArchiveController extends Controller
             'totalPages' => $appointments->lastPage(),
             'totalItems' => $appointments->total(),
             'status' => true,
-            'message' => $appointments->isEmpty() 
-                ? 'No finished appointments found' 
-                : 'Finished appointments loaded successfully',
+            'message' => $this->translateMessage($request, $appointments->isEmpty()
+                ? 'No finished appointments found'
+                : 'Finished appointments loaded successfully'),
             'data' => $appointments->items()
         ], 200);
     }
 
-    // This function shows the user who is in this case a doctor his all upcoming appointments
-    public function showFinishedArchive_D(Request $request) {
+    public function showFinishedArchive_D(Request $request)
+    {
         $user = Auth::user();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -215,25 +221,25 @@ class ArchiveController extends Controller
             $diagnostics = Analytics::where('appointment_id', $appointment->id)
                             ->select('id', 'name', 'type')
                             ->get();
-                        
+
             $analyzes = MedicalRecords::where('appointment_id', $appointment->id)
                             ->select('id', 'name', 'image_path')
                             ->get();
 
             $medicines = MedicineSchedules::where('appointment_id', $appointment->id)
                             ->join('medicines', 'medicine_schedules.medicine_id', '=', 'medicines.id')
-                            ->select('medicine_schedules.id', 
-                            'medicines.name as medicine_name',
-                            'medicine_schedules.quantity',
-                            'medicine_schedules.number_of_taken_doses',
-                            'medicine_schedules.rest_time',
-                            'medicine_schedules.last_time_has_taken')
+                            ->select('medicine_schedules.id',
+                                'medicines.name as medicine_name',
+                                'medicine_schedules.quantity',
+                                'medicine_schedules.number_of_taken_doses',
+                                'medicine_schedules.rest_time',
+                                'medicine_schedules.last_time_has_taken')
                             ->get();
 
             return [
                 'id' => $appointment->id,
-                'doctorName' => $doctorUser 
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name 
+                'doctorName' => $doctorUser
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
@@ -244,12 +250,11 @@ class ArchiveController extends Controller
                     'analyzes' => $analyzes,
                     'medicines' => $medicines
                 ],
-                'status' => 'upcoming'
+                'status' => 'finished'
             ];
         });
 
         $appointments->setCollection($transformedItems);
-
 
         return response()->json([
             'currentPage' => $appointments->currentPage(),
@@ -257,9 +262,9 @@ class ArchiveController extends Controller
             'totalPages' => $appointments->lastPage(),
             'totalItems' => $appointments->total(),
             'status' => true,
-            'message' => $appointments->isEmpty() 
-                ? 'No finished appointments found' 
-                : 'Finished appointments loaded successfully',
+            'message' => $this->translateMessage($request, $appointments->isEmpty()
+                ? 'No finished appointments found'
+                : 'Finished appointments loaded successfully'),
             'data' => $appointments->items()
         ], 200);
     }

@@ -13,13 +13,16 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Cloudinary\Cloudinary;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class ExaminationController extends Controller
 {
-    // This function to add an examination
     public function addExamin(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
+
+        $lan = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
 
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
@@ -79,16 +82,13 @@ class ExaminationController extends Controller
 
         $now = Carbon::now();
 
-        $appointment = null;
-        
         $appointment = Appointment::where('doctor_id', $user->id)
-        ->where('patient_id', $request['patient_id'])
-        ->whereBetween('start_date', [
-            $now->copy()->subHours(1),
-            $now->copy()->addHours(1)
-        ])
-        ->first();
-        
+            ->where('patient_id', $request['patient_id'])
+            ->whereBetween('start_date', [
+                $now->copy()->subHours(1),
+                $now->copy()->addHours(1)
+            ])
+            ->first();
 
         DB::transaction(function () use ($validated, $user, $now, &$appointment) {
             if (!$appointment) {
@@ -127,7 +127,7 @@ class ExaminationController extends Controller
                     );
 
                     $uploadedFileUrl = $uploadedFile['secure_url'];
-                
+
                     MedicalRecords::create([
                         'appointment_id' => $appointment->id,
                         'name' => $analysisData['analysis_name'],
@@ -153,7 +153,7 @@ class ExaminationController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Doctor data saved successfully'
+            'message' => $translator->translate('Doctor data saved successfully')
         ], 200);
     }
 }
