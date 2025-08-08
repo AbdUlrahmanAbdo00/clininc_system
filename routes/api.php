@@ -88,4 +88,4 @@ Route::get('/report/{id}', [PatientsController::class, 'report']);
 //medicalInfo
 Route::get('/medicalInfo', [PatientsController::class, 'medicalInfo']);
 //confirmTaken
-Route::get('/confirmTaken', [PatientsController::class, 'confirmTaken']);
+Route::post('/confirmTaken', [PatientsController::class, 'confirmTaken']);
