@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Analytics;
 use App\Models\Appointment;
+use App\Models\Doctors;
 use App\Models\MedicalDiagnostic;
 use App\Models\MedicalRecords;
 use App\Models\MedicineSchedules;
@@ -89,11 +90,11 @@ class ExaminationController extends Controller
         ])
         ->first();
         
-
-        DB::transaction(function () use ($validated, $user, $now, &$appointment) {
+            $doctor = Doctors::where('user_id',$user->id)->first();
+        DB::transaction(function () use ($validated, $user, $now, &$appointment,$doctor) {
             if (!$appointment) {
                 $appointment = Appointment::create([
-                    'doctor_id' => $user->id,
+                    'doctor_id' => $doctor->id,
                     'patient_id' => $validated['patient_id'],
                     'date' => $now,
                     'start_date' => $now,
