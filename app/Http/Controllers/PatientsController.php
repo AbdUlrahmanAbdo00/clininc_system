@@ -240,9 +240,9 @@ class PatientsController extends Controller
             'data' => [
                 'full_name'        => $full_name ?: 'unknown',
                 'age'              => $age,
-                'diagnoses'        => $translatedDiagnoses,
-                'medicalRecord'    => $translatedMedicalRecord,
-                'medicineSchedule' => $translatedMedicineSchedule,
+                'diagnostics'        => $translatedDiagnoses,
+                'analyzes'    => $translatedMedicalRecord,
+                'medicines' => $translatedMedicineSchedule,
             ]
         ]);
     }
@@ -276,48 +276,65 @@ class PatientsController extends Controller
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
                
-                'medicineSchedule' => $translatedMedicineSchedule,
+                'medicines' => $translatedMedicineSchedule,
             ]
         ]);
         
     }
-    public function confirmTaken(Request $request){
-        $lan = request()->header('lan', 'en');
-        $translator = new GoogleTranslate($lan);
 
 
-            $user = auth('sanctum')->user();
+public function confirmTaken(Request $request)
+{
+    $lan = $request->header('lan', 'en');
+    $translator = new GoogleTranslate($lan);
+
+    $user = auth('sanctum')->user();
 
     if (!$user) {
         return response()->json([
             'success' => false,
-            'message' => 'Unauthorized'
+            'message' => $translator->translate('Unauthorized')
         ], 401);
     }
-            $patient = Patients::where('user_id', $user->id)->first();
-            $medical=MedicineSchedules::find($request->MedicineSchedules_id);
-            if($medical->number_of_taken_doses<$medical->quantity){
 
-                $medical->number_of_taken_doses ++;
-            }else {
-                 return response()->json([
-            'success' => true,
-            'message' => $translator->translate(' number of taken doses did not update .'),
-            'data' => [
-               
-            ]
-        ]);
-            }
-
-     return response()->json([
-            'success' => true,
-            'message' => $translator->translate('number of taken doses  updated.'),
-            'data' => [
-               
-            ]
-        ]);
-
+    $patient = Patients::where('user_id', $user->id)->first();
+    if (!$patient) {
+        return response()->json([
+            'success' => false,
+            'message' => $translator->translate('Patient not found.')
+        ], 404);
     }
+
+    $request->validate([
+        'MedicineSchedules_id' => 'required|exists:medicine_schedules,id'
+    ]);
+
+    $medical = MedicineSchedules::find($request->MedicineSchedules_id);
+
+    if ($medical->number_of_taken_doses < $medical->quantity) {
+        $medical->number_of_taken_doses++;
+        $medical->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => $translator->translate('Number of taken doses updated.'),
+            'data' => [
+                'current_taken' => $medical->number_of_taken_doses,
+                'total_quantity' => $medical->quantity
+            ]
+        ]);
+    } else {
+        return response()->json([
+            'success' => false,
+            'message' => $translator->translate('Number of taken doses did not update.'),
+            'data' => [
+                'current_taken' => $medical->number_of_taken_doses,
+                'total_quantity' => $medical->quantity
+            ]
+        ]);
+    }
+}
+
 
 }
 
