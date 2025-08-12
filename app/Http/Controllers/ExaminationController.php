@@ -81,8 +81,9 @@ class ExaminationController extends Controller
         $now = Carbon::now();
 
         $appointment = null;
-        
-        $appointment = Appointment::where('doctor_id', $user->id)
+                    $doctor = Doctors::where('user_id',$user->id)->first();
+
+        $appointment = Appointment::where('doctor_id', $doctor->id)
         ->where('patient_id', $request['patient_id'])
         ->whereBetween('start_date', [
             $now->copy()->subHours(1),
@@ -90,7 +91,6 @@ class ExaminationController extends Controller
         ])
         ->first();
         
-            $doctor = Doctors::where('user_id',$user->id)->first();
         DB::transaction(function () use ($validated, $user, $now, &$appointment,$doctor) {
             if (!$appointment) {
                 $appointment = Appointment::create([
