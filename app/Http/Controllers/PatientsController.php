@@ -238,7 +238,8 @@ class PatientsController extends Controller
             'success' => true,
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
-                'full_name'        => $full_name ?: 'unknown',
+                'full_name'        =>$translator->translate($full_name ) ?: 'unknown',
+                'gender'            =>$translator->translate($user->gender)   ,   
                 'age'              => $age,
                 'diagnostics'        => $translatedDiagnoses,
                 'analyzes'    => $translatedMedicalRecord,
