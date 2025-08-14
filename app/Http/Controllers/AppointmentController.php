@@ -18,8 +18,8 @@ class AppointmentController extends Controller
     public function booking(Request $request)
     {
         $request->validate([
-            'date' => 'required|date_format:Y-m-d',    
-            'doctor_id' => 'required|integer|exists:doctors,id', 
+            'date' => 'required|date_format:Y-m-d',
+            'doctor_id' => 'required|integer|exists:doctors,id',
         ]);
         $date = $request->date;
         $user = Auth::user();
@@ -103,29 +103,29 @@ class AppointmentController extends Controller
         ], 200);
     }
     public function deleteAppointment($id)
-{
-    $appointment = Appointment::find($id);
+    {
+        $appointment = Appointment::find($id);
 
-    if (!$appointment) {
+        if (!$appointment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Appointment not found.',
+            ], 404);
+        }
+
+        $appointment->delete();
+
         return response()->json([
-            'success' => false,
-            'message' => 'Appointment not found.',
-        ], 404);
+            'success' => true,
+            'message' => 'Appointment deleted successfully.',
+        ]);
     }
-
-    $appointment->delete();
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Appointment deleted successfully.',
-    ]);
-}
 
     public function getAvailableSlotsForDay(Request $request)
     {
-            $request->validate([
-            'date' => 'required|date_format:Y-m-d',    
-            'doctor_id' => 'required|integer|exists:doctors,id', 
+        $request->validate([
+            'date' => 'required|date_format:Y-m-d',
+            'doctor_id' => 'required|integer|exists:doctors,id',
         ]);
         $date = Carbon::parse($request->date);
         $doctor = Doctors::findOrFail($request->doctor_id);
@@ -239,109 +239,116 @@ class AppointmentController extends Controller
             ], 409); // Conflict
         }
     }
-public function showBookedappointmentForPatient(Request $request)
-{
-    $request->validate([
-        'finished' => 'required|boolean'
-    ]);
-    
-   
-    $user = auth('sanctum')->user();
-    
-    if (!$user) {
+    public function showBookedappointmentForPatient(Request $request)
+    {
+        $request->validate([
+            'finished' => 'required|boolean'
+        ]);
+
+
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+
+        $patient = Patients::where('user_id', $user->id)->first();
+
+        if (!$patient) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Patient not found for this user.'
+            ], 404);
+        }
+
+        $appointments = Appointment::where('patient_id', $patient->id)
+            ->where('finished', $request->finished)
+            ->get();
+
+        if ($appointments->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No appointments found.'
+            ], 200);
+        }
+
         return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized'
-        ], 401);
-    }
-    
+            'success' => true,
+            'data' => $appointments->map(function ($appointment) use ($user) {
+                $doctor = Doctors::where('id', $appointment->doctor_id)->first();
+                $doctorUser = User::where('id', $doctor->user_id)->first();
 
-    $patient = Patients::where('user_id', $user->id)->first();
-    
-    if (!$patient) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Patient not found for this user.'
-        ], 404);
-    }
-    
-    $appointments = Appointment::where('patient_id', $patient->id)
-                              ->where('finished', $request->finished)
-                              ->get();
-    
-    if ($appointments->isEmpty()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No appointments found.'
-        ], 200);
-    }
-    
-    return response()->json([
-        'success' => true,
-        'data' => $appointments->map(function ($appointment) use ($user) {
-            $doctor = Doctors::where('id', $appointment->doctor_id)->first();
-            $doctorUser = User::where('id', $doctor->user_id)->first();
-            
-            return [
-                'date' => $appointment->date,
-                'appointment_id' => $appointment->id,
-                'doctor_name' => $doctorUser->first_name,
-                'patient_first_name' => $user->first_name,
-            ];
-        })
-    ], 200);
-}
+                return [
+                    'date' => $appointment->date,
+                    'start_time' => \Carbon\Carbon::parse($appointment->start_time)->format('h:i A'),
+                    'appointment_id' => $appointment->id,
+                    'doctor_name' => $doctorUser->first_name.' '.$doctorUser->last_name,
+                    'patient_name' => $user->first_name . ' ' . $user->last_name,
+                    'specialization' => $doctor->specialization->name
 
-
-public function showBookedappointmentForDoctor(Request $request)
-{
-    $request->validate([
-        'finished' => 'required|boolean'
-    ]);
-
-    $user = auth('sanctum')->user();
-    
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized'
-        ], 401);
-    }
-
-    $doctor = Doctors::where('user_id', $user->id)->first();
-    
-    if (!$doctor) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Doctor not found for this user.'
-        ], 404);
-    }
-
-    $appointments = Appointment::where('doctor_id', $doctor->id)
-                    ->where('finished', $request->finished)
-                    ->get();
-
-    if ($appointments->isEmpty()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'No appointments found.'
+                ];
+            })
         ], 200);
     }
 
-    return response()->json([
-        'success' => true,
-        'data' => $appointments->map(function ($appointment) use ($user) {
-            $patient = Patients::where('id', $appointment->patient_id)->first();
-            $patientUser = User::where('id', $patient->user_id)->first();
-            
-            return [
-                'date' => $appointment->date,
-                'appointment_id' => $appointment->id,
-                'patient_name' => $patientUser->first_name ?? 'Unknown',
-                'doctor_name' => $user->first_name,
-            ];
-        })
-    ], 200);
-}
 
+    public function showBookedappointmentForDoctor(Request $request)
+    {
+        $request->validate([
+            'finished' => 'required|boolean'
+        ]);
+
+        $user = auth('sanctum')->user();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $doctor = Doctors::where('user_id', $user->id)->first();
+
+        if (!$doctor) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Doctor not found for this user.'
+            ], 404);
+        }
+
+        $appointments = Appointment::where('doctor_id', $doctor->id)
+            ->where('finished', $request->finished)
+            ->get();
+
+        if ($appointments->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No appointments found.'
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointments->map(function ($appointment) use ($user) {
+                $patient = Patients::where('id', $appointment->patient_id)->first();
+                $patientUser = User::where('id', $patient->user_id)->first();
+                $doctor = Doctors::where('id', $appointment->doctor_id)->first();
+
+
+                return [
+                    'date' => $appointment->date,
+                    'start_time' => \Carbon\Carbon::parse($appointment->start_time)->format('h:i A'),
+
+                    'appointment_id' => $appointment->id,
+                    'patient_name' => $patientUser->first_name.' '. $patientUser->last_name ?? 'Unknown',
+                    'doctor_name' =>  $fullName = $user->first_name . ' ' . $user->last_name,
+                    'specialization' => $doctor->specialization->name
+                ];
+            })
+        ], 200);
+    }
 }
