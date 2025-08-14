@@ -20,7 +20,8 @@ class MedicineSchedules extends Model
         return $this->belongsTo(Appointment::class);
     }
 
-    public function medicine() {
-        return $this->hasOne(Medicines::class);
-    }
+  public function medicine() {
+    return $this->belongsTo(Medicines::class, 'medicine_id');
+}
+
 }

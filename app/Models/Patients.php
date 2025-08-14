@@ -22,35 +22,35 @@ class Patients extends Model
 public function analytics()
 {
     return $this->hasManyThrough(
-        Analytics::class,     // الجدول النهائي
-        Appointment::class,   // الجدول الوسيط
-        'patient_id',         // العمود في appointments الذي يشير إلى patients
-        'appointment_id',     // العمود في analytics الذي يشير إلى appointments
-        'id',                 // المفتاح الأساسي في patients
-        'id'                  // المفتاح الأساسي في appointments
+        Analytics::class,     
+        Appointment::class,   
+        'patient_id',         
+        'appointment_id',     
+        'id',                
+        'id'                  
     );
 }
 
 public function medicalRecord()
 {
     return $this->hasManyThrough(
-        MedicalRecords::class,    // الجدول النهائي
-        Appointment::class,      // الجدول الوسيط
-        'patient_id',            // العمود في appointments الذي يشير إلى patients
-        'appointment_id',        // العمود في medical_records الذي يشير إلى appointments
-        'id',                    // المفتاح الأساسي في patients
-        'id'                     // المفتاح الأساسي في appointments
+        MedicalRecords::class,    
+        Appointment::class,      
+        'patient_id',            
+        'appointment_id',        
+        'id',                    
+        'id'                     
     );
 }
 public function medicineSchedule()
 {
     return $this->hasManyThrough(
-        MedicineSchedules::class,    // الجدول النهائي
-        Appointment::class,         // الجدول الوسيط
-        'patient_id',               // المفتاح الأجنبي في جدول appointments الذي يشير إلى patients
-        'appointment_id',           // المفتاح الأجنبي في جدول medicine_schedules الذي يشير إلى appointments
-        'id',                       // المفتاح الأساسي في جدول patients
-        'id'                        // المفتاح الأساسي في جدول appointments
+        MedicineSchedules::class,
+        Appointment::class,         
+        'patient_id',               
+        'appointment_id',           
+        'id',
+        'id'
     );
 }
 

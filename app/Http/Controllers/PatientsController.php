@@ -224,15 +224,20 @@ class PatientsController extends Controller
     : collect(['unknown']);
 
 
-        $medicineSchedule = $patient && $patient->medicineSchedule
-            ? $patient->medicineSchedule
-               ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-            ->pluck('name')
-            : collect(['unknown']);
+        $medicineNames = $patient && $patient->medicineSchedule
+    ? $patient->medicineSchedule()
+        ->with('medicine')
+        ->get()
+        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+        ->pluck('medicine.name')
+        ->unique()
+        ->values()
+    : collect(['unknown']);
+;
 
-        $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
-        $translatedMedicalRecord = $medicalRecord->map(fn($item) => $translator->translate($item));
-        $translatedMedicineSchedule = $medicineSchedule->map(fn($item) => $translator->translate($item));
+        // $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
+        // $translatedMedicalRecord = $medicalRecord->map(fn($item) => $translator->translate($item));
+        // $translatedMedicineSchedule = $medicineSchedule->map(fn($item) => $translator->translate($item));
 
         return response()->json([
             'success' => true,
@@ -241,9 +246,9 @@ class PatientsController extends Controller
                 'full_name'        =>$translator->translate($full_name ) ?: 'unknown',
                 'gender'            =>$translator->translate($user->gender)   ,   
                 'age'              => $age,
-                'diagnostics'        => $translatedDiagnoses,
-                'analyzes'    => $translatedMedicalRecord,
-                'medicines' => $translatedMedicineSchedule,
+                'diagnostics'        => $diagnoses,
+                'analyzes'    => $medicalRecord,
+                'medicines' => $medicineNames ,
             ]
         ]);
     }
@@ -263,13 +268,18 @@ class PatientsController extends Controller
     }
 
         $patient = Patients::where('user_id', $user->id)->first();
-    $medicineSchedule = $patient && $patient->medicineSchedule
-            ? $patient->medicineSchedule
-               ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-            ->pluck('name')
-            : collect(['unknown']);
+  $medicineNames = $patient && $patient->medicineSchedule
+    ? $patient->medicineSchedule()
+        ->with('medicine')
+        ->get()
+        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+        ->pluck('medicine.name')
+        ->unique()
+        ->values()
+    : collect(['unknown']);
 
-        $translatedMedicineSchedule = $medicineSchedule->map(fn($item) => $translator->translate($item));
+
+        $translatedMedicineSchedule = $medicineNames->map(fn($item) => $translator->translate($item));
 
 
      return response()->json([
@@ -318,7 +328,7 @@ public function confirmTaken(Request $request)
 
         return response()->json([
             'success' => true,
-            'message' => $translator->translate('Number of taken doses updated.'),
+            'message' => $translator->translate('💚  Wishing you good health.'),
             'data' => [
                 'current_taken' => $medical->number_of_taken_doses,
                 'total_quantity' => $medical->quantity

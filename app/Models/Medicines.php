@@ -10,7 +10,9 @@ class Medicines extends Model
         'name'
     ];
 
-    public function medicineSchedule() {
-        return $this->belongsTo(MedicineSchedules::class);
-    }
+public function medicineSchedules()
+{
+    return $this->hasMany(MedicineSchedules::class, 'medicine_id');
+}
+
 }
