@@ -316,26 +316,42 @@ $diagnosticsTranslated = array_map(function ($diag) use ($translator) {
         }
 
         $patient = Patients::where('user_id', $user->id)->first();
-        $medicineNames = $patient && $patient->medicineSchedule
-            ? $patient->medicineSchedule()
-            ->with('medicine')
-            ->get()
-            ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-            ->pluck('medicine.name')
-            ->unique()
-            ->values()
-            : collect(['unknown']);
+
+      $medicines = $patient && $patient->medicineSchedule
+    ? $patient->medicineSchedule()
+        ->with('medicine') // جلب اسم الدواء
+        ->get()
+        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+        ->map(function ($record) {
+            return [
+                'medicine_name'         => $record->medicine->name,
+                'quantity'              => $record->quantity,
+                'number_of_taken_doses' => $record->number_of_taken_doses,
+                'rest_time'             => $record->rest_time,
+                'last_time_has_taken'   => \Carbon\Carbon::parse($record->last_time_has_taken)->toISOString(),
+            ];
+        })
+        ->values()
+        ->toArray()
+    : [];
 
 
-        $translatedMedicineSchedule = $medicineNames->map(fn($item) => $translator->translate($item));
-
+$medicinesTranslated = array_map(function ($medicine) use ($translator) {
+    return [
+        'medicine_name'         => $translator->translate($medicine['medicine_name']),
+        'quantity'              => $medicine['quantity'],
+        'number_of_taken_doses' => $medicine['number_of_taken_doses'],
+        'rest_time'             => $medicine['rest_time'],
+        'last_time_has_taken'   => $medicine['last_time_has_taken'],
+    ];
+}, $medicines);
 
         return response()->json([
             'success' => true,
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
 
-                'medicines' => $translatedMedicineSchedule,
+                'medicines' => $medicinesTranslated,
             ]
         ]);
     }
