@@ -154,7 +154,6 @@ class PatientsController extends Controller
                 'success' => true,
                 'message' => $translator->translate('Patient created successfully.')
             ], 200);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -205,8 +204,8 @@ class PatientsController extends Controller
 
         $full_name = trim(
             ($user->first_name ?? 'unknown') . ' ' .
-            ($user->middle_name ?? '') . ' ' .
-            ($user->last_name ?? '')
+                ($user->middle_name ?? '') . ' ' .
+                ($user->last_name ?? '')
         );
 
         $age = $user->birth_day
@@ -216,136 +215,182 @@ class PatientsController extends Controller
         $patient = Patients::where('user_id', $id)->first();
 
         $diagnoses = $patient && $patient->analytics
-            ? $patient->analytics->pluck('name')
+            ? $patient->analytics
             : collect(['unknown']);
 
-       $medicalRecord = $patient && $patient->medicalRecord
-    ? $patient->medicalRecord->pluck('name')
-    : collect(['unknown']);
+        $diagnoses = $patient && $patient->analytics
+            ? $patient->analytics
+            : collect([]);
+
+        $diagnostics = $diagnoses->map(function ($item) {
+            return [
+                'name' => $item->name ?? 'unknown',
+                'type' => $item->description ?? 'unknown',
+            ];
+        })->values()->toArray();
+
+       
 
 
-        $medicineNames = $patient && $patient->medicineSchedule
+       $analyzes = $patient && $patient->medicalRecord
+    ? $patient->medicalRecord->map(function ($record) {
+        return [
+            'name'       => $record->name,
+            'image_path' => $record->image_path,
+        ];
+    })->values()->toArray()
+    : [];
+
+
+
+      $medicines = $patient && $patient->medicineSchedule
     ? $patient->medicineSchedule()
-        ->with('medicine')
+        ->with('medicine') // جلب اسم الدواء
         ->get()
         ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-        ->pluck('medicine.name')
-        ->unique()
+        ->map(function ($record) {
+            return [
+                'medicine_name'         => $record->medicine->name,
+                'quantity'              => $record->quantity,
+                'number_of_taken_doses' => $record->number_of_taken_doses,
+                'rest_time'             => $record->rest_time,
+                'last_time_has_taken'   => \Carbon\Carbon::parse($record->last_time_has_taken)->toISOString(),
+            ];
+        })
         ->values()
-    : collect(['unknown']);
-;
+        ->toArray()
+    : [];
 
-        $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
-        $translatedMedicalRecord = $medicalRecord->map(fn($item) => $translator->translate($item));
-        $translatedMedicineSchedule = $medicineNames->map(fn($item) => $translator->translate($item));
+
+
+
+$diagnosticsTranslated = array_map(function ($diag) use ($translator) {
+    return [
+        'name' => $translator->translate($diag['name']),
+        'type' => $translator->translate($diag['type']),
+    ];
+}, $diagnostics);      
+  $translatedMedicalRecord = array_map(function($med_r)use($translator){
+    return [
+        'name'=> $translator->translate($med_r['name']),
+        'image_path'=>$med_r['image_path'],
+    ];
+  },$analyzes);
+ $medicinesTranslated = array_map(function ($medicine) use ($translator) {
+    return [
+        'medicine_name'         => $translator->translate($medicine['medicine_name']),
+        'quantity'              => $medicine['quantity'],
+        'number_of_taken_doses' => $medicine['number_of_taken_doses'],
+        'rest_time'             => $medicine['rest_time'],
+        'last_time_has_taken'   => $medicine['last_time_has_taken'],
+    ];
+}, $medicines);
 
         return response()->json([
             'success' => true,
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
-                'full_name'        =>$translator->translate($full_name ) ?: 'unknown',
-                'gender'            =>$translator->translate($user->gender)   ,   
+                'full_name'        => $translator->translate($full_name) ?: 'unknown',
+                'gender'            => $translator->translate($user->gender),
                 'age'              => $age,
-                'diagnostics'        => $translatedDiagnoses,
+                'diagnostics'        => $diagnosticsTranslated,
                 'analyzes'    => $translatedMedicalRecord,
-                'medicines' => $translatedMedicineSchedule ,
+                'medicines' => $medicinesTranslated,
             ]
         ]);
     }
 
-    public function medicalInfo(){
+    public function medicalInfo()
+    {
         $lan = request()->header('lan', 'en');
         $translator = new GoogleTranslate($lan);
 
 
-            $user = auth('sanctum')->user();
+        $user = auth('sanctum')->user();
 
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized'
-        ], 401);
-    }
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
 
         $patient = Patients::where('user_id', $user->id)->first();
-  $medicineNames = $patient && $patient->medicineSchedule
-    ? $patient->medicineSchedule()
-        ->with('medicine')
-        ->get()
-        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-        ->pluck('medicine.name')
-        ->unique()
-        ->values()
-    : collect(['unknown']);
+        $medicineNames = $patient && $patient->medicineSchedule
+            ? $patient->medicineSchedule()
+            ->with('medicine')
+            ->get()
+            ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+            ->pluck('medicine.name')
+            ->unique()
+            ->values()
+            : collect(['unknown']);
 
 
         $translatedMedicineSchedule = $medicineNames->map(fn($item) => $translator->translate($item));
 
 
-     return response()->json([
+        return response()->json([
             'success' => true,
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
-               
+
                 'medicines' => $translatedMedicineSchedule,
             ]
         ]);
-        
     }
 
 
-public function confirmTaken(Request $request)
-{
-    $lan = $request->header('lan', 'en');
-    $translator = new GoogleTranslate($lan);
+    public function confirmTaken(Request $request)
+    {
+        $lan = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
 
-    $user = auth('sanctum')->user();
+        $user = auth('sanctum')->user();
 
-    if (!$user) {
-        return response()->json([
-            'success' => false,
-            'message' => $translator->translate('Unauthorized')
-        ], 401);
-    }
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => $translator->translate('Unauthorized')
+            ], 401);
+        }
 
-    $patient = Patients::where('user_id', $user->id)->first();
-    if (!$patient) {
-        return response()->json([
-            'success' => false,
-            'message' => $translator->translate('Patient not found.')
-        ], 404);
-    }
+        $patient = Patients::where('user_id', $user->id)->first();
+        if (!$patient) {
+            return response()->json([
+                'success' => false,
+                'message' => $translator->translate('Patient not found.')
+            ], 404);
+        }
 
-    $request->validate([
-        'MedicineSchedules_id' => 'required|exists:medicine_schedules,id'
-    ]);
-
-    $medical = MedicineSchedules::find($request->MedicineSchedules_id);
-
-    if ($medical->number_of_taken_doses < $medical->quantity) {
-        $medical->number_of_taken_doses++;
-        $medical->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => $translator->translate('💚  Wishing you good health.'),
-            'data' => [
-                'current_taken' => $medical->number_of_taken_doses,
-                'total_quantity' => $medical->quantity
-            ]
+        $request->validate([
+            'MedicineSchedules_id' => 'required|exists:medicine_schedules,id'
         ]);
-    } else {
-        return response()->json([
-            'success' => false,
-            'message' => $translator->translate('Number of taken doses did not update.'),
-            'data' => [
-                'current_taken' => $medical->number_of_taken_doses,
-                'total_quantity' => $medical->quantity
-            ]
-        ]);
+
+        $medical = MedicineSchedules::find($request->MedicineSchedules_id);
+
+        if ($medical->number_of_taken_doses < $medical->quantity) {
+            $medical->number_of_taken_doses++;
+            $medical->last_time_has_taken = now();
+            $medical->save();
+// dd($medical->last_time_has_taken);
+            return response()->json([
+                'success' => true,
+                'message' => $translator->translate('💚  Wishing you good health.'),
+                'data' => [
+                    'current_taken' => $medical->number_of_taken_doses,
+                    'total_quantity' => $medical->quantity
+                ]
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => $translator->translate('Number of taken doses did not update.'),
+                'data' => [
+                    'current_taken' => $medical->number_of_taken_doses,
+                    'total_quantity' => $medical->quantity
+                ]
+            ]);
+        }
     }
 }
-
-
-}
-
