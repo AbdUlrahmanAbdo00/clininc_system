@@ -235,9 +235,9 @@ class PatientsController extends Controller
     : collect(['unknown']);
 ;
 
-        // $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
-        // $translatedMedicalRecord = $medicalRecord->map(fn($item) => $translator->translate($item));
-        // $translatedMedicineSchedule = $medicineSchedule->map(fn($item) => $translator->translate($item));
+        $translatedDiagnoses = $diagnoses->map(fn($item) => $translator->translate($item));
+        $translatedMedicalRecord = $medicalRecord->map(fn($item) => $translator->translate($item));
+        $translatedMedicineSchedule = $medicineNames->map(fn($item) => $translator->translate($item));
 
         return response()->json([
             'success' => true,
@@ -246,9 +246,9 @@ class PatientsController extends Controller
                 'full_name'        =>$translator->translate($full_name ) ?: 'unknown',
                 'gender'            =>$translator->translate($user->gender)   ,   
                 'age'              => $age,
-                'diagnostics'        => $diagnoses,
-                'analyzes'    => $medicalRecord,
-                'medicines' => $medicineNames ,
+                'diagnostics'        => $translatedDiagnoses,
+                'analyzes'    => $translatedMedicalRecord,
+                'medicines' => $translatedMedicineSchedule ,
             ]
         ]);
     }
