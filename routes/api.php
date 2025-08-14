@@ -76,6 +76,8 @@ Route::get('/archive/doctor/show_finished_appointments', [ArchiveController::cla
 // Examination
 Route::post('examination/add_examination', [ExaminationController::class, 'addExamin'])
     ->middleware('auth:sanctum', 'doctor');
+    Route::post('examination/add_examination_by_apointment_id', [ExaminationController::class, 'addExamin_by_appointment_id'])
+    ->middleware('auth:sanctum', 'doctor');
 
 // Medicines
 Route::post('medicine/add_medicine_db', [MedicineController::class, 'addMedicineToDB'])

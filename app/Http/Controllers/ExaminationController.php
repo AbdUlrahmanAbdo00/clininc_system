@@ -157,4 +157,129 @@ class ExaminationController extends Controller
             'message' => 'Doctor data saved successfully'
         ], 200);
     }
+
+        public function addExamin_by_appointment_id(Request $request) {
+        $user = Auth::user();
+        abort_unless($user, 404);
+
+        $validated = $request->validate([
+'apointment_id' => 'required|exists:appointments,id',
+            'diagnoses' => [
+                'nullable',
+                'array',
+                function ($attributes, $value, $fail) {
+                    foreach ($value as $diagnose) {
+                        if(!isset($diagnose['diagnose_name']) || !isset($diagnose['diagnose_type'])) {
+                            $fail('Each diagnose must contain : diagnose name, diagnose type.');
+                        }
+                    }
+                }
+            ],
+            'diagnoses.*.diagnose_name' => 'required|string|max:255',
+            'diagnoses.*.diagnose_type' => 'required|in:temporary,non-temporary',
+            'diagnoses.*.description' => 'nullable|string',
+            'analysiss' => [
+                'nullable',
+                'array',
+                function ($attributes, $value, $fail) {
+                    foreach ($value as $analysis) {
+                        if(!isset($analysis['analysis_name']) || !isset($analysis['analysis_image'])) {
+                            $fail('Each diagnose must contain : analysis name and image.');
+                        }
+                    }
+                }
+            ],
+            'analysiss.*.analysis_name' => 'required|string|max:255',
+            'analysiss.*.analysis_image' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,jpg',
+                'max:2048'
+            ],
+            'analysiss.*.description' => 'nullable|string',
+            'medicines' => [
+                'nullable',
+                'array',
+                function ($attributes, $value, $fail) {
+                    foreach ($value as $medicine) {
+                        if(!isset($medicine['medicine_id']) || !isset($medicine['rest_time']) || !isset($medicine['quantity'])) {
+                            $fail('Each diagnose must contain : medicine id, rest time, quantity.');
+                        }
+                    }
+                }
+            ],
+            'medicines.*.medicine_id' => 'required',
+            'medicines.*.rest_time' => 'required|numeric|min:0',
+            'medicines.*.quantity' => 'required|integer|min:1',
+            'medicines.*.description' => 'nullable|string'
+        ]);
+
+        $validated['diagnoses'] = $validated['diagnoses'] ?? [];
+        $validated['analysiss'] = $validated['analysiss'] ?? [];
+        $validated['medicines'] = $validated['medicines'] ?? [];
+
+        $now = Carbon::now();
+
+        $appointment = null;
+                    $doctor = Doctors::where('user_id',$user->id)->first();
+
+        $appointment = Appointment::where('id', $request->apointment_id)
+        ->first();
+        DB::transaction(function () use ($validated, &$appointment) {
+  
+
+            if ($validated['diagnoses']) {
+                foreach($validated['diagnoses'] as $diagnose) {
+                    Analytics::create([
+                        'appointment_id' => $appointment->id,
+                        'name' => $diagnose['diagnose_name'],
+                        'type' => $diagnose['diagnose_type'],
+                        'date' => Carbon::now(),
+                        'description' => $diagnose['description'] ?? null,
+                    ]);
+                }
+            }
+
+            if ($validated['analysiss']) {
+                $cloudinary = app(Cloudinary::class);
+
+                foreach ($validated['analysiss'] as $analysisData) {
+                    $file = $analysisData['analysis_image'];
+
+                    $uploadedFile = $cloudinary->uploadApi()->upload(
+                        $file->getRealPath(),
+                        ['folder' => 'analysis_images']
+                    );
+
+                    $uploadedFileUrl = $uploadedFile['secure_url'];
+                
+                    MedicalRecords::create([
+                        'appointment_id' => $appointment->id,
+                        'name' => $analysisData['analysis_name'],
+                        'date' => Carbon::now(),
+                        'image_path' => $uploadedFileUrl,
+                        'description' => $analysisData['description'] ?? null,
+                    ]);
+                }   
+            }
+
+            if ($validated['medicines']) {
+                foreach ($validated['medicines'] as $medicineData) {
+                    MedicineSchedules::create([
+                        'appointment_id' => $appointment->id,
+                        'medicine_id' => $medicineData['medicine_id'],
+                        'rest_time' => $medicineData['rest_time'],
+                        'quantity' => $medicineData['quantity'],
+                        'description' => $medicineData['description'] ?? null,
+                    ]);
+                }
+            }
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Doctor data saved successfully'
+        ], 200);
+    }
+    
 }
