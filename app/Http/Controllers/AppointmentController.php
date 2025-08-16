@@ -285,7 +285,7 @@ class AppointmentController extends Controller
 
                 return [
                     'date' => $appointment->date,
-                    'start_time' => \Carbon\Carbon::parse($appointment->start_time)->format('h:i A'),
+                    'start_time' =>$appointment->start_time,
                     'appointment_id' => $appointment->id,
                     'doctor_name' => $doctorUser->first_name . ' ' . $doctorUser->last_name,
                     'patient_name' => $user->first_name . ' ' . $user->last_name,
