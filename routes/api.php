@@ -48,6 +48,7 @@ Route::delete('/appointments/{id}', [AppointmentController::class, 'deleteAppoin
 Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoctorsBySpecialization']);
 
 });
+Route::post('patient/cancel/apointment',[AppointmentController::class,'cancel'])->middleware('auth:sanctum');
 
 
 

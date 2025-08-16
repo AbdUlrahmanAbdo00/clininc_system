@@ -360,6 +360,12 @@ class AppointmentController extends Controller
         ]);
 
         $appointment = Appointment::findOrFail($request->Appointment_id);
+        if($appointment->cancel !== ""){
+                   return response()->json([
+                    'success' => true,
+                    'message' => 'الموعد ملغى مسبقا '
+                ]);
+        }
         $user = auth('sanctum')->user();
         $patient = Patients::where('user_id', $user->id)->first();
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -383,13 +389,21 @@ class AppointmentController extends Controller
                 $entity->save();
                 $appointment->save();
 
-                $tokens = $entity->user->fcmTokens()->pluck('token');
+                if ($role === 'doctor') {
+                    $tokens = $appointment->patient->user->fcmTokens()->pluck('token');
+                } else {
+                    $tokens = $appointment->doctor->user->fcmTokens()->pluck('token');
+                }
+
                 foreach ($tokens as $token) {
                     try {
                         $firebaseService->sendNotification(
                             $token,
                             'إلغاء موعد',
-                            'تم إلغاء الموعد بنجاح من طرف ' . ($role === 'doctor' ? 'الطبيب' : 'المريض')
+                            'تم إلغاء الموعد من طرف '
+                                . ($role === 'doctor' ? 'الطبيب' : 'المريض')
+                                . ' بتاريخ ' . $appointment->date
+                                . ' الساعة ' . $appointment->start_date
                         );
                     } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                         \App\Models\FcmToken::where('token', $token)->delete();
