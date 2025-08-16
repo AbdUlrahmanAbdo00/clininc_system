@@ -68,5 +68,9 @@ public function getJWTCustomClaims()
 {
     return []; // لو عندك claims إضافية، تحطها هنا
 }
+public function fcmTokens()
+{
+    return $this->hasMany(FcmToken::class);
+}
 
 }

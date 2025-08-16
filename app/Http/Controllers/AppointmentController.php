@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use App\Services\AppointmentBookingService;
+use Illuminate\Support\Facades\Log;
 
 class AppointmentController extends Controller
 {
@@ -286,7 +287,7 @@ class AppointmentController extends Controller
                     'date' => $appointment->date,
                     'start_time' => \Carbon\Carbon::parse($appointment->start_time)->format('h:i A'),
                     'appointment_id' => $appointment->id,
-                    'doctor_name' => $doctorUser->first_name.' '.$doctorUser->last_name,
+                    'doctor_name' => $doctorUser->first_name . ' ' . $doctorUser->last_name,
                     'patient_name' => $user->first_name . ' ' . $user->last_name,
                     'specialization' => $doctor->specialization->name
 
@@ -344,11 +345,80 @@ class AppointmentController extends Controller
                     'start_time' => \Carbon\Carbon::parse($appointment->start_time)->format('h:i A'),
 
                     'appointment_id' => $appointment->id,
-                    'patient_name' => $patientUser->first_name.' '. $patientUser->last_name ?? 'Unknown',
+                    'patient_name' => $patientUser->first_name . ' ' . $patientUser->last_name ?? 'Unknown',
                     'doctor_name' =>  $fullName = $user->first_name . ' ' . $user->last_name,
                     'specialization' => $doctor->specialization->name
                 ];
             })
         ], 200);
+    }
+
+    public function cancel(Request $request)
+    {
+        $request->validate([
+            'Appointment_id' => 'required|exists:appointments,id'
+        ]);
+
+        $appointment = Appointment::findOrFail($request->Appointment_id);
+        $user = auth('sanctum')->user();
+        $patient = Patients::where('user_id', $user->id)->first();
+        $doctor = Doctors::where('user_id', $user->id)->first();
+
+        $firebaseService = app(\App\Services\FirebaseService::class);
+
+        $updateCancel = function ($entity, $role) use ($appointment, $firebaseService) {
+            $now = Carbon::now();
+
+            if ($entity->last_canceled_at) {
+                $last = Carbon::parse($entity->last_canceled_at);
+                if ($last->month != $now->month || $last->year != $now->year) {
+                    $entity->cancel_count = 0;
+                }
+            }
+
+            if ($entity->cancel_count < 5) {
+                $entity->increment('cancel_count');
+                $entity->last_canceled_at = $now;
+                $appointment->cancled = $role === 'doctor' ? 'cancled_by_doctor' : 'cancled_by_patient';
+                $entity->save();
+                $appointment->save();
+
+                $tokens = $entity->user->fcmTokens()->pluck('token');
+                foreach ($tokens as $token) {
+                    try {
+                        $firebaseService->sendNotification(
+                            $token,
+                            'إلغاء موعد',
+                            'تم إلغاء الموعد بنجاح من طرف ' . ($role === 'doctor' ? 'الطبيب' : 'المريض')
+                        );
+                    } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
+                        \App\Models\FcmToken::where('token', $token)->delete();
+                    } catch (\Exception $e) {
+                        Log::error("فشل إرسال الإشعار للتوكن {$token}: " . $e->getMessage());
+                    }
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم إلغاء الموعد بنجاح.'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لقد وصلت إلى الحد الأقصى للإلغاءات هذا الشهر (5 مواعيد).'
+                ]);
+            }
+        };
+
+        if ($doctor && $appointment->doctor_id == $doctor->id) {
+            return $updateCancel($doctor, 'doctor');
+        } elseif ($patient) {
+            return $updateCancel($patient, 'patient');
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'لم يتم العثور على الطبيب أو المريض.'
+        ]);
     }
 }

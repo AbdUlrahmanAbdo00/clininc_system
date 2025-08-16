@@ -76,6 +76,7 @@ class UserController extends Controller
                 'message' => $translator->translate($result['message'] ?? 'Unauthorized'),
             ], 400);
         }
+    
 
         $filled_data = true;
         $user = User::where('number', $request->number)->first();
@@ -109,6 +110,12 @@ class UserController extends Controller
 
             $token = $user->createToken('clinic_sys')->plainTextToken;
 
+           
+             $user->fcmTokens()->updateOrCreate(
+        ['token' => $request->fcm],
+        ['user_id' => $user->id]
+    );
+        
             return response()->json([
                 'success' => true,
                 'message' => $translator->translate($messag),

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->integer('number_of_taken_doses')->default(0);
             $table->float('rest_time');
-            $table->dateTime('last_time_has_taken')->nullable();
+            $table->date('last_time_has_taken')->nullable();
             $table->text('description')->nullable();
             $table->timestamps();
         });

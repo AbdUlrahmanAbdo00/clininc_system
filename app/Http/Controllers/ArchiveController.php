@@ -87,7 +87,8 @@ class ArchiveController extends Controller
 
         $appointments = Appointment::where([
                 ['doctor_id', '=', $doctor->id],
-                ['finished', '=', 0]
+                ['finished', '=', 0],
+                ['canceled','=',null]
             ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
