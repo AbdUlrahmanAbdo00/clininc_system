@@ -65,7 +65,9 @@ class UserController extends Controller
 
         $validator = Validator::make($request->all(), [
             'number' => 'required',
-            'otp' => 'required'
+            'otp' => 'required',
+                'fcm' => 'required|string'
+
         ]);
 
         $result = $this->verifyOTP($request->number, $request->otp);
