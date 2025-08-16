@@ -58,82 +58,83 @@ class UserController extends Controller
         ], $num);
     }
 
-    public function verif(Request $request)
-    {
-        $lan = $request->header('lan', 'en');
-        $translator = new GoogleTranslate($lan);
+public function verif(Request $request)
+{
+    $lan = $request->header('lan', 'en');
+    $translator = new GoogleTranslate($lan);
 
-        $validator = Validator::make($request->all(), [
-            'number' => 'required',
-            'otp' => 'required',
-                'fcm' => 'required|string'
+    $validator = Validator::make($request->all(), [
+        'number' => 'required',
+        'otp'    => 'required',
+        'fcm'    => 'nullable|string' 
+    ]);
 
-        ]);
-
-        $result = $this->verifyOTP($request->number, $request->otp);
-
-        if (!$result['success']) {
-            return response()->json([
-                'success' => false,
-                'message' => $translator->translate($result['message'] ?? 'Unauthorized'),
-            ], 400);
-        }
+    $result = $this->verifyOTP($request->number, $request->otp);
     
+    if (!$result['success']) {
+        return response()->json([
+            'success' => false,
+            'message' => $translator->translate($result['message'] ?? 'Unauthorized'),
+        ], 400);
+    }
 
-        $filled_data = true;
-        $user = User::where('number', $request->number)->first();
+    $filled_data = true;
+    $user = User::where('number', $request->number)->first();
 
-        $messag = 'Logged in successfully.';
+    $messag = 'Logged in successfully.';
 
-        if (!$user) {
-            $messag = 'Account created successfully. Welcome!';
-            $user = User::create([
-                'number' => $request->number
-            ]);
+    if (!$user) {
+        $messag = 'Account created successfully. Welcome!';
+        $user = User::create([
+            'number' => $request->number
+        ]);
+        $filled_data = false;
+    }
+
+    $requiredFields = [
+        'first_name', 'middle_name', 'last_name', 'number',
+        'mother_name', 'birth_day', 'national_number', 'gender'
+    ];
+
+    foreach ($requiredFields as $field) {
+        if (empty($user->$field)) {
             $filled_data = false;
+            break;
         }
+    }
 
-        $requiredFields = [
-            'first_name', 'middle_name', 'last_name', 'number',
-            'mother_name', 'birth_day', 'national_number', 'gender'
-        ];
+    $userOtp = Otp::where('phone', $request->number)->first();
 
-        foreach ($requiredFields as $field) {
-            if (empty($user->$field)) {
-                $filled_data = false;
-                break;
-            }
-        }
+    if ($request->otp == $userOtp->otp) {
+        Auth::login($user);
 
-        $userOtp = Otp::where('phone', $request->number)->first();
+        $token = $user->createToken('clinic_sys')->plainTextToken;
 
-        if ($request->otp == $userOtp->otp) {
-            Auth::login($user);
+        if (!empty($request->fcm)) {
+            \App\Models\FcmToken::where('token', $request->fcm)->delete();
 
-            $token = $user->createToken('clinic_sys')->plainTextToken;
-
-           
-             $user->fcmTokens()->updateOrCreate(
-        ['token' => $request->fcm],
-        ['user_id' => $user->id]
-    );
-        
-            return response()->json([
-                'success' => true,
-                'message' => $translator->translate($messag),
-                'data' => [
-                    'token' => $token,
-                    'token_type' => 'bearer',
-                    'filled_data' => $filled_data,
-                ]
-            ], 200);
+            $user->fcmTokens()->create([
+                'token' => $request->fcm,
+            ]);
         }
 
         return response()->json([
-            'success' => false,
-            'message' => $translator->translate('Unauthorized')
-        ], 400);
+            'success' => true,
+            'message' => $translator->translate($messag),
+            'data' => [
+                'token'       => $token,
+                'token_type'  => 'bearer',
+                'filled_data' => $filled_data,
+            ]
+        ], 200);
     }
+
+    return response()->json([
+        'success' => false,
+        'message' => $translator->translate('Unauthorized')
+    ], 400);
+}
+
 
     public function logout(Request $request)
     {
