@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use App\Services\AppointmentBookingService;
 use Illuminate\Support\Facades\Log;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 
 class AppointmentController extends Controller
 {
@@ -268,6 +269,7 @@ class AppointmentController extends Controller
 
         $appointments = Appointment::where('patient_id', $patient->id)
             ->where('finished', $request->finished)
+            ->where('cancel', "")
             ->get();
 
         if ($appointments->isEmpty()) {
@@ -359,13 +361,16 @@ class AppointmentController extends Controller
             'Appointment_id' => 'required|exists:appointments,id'
         ]);
 
+        $lan = request()->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
         $appointment = Appointment::findOrFail($request->Appointment_id);
-        if($appointment->cancel !== ""){
-                   return response()->json([
-                    'success' => true,
-                    'message' => 'الموعد ملغى مسبقا '
-                ]);
-        }
+        // if ($appointment->cancel !== "") {
+        //     return response()->json([
+        //         'success' => true,
+        //         'message' => $translator->translate('الموعد ملغى مسبقا ')
+        //     ]);
+        // }
+
         $user = auth('sanctum')->user();
         $patient = Patients::where('user_id', $user->id)->first();
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -382,7 +387,7 @@ class AppointmentController extends Controller
                 }
             }
 
-            if ($entity->cancel_count < 5) {
+            if ($entity->cancel_count < 10) {
                 $entity->increment('cancel_count');
                 $entity->last_canceled_at = $now;
                 $appointment->cancled = $role === 'doctor' ? 'cancled_by_doctor' : 'cancled_by_patient';
@@ -394,16 +399,19 @@ class AppointmentController extends Controller
                 } else {
                     $tokens = $appointment->doctor->user->fcmTokens()->pluck('token');
                 }
+                $lan = request()->header('lan', 'en');
+
+                $translator = new GoogleTranslate($lan);
 
                 foreach ($tokens as $token) {
                     try {
                         $firebaseService->sendNotification(
                             $token,
                             'إلغاء موعد',
-                            'تم إلغاء الموعد من طرف '
-                                . ($role === 'doctor' ? 'الطبيب' : 'المريض')
-                                . ' بتاريخ ' . $appointment->date
-                                . ' الساعة ' . $appointment->start_date
+                            $translator->translate('تم إلغاء الموعد من طرف ')
+                                . $translator->translate(($role === 'doctor' ? 'الطبيب' : 'المريض'))
+                                .$translator->translate( ' بتاريخ ' . $appointment->date)
+                                . $translator->translate(' الساعة ' . $appointment->start_date)
                         );
                     } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                         \App\Models\FcmToken::where('token', $token)->delete();

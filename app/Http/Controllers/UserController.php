@@ -14,6 +14,55 @@ class UserController extends Controller
 {
     use OtpTrait;
 
+
+    public function Secretary_login(Request $request){
+        $validator = Validator::make($request->all(), [
+        'name'     => 'required|string',
+        'password' => 'required|string',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => $validator->errors()->first(),
+        ], 400);
+    }
+
+    
+    if (
+        $request->name === env('SECRETARY_NAME') &&
+        $request->password === env('SECRETARY_PASSWORD')
+    ) {
+
+        $user = User::firstOrCreate(
+            ['number' => '0000000000'], 
+            ['first_name' =>"secretary" ]
+        );
+
+        Auth::login($user);
+
+
+        $token = $user->createToken('clinic_sys')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged in successfully.',
+            'data' => [
+                'token'       => $token,
+                'token_type'  => 'bearer',
+                'filled_data' => true,
+            ]
+        ], 200);
+    }
+
+    return response()->json([
+        'success' => false,
+        'message' => 'Unauthorized'
+    ], 400);
+
+    }
+
+
     public function requestOtp(Request $request)
     {
         $lan = $request->header('lan', 'en');

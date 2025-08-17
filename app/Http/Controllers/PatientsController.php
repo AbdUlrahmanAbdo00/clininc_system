@@ -325,6 +325,7 @@ $diagnosticsTranslated = array_map(function ($diag) use ($translator) {
         ->map(function ($record) {
             return [
                 'medicine_name'         => $record->medicine->name,
+                'medicine_id'           =>$record->medicine_id,
                 'quantity'              => $record->quantity,
                 'number_of_taken_doses' => $record->number_of_taken_doses,
                 'rest_time'             => $record->rest_time,

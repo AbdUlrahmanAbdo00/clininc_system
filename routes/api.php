@@ -19,6 +19,8 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 Route::post('/requestOtp', [UserController::class, 'requestOtp']);
 Route::post('/verify', [UserController::class, 'verif']);
+Route::post('/Secretary_login', [UserController::class, 'Secretary_login']);
+
 Route::post('/patient',[PatientsController::class,'store'])->middleware('auth:sanctum');
 Route::post('/logout', [UserController::class, 'logout'])
     ->middleware('auth:sanctum');
