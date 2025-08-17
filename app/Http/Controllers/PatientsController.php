@@ -341,6 +341,7 @@ $medicinesTranslated = array_map(function ($medicine) use ($translator) {
     return [
         'medicine_name'         => $translator->translate($medicine['medicine_name']),
         'quantity'              => $medicine['quantity'],
+        'medicine_id'           =>$medicine['medicine_id'],
         'number_of_taken_doses' => $medicine['number_of_taken_doses'],
         'rest_time'             => $medicine['rest_time'],
         'last_time_has_taken'   => $medicine['last_time_has_taken'],
