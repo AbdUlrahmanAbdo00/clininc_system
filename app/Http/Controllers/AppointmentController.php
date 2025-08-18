@@ -267,7 +267,7 @@ class AppointmentController extends Controller
             ], 404);
         }
 
-        $appointments = Appointment::where('cancled', null)
+        $appointments = Appointment::where('cancled', 0)
             ->where('patient_id', $patient->id)
             ->where('finished', $request->finished)
             ->get();
