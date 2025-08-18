@@ -229,62 +229,62 @@ class PatientsController extends Controller
             ];
         })->values()->toArray();
 
-       
-
-
-       $analyzes = $patient && $patient->medicalRecord
-    ? $patient->medicalRecord->map(function ($record) {
-        return [
-            'name'       => $record->name,
-            'image_path' => $record->image_path,
-        ];
-    })->values()->toArray()
-    : [];
 
 
 
-      $medicines = $patient && $patient->medicineSchedule
-    ? $patient->medicineSchedule()
-        ->with('medicine') // جلب اسم الدواء
-        ->get()
-        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-        ->map(function ($record) {
+        $analyzes = $patient && $patient->medicalRecord
+            ? $patient->medicalRecord->map(function ($record) {
+                return [
+                    'name'       => $record->name,
+                    'image_path' => $record->image_path,
+                ];
+            })->values()->toArray()
+            : [];
+
+
+
+        $medicines = $patient && $patient->medicineSchedule
+            ? $patient->medicineSchedule()
+            ->with('medicine') // جلب اسم الدواء
+            ->get()
+            ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+            ->map(function ($record) {
+                return [
+                    'medicine_name'         => $record->medicine->name,
+                    'quantity'              => $record->quantity,
+                    'number_of_taken_doses' => $record->number_of_taken_doses,
+                    'rest_time'             => $record->rest_time,
+                    'last_time_has_taken'   => \Carbon\Carbon::parse($record->last_time_has_taken)->toISOString(),
+                ];
+            })
+            ->values()
+            ->toArray()
+            : [];
+
+
+
+
+        $diagnosticsTranslated = array_map(function ($diag) use ($translator) {
             return [
-                'medicine_name'         => $record->medicine->name,
-                'quantity'              => $record->quantity,
-                'number_of_taken_doses' => $record->number_of_taken_doses,
-                'rest_time'             => $record->rest_time,
-                'last_time_has_taken'   => \Carbon\Carbon::parse($record->last_time_has_taken)->toISOString(),
+                'name' => $translator->translate($diag['name']),
+                'type' => $translator->translate($diag['type']),
             ];
-        })
-        ->values()
-        ->toArray()
-    : [];
-
-
-
-
-$diagnosticsTranslated = array_map(function ($diag) use ($translator) {
-    return [
-        'name' => $translator->translate($diag['name']),
-        'type' => $translator->translate($diag['type']),
-    ];
-}, $diagnostics);      
-  $translatedMedicalRecord = array_map(function($med_r)use($translator){
-    return [
-        'name'=> $translator->translate($med_r['name']),
-        'image_path'=>$med_r['image_path'],
-    ];
-  },$analyzes);
- $medicinesTranslated = array_map(function ($medicine) use ($translator) {
-    return [
-        'medicine_name'         => $translator->translate($medicine['medicine_name']),
-        'quantity'              => $medicine['quantity'],
-        'number_of_taken_doses' => $medicine['number_of_taken_doses'],
-        'rest_time'             => $medicine['rest_time'],
-        'last_time_has_taken'   => $medicine['last_time_has_taken'],
-    ];
-}, $medicines);
+        }, $diagnostics);
+        $translatedMedicalRecord = array_map(function ($med_r) use ($translator) {
+            return [
+                'name' => $translator->translate($med_r['name']),
+                'image_path' => $med_r['image_path'],
+            ];
+        }, $analyzes);
+        $medicinesTranslated = array_map(function ($medicine) use ($translator) {
+            return [
+                'medicine_name'         => $translator->translate($medicine['medicine_name']),
+                'quantity'              => $medicine['quantity'],
+                'number_of_taken_doses' => $medicine['number_of_taken_doses'],
+                'rest_time'             => $medicine['rest_time'],
+                'last_time_has_taken'   => $medicine['last_time_has_taken'],
+            ];
+        }, $medicines);
 
         return response()->json([
             'success' => true,
@@ -317,36 +317,37 @@ $diagnosticsTranslated = array_map(function ($diag) use ($translator) {
 
         $patient = Patients::where('user_id', $user->id)->first();
 
-      $medicines = $patient && $patient->medicineSchedule
-    ? $patient->medicineSchedule()
-        ->with('medicine') // جلب اسم الدواء
-        ->get()
-        ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
-        ->map(function ($record) {
+        $medicines = $patient && $patient->medicineSchedule
+            ? $patient->medicineSchedule()
+            ->with('medicine') // جلب اسم الدواء
+            ->get()
+            ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
+            ->map(function ($record) {
+                return [
+                    'medicine_name'         => $record->medicine->name,
+                    'medicine_id'           => $record->id,
+                    'quantity'              => $record->quantity,
+                    'number_of_taken_doses' => $record->number_of_taken_doses,
+                    'rest_time'             => $record->rest_time,
+
+                    'last_time_has_taken' => $record->last_time_has_taken ?? 'لم يأخذ أي جرعة بعد',
+                ];
+            })
+            ->values()
+            ->toArray()
+            : [];
+
+
+        $medicinesTranslated = array_map(function ($medicine) use ($translator) {
             return [
-                'medicine_name'         => $record->medicine->name,
-                'medicine_id'           =>$record->medicine_id,
-                'quantity'              => $record->quantity,
-                'number_of_taken_doses' => $record->number_of_taken_doses,
-                'rest_time'             => $record->rest_time,
-                'last_time_has_taken'   => \Carbon\Carbon::parse($record->last_time_has_taken)->toISOString(),
+                'medicine_name'         => $translator->translate($medicine['medicine_name']),
+                'quantity'              => $medicine['quantity'],
+                'medicine_id'           => $medicine['medicine_id'],
+                'number_of_taken_doses' => $medicine['number_of_taken_doses'],
+                'rest_time'             => $medicine['rest_time'],
+                'last_time_has_taken'   => $medicine['last_time_has_taken'],
             ];
-        })
-        ->values()
-        ->toArray()
-    : [];
-
-
-$medicinesTranslated = array_map(function ($medicine) use ($translator) {
-    return [
-        'medicine_name'         => $translator->translate($medicine['medicine_name']),
-        'quantity'              => $medicine['quantity'],
-        'medicine_id'           =>$medicine['medicine_id'],
-        'number_of_taken_doses' => $medicine['number_of_taken_doses'],
-        'rest_time'             => $medicine['rest_time'],
-        'last_time_has_taken'   => $medicine['last_time_has_taken'],
-    ];
-}, $medicines);
+        }, $medicines);
 
         return response()->json([
             'success' => true,
@@ -391,7 +392,7 @@ $medicinesTranslated = array_map(function ($medicine) use ($translator) {
             $medical->number_of_taken_doses++;
             $medical->last_time_has_taken = now();
             $medical->save();
-// dd($medical->last_time_has_taken);
+            // dd($medical->last_time_has_taken);
             return response()->json([
                 'success' => true,
                 'message' => $translator->translate('💚  Wishing you good health.'),
