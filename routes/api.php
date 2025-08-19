@@ -52,7 +52,10 @@ Route::get('/doctors/by_specialization/{id}', [DoctorsController::class, 'getDoc
 });
 Route::post('patient/cancel/apointment',[AppointmentController::class,'cancel'])->middleware('auth:sanctum');
 
+//secretary
+Route::post('/appointments/secretary', [AppointmentController::class, 'showBookedappointmentForSecretary']);
 
+Route::get('/doctorsWorkingToday', [AppointmentController::class, 'doctorsWorkingToday']);
 
 
 

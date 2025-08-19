@@ -298,6 +298,51 @@ class AppointmentController extends Controller
         ], 200);
     }
 
+    public function showBookedappointmentForSecretary(Request $request)
+    {
+        $request->validate([
+            'finished' => 'required|boolean',
+            'date' => 'required|date|after_or_equal:today'
+        ]);
+
+
+
+
+
+
+
+        $appointments = Appointment::where('cancled', 0)
+            ->where('finished', $request->finished)
+            ->where('date', $request->date)
+            ->get();
+
+        if ($appointments->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No appointments found.'
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointments->map(function ($appointment) {
+                $doctor = Doctors::where('id', $appointment->doctor_id)->first();
+                $doctorUser = User::where('id', $doctor->user_id)->first();
+                $patient = Patients::where('id', $appointment->patient_id)->first();
+                $user = User::where('id', $patient->user_id)->first();
+                return [
+                    'date' => $appointment->date,
+                    'start_time' => \Carbon\Carbon::parse($appointment->start_date)->format('h:i A'),
+                    'appointment_id' => $appointment->id,
+                    'doctor_name' => $doctorUser->first_name . ' ' . $doctorUser->last_name,
+                    'patient_name' => $user->first_name . ' ' . $user->last_name,
+                    'phone'        => $user->number,
+                    'specialization' => $doctor->specialization->name
+
+                ];
+            })
+        ], 200);
+    }
 
     public function showBookedappointmentForDoctor(Request $request)
     {
@@ -410,7 +455,7 @@ class AppointmentController extends Controller
                             'إلغاء موعد',
                             $translator->translate('تم إلغاء الموعد من طرف ')
                                 . $translator->translate(($role === 'doctor' ? 'الطبيب' : 'المريض'))
-                                .$translator->translate( ' بتاريخ ' . $appointment->date)
+                                . $translator->translate(' بتاريخ ' . $appointment->date)
                                 . $translator->translate(' الساعة ' . $appointment->start_date)
                         );
                     } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
@@ -442,5 +487,35 @@ class AppointmentController extends Controller
             'success' => false,
             'message' => 'لم يتم العثور على الطبيب أو المريض.'
         ]);
+    }
+    public function doctorsWorkingToday()
+    {
+        $today = Carbon::now()->format('l'); // يرجع Monday, Tuesday...
+
+        $doctors = Doctors::whereHas('shifts', function ($query) use ($today) {
+            $query->whereJsonContains('doctor_shift.days', $today);
+        })->get()
+            ->map(function ($doctor) {
+                $shift = $doctor->shifts->first();
+                $specialization = $doctor->specialization->first();
+
+                return [
+                    'id' => $doctor->id,
+                    'name' => $doctor->user->name,
+                    'bio' => $doctor->bio,
+                    'specialization' => $specialization->name,
+                    'specialization_img' => $specialization->path,
+                    'imageUrl' => $doctor->imageUrl,
+                    'consultation_duration' => $doctor->consultation_duration,
+                    'start_time' => $shift?->start_time, // وقت بداية الدوام
+                    'end_time'   => $shift?->end_time,   // وقت نهاية الدوام
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Doctors working today.',
+            'data' => $doctors,
+        ], 200);
     }
 }
