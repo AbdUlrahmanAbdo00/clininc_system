@@ -39,7 +39,7 @@
                 </div>
                 <div class="mr-4">
                     <p class="text-sm font-medium text-gray-600">مكتملة</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $appointments->where('completed', true)->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">0</p>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                 </div>
                 <div class="mr-4">
                     <p class="text-sm font-medium text-gray-600">قيد الانتظار</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $appointments->where('completed', false)->where('canceled', false)->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">0</p>
                 </div>
             </div>
         </div>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="mr-4">
                     <p class="text-sm font-medium text-gray-600">ملغية</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ $appointments->where('canceled', true)->count() }}</p>
+                    <p class="text-2xl font-semibold text-gray-900">0</p>
                 </div>
             </div>
         </div>
@@ -109,25 +109,15 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $appointment->date ? \Carbon\Carbon::parse($appointment->date)->format('Y-m-d') : 'غير محدد' }}
+                            {{ $appointment->date ?? 'غير محدد' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $appointment->start_date ? \Carbon\Carbon::parse($appointment->start_date)->format('H:i') : 'غير محدد' }}
+                            {{ $appointment->start_date ?? 'غير محدد' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($appointment->canceled)
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                    ملغي
-                                </span>
-                            @elseif($appointment->completed)
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                    مكتمل
-                                </span>
-                            @else
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    قيد الانتظار
-                                </span>
-                            @endif
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                قيد الانتظار
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center gap-2">

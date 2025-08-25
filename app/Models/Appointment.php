@@ -38,15 +38,4 @@ class Appointment extends Model
     public function medicineSchedule() {
         $this->hasMany(MedicineSchedules::class);
     }
-
-    // Accessors للحقول
-    public function getCompletedAttribute($value)
-    {
-        return $this->finished == 1 || $this->finished == true;
-    }
-
-    public function getCanceledAttribute($value)
-    {
-        return $this->cancled == 1 || $this->cancled == true;
-    }
 }

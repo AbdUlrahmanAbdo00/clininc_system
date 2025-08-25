@@ -5,14 +5,15 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 
-
+Route::get('/', function () {
+    return redirect('/login');
+});
 
 Route::get('/chat', function () {
     return view('chat');
 });
 
 // Auth Routes
-Route::get('/', [AuthController::class, 'showLogin'])->name('auth.login');
 Route::get('/login', [AuthController::class, 'showLogin'])->name('auth.login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('auth.register');
@@ -27,7 +28,7 @@ Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard
 */
 
 // Dashboard Routes (Protected)
-Route::middleware(['CheckAuthToken'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // الصفحة الرئيسية للوحة التحكم
 
     // إدارة الأطباء
@@ -43,6 +44,8 @@ Route::middleware(['CheckAuthToken'])->group(function () {
     Route::get('/dashboard/specializations/create', [DashboardController::class, 'specializationsCreate'])->name('dashboard.specializations.create');
     Route::get('/dashboard/specializations/{id}/edit', [DashboardController::class, 'specializationsEdit'])->name('dashboard.specializations.edit');
     Route::post('/dashboard/specializations', [DashboardController::class, 'createSpecialization'])->name('dashboard.specializations.store');
+    Route::put('/dashboard/specializations/{id}', [DashboardController::class, 'updateSpecialization'])->name('dashboard.specializations.update');
+    Route::delete('/dashboard/specializations/{id}', [DashboardController::class, 'deleteSpecialization'])->name('dashboard.specializations.destroy');
     Route::get('/dashboard/specializations-api', [DashboardController::class, 'getAllSpecializations'])->name('dashboard.specializations.api');
 
     // إدارة الشيفتات
@@ -50,15 +53,25 @@ Route::middleware(['CheckAuthToken'])->group(function () {
     Route::get('/dashboard/shifts/create', [DashboardController::class, 'shiftsCreate'])->name('dashboard.shifts.create');
     Route::get('/dashboard/shifts/{id}/edit', [DashboardController::class, 'shiftsEdit'])->name('dashboard.shifts.edit');
     Route::post('/dashboard/shifts', [DashboardController::class, 'createShift'])->name('dashboard.shifts.store');
+    Route::put('/dashboard/shifts/{id}', [DashboardController::class, 'updateShift'])->name('dashboard.shifts.update');
+    Route::delete('/dashboard/shifts/{id}', [DashboardController::class, 'deleteShift'])->name('dashboard.shifts.destroy');
     Route::post('/dashboard/shifts/assign', [DashboardController::class, 'assignShiftToDoctor'])->name('dashboard.shifts.assign');
 
     // إدارة المرضى
     Route::get('/dashboard/patients', [DashboardController::class, 'patients'])->name('dashboard.patients.index');
+    Route::get('/dashboard/patients/create', [DashboardController::class, 'patientsCreate'])->name('dashboard.patients.create');
     Route::get('/dashboard/patients/{id}/edit', [DashboardController::class, 'patientsEdit'])->name('dashboard.patients.edit');
-    Route::put('/dashboard/patients/{id}', [DashboardController::class, 'patientsUpdate'])->name('dashboard.patients.update');
+    Route::post('/dashboard/patients', [DashboardController::class, 'createPatient'])->name('dashboard.patients.store');
+    Route::put('/dashboard/patients/{id}', [DashboardController::class, 'updatePatient'])->name('dashboard.patients.update');
+    Route::delete('/dashboard/patients/{id}', [DashboardController::class, 'deletePatient'])->name('dashboard.patients.destroy');
 
     // إدارة المواعيد
     Route::get('/dashboard/appointments', [DashboardController::class, 'appointments'])->name('dashboard.appointments.index');
+    Route::get('/dashboard/appointments/create', [DashboardController::class, 'appointmentsCreate'])->name('dashboard.appointments.create');
+    Route::get('/dashboard/appointments/{id}/edit', [DashboardController::class, 'appointmentsEdit'])->name('dashboard.appointments.edit');
+    Route::post('/dashboard/appointments', [DashboardController::class, 'createAppointment'])->name('dashboard.appointments.store');
+    Route::put('/dashboard/appointments/{id}', [DashboardController::class, 'updateAppointment'])->name('dashboard.appointments.update');
+    Route::delete('/dashboard/appointments/{id}', [DashboardController::class, 'deleteAppointment'])->name('dashboard.appointments.destroy');
 
     // التقارير
     Route::get('/dashboard/reports', [DashboardController::class, 'reports'])->name('dashboard.reports');

@@ -38,10 +38,10 @@ class DashboardController extends Controller
      * عرض صفحة الأطباء
      */
     public function doctors()
-    {
-        $doctors = Doctors::with(['specialization', 'user'])->paginate(10);
+    {$doctors = Doctors::with('specialization')->paginate(10);
         $specializations = Specialization::all();
         return view('dashboard.doctors.index', compact('doctors', 'specializations'));
+        
     }
 
     /**
@@ -132,52 +132,11 @@ class DashboardController extends Controller
     }
 
     /**
-     * عرض صفحة تعديل المريض
-     */
-    public function patientsEdit($id)
-    {
-        $patient = Patients::with('user')->findOrFail($id);
-        return view('dashboard.patients.edit', compact('patient'));
-    }
-
-    /**
-     * تحديث بيانات المريض
-     */
-    public function patientsUpdate(Request $request, $id)
-    {
-        $patient = Patients::with('user')->findOrFail($id);
-        
-        $request->validate([
-            'first_name' => 'required|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'last_name' => 'required|string|max:255',
-            'mother_name' => 'required|string|max:255',
-            'national_number' => 'required|string|max:255',
-            'number' => 'required|string|max:255',
-            'birth_day' => 'required|date',
-            'gender' => 'required|in:ذكر,أنثى'
-        ]);
-
-        $patient->user->update([
-            'first_name' => $request->first_name,
-            'middle_name' => $request->middle_name,
-            'last_name' => $request->last_name,
-            'mother_name' => $request->mother_name,
-            'national_number' => $request->national_number,
-            'number' => $request->number,
-            'birth_day' => $request->birth_day,
-            'gender' => $request->gender
-        ]);
-
-        return redirect()->route('dashboard.patients.index')->with('success', 'تم تحديث بيانات المريض بنجاح');
-    }
-
-    /**
      * عرض صفحة المواعيد
      */
     public function appointments()
     {
-        $appointments = Appointment::with(['doctor.user', 'patient.user', 'doctor.specialization'])->paginate(10);
+        $appointments = Appointment::with(['doctor.user', 'patient.user'])->paginate(10);
         return view('dashboard.appointments.index', compact('appointments'));
     }
 
@@ -367,39 +326,6 @@ class DashboardController extends Controller
                 'message' => 'حدث خطأ أثناء إسناد الشيفت.'
             ], 500);
         }
-    }
-
-    /**
-     * تحديث بيانات الطبيب
-     */
-    public function updateDoctor(Request $request, $id)
-    {
-        $doctor = Doctors::findOrFail($id);
-        
-        $request->validate([
-            'specialization_id' => 'required|exists:specializations,id',
-            'consultation_duration' => 'required|integer|min:1|max:1440',
-            'bio' => 'required|string'
-        ]);
-
-        $doctor->update([
-            'specialization_id' => $request->specialization_id,
-            'consultation_duration' => $request->consultation_duration,
-            'bio' => $request->bio
-        ]);
-
-        return redirect()->route('dashboard.doctors.index')->with('success', 'تم تحديث بيانات الطبيب بنجاح');
-    }
-
-    /**
-     * حذف طبيب
-     */
-    public function deleteDoctor($id)
-    {
-        $doctor = Doctors::findOrFail($id);
-        $doctor->delete();
-        
-        return redirect()->route('dashboard.doctors.index')->with('success', 'تم حذف الطبيب بنجاح');
     }
 
     /**
