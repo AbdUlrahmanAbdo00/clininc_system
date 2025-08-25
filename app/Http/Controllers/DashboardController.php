@@ -177,18 +177,8 @@ class DashboardController extends Controller
      */
     public function appointments()
     {
-         // إحصائيات سريعة
-         $stats = [
-            'doctors' => Doctors::count(),
-            'specializations' => Specialization::count(),
-            'shifts' => Shift::count(),
-            'patients' => Patients::count(),
-            'appointments' => Appointment::count(),
-        ];
-        $appointments = Appointment::all();
-        dd($appointments);
-                // dd($appointments);
-        return view('dashboard.appointments.index', compact('appointments','stats'));
+        $appointments = Appointment::with(['doctor.user', 'patient.user', 'doctor.specialization'])->paginate(10);
+        return view('dashboard.appointments.index', compact('appointments'));
     }
 
     /**

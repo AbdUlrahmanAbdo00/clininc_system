@@ -18,7 +18,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'array'),
+    'driver' => env('SESSION_DRIVER', 'file'),
 
     /*
     |--------------------------------------------------------------------------
@@ -35,6 +35,10 @@ return [
     'lifetime' => (int) env('SESSION_LIFETIME', 120),
 
     'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    
+    // إعدادات إضافية لحل مشاكل PostgreSQL
+    'secure' => env('SESSION_SECURE_COOKIE', false),
+    'same_site' => 'lax',
 
     /*
     |--------------------------------------------------------------------------
