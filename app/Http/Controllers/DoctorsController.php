@@ -57,6 +57,8 @@ class DoctorsController extends Controller
                 'imageUrl' => $doctor->imageUrl,
                 'name' => $user->first_name ?? 'Unknown',
                 'bio' => $doctor->bio,
+                'session_cost'=>$doctor->price,
+
                 'speciality' => [
                     'id' => (string) $spec->id,
                     'name' => $spec->name,
@@ -251,6 +253,8 @@ class DoctorsController extends Controller
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
                 'id' => $user->id,
+                'doctor_id'=>$doctor->id,
+
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name,
                 'last_name' => $user->last_name,

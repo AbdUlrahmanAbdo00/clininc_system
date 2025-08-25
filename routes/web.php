@@ -54,6 +54,8 @@ Route::middleware(['CheckAuthToken'])->group(function () {
 
     // إدارة المرضى
     Route::get('/dashboard/patients', [DashboardController::class, 'patients'])->name('dashboard.patients.index');
+    Route::get('/dashboard/patients/{id}/edit', [DashboardController::class, 'patientsEdit'])->name('dashboard.patients.edit');
+    Route::put('/dashboard/patients/{id}', [DashboardController::class, 'patientsUpdate'])->name('dashboard.patients.update');
 
     // إدارة المواعيد
     Route::get('/dashboard/appointments', [DashboardController::class, 'appointments'])->name('dashboard.appointments.index');

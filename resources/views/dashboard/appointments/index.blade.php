@@ -39,7 +39,7 @@
                 </div>
                 <div class="mr-4">
                     <p class="text-sm font-medium text-gray-600">مكتملة</p>
-                    <p class="text-2xl font-semibold text-gray-900">0</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $appointments->where('completed', true)->count() }}</p>
                 </div>
             </div>
         </div>
@@ -51,7 +51,7 @@
                 </div>
                 <div class="mr-4">
                     <p class="text-sm font-medium text-gray-600">قيد الانتظار</p>
-                    <p class="text-2xl font-semibold text-gray-900">0</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $appointments->where('completed', false)->where('canceled', false)->count() }}</p>
                 </div>
             </div>
         </div>
@@ -63,7 +63,7 @@
                 </div>
                 <div class="mr-4">
                     <p class="text-sm font-medium text-gray-600">ملغية</p>
-                    <p class="text-2xl font-semibold text-gray-900">0</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $appointments->where('canceled', true)->count() }}</p>
                 </div>
             </div>
         </div>
@@ -92,32 +92,42 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ $appointment->patient->name ?? 'Unknown' }}&background=0D9488&color=fff" alt="">
+                                <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name) }}&background=0D9488&color=fff" alt="">
                                 <div class="mr-4">
-                                    <div class="text-sm font-medium text-gray-900">{{ $appointment->patient->name ?? 'غير محدد' }}</div>
-                                    <div class="text-sm text-gray-500">{{ $appointment->patient->phone ?? 'غير محدد' }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ $appointment->patient->user->first_name . ' ' . $appointment->patient->user->last_name }}</div>
+                                    <div class="text-sm text-gray-500">{{ $appointment->patient->user->number ?? 'غير محدد' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name={{ $appointment->doctor->name ?? 'Unknown' }}&background=0D9488&color=fff" alt="">
+                                <img class="h-8 w-8 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($appointment->doctor->user->first_name . ' ' . $appointment->doctor->user->last_name) }}&background=0D9488&color=fff" alt="">
                                 <div class="mr-3">
-                                    <div class="text-sm font-medium text-gray-900">{{ $appointment->doctor->name ?? 'غير محدد' }}</div>
+                                    <div class="text-sm font-medium text-gray-900">{{ $appointment->doctor->user->first_name . ' ' . $appointment->doctor->user->last_name }}</div>
                                     <div class="text-sm text-gray-500">{{ $appointment->doctor->specialization->name ?? 'غير محدد' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $appointment->date ?? 'غير محدد' }}
+                            {{ $appointment->date ? \Carbon\Carbon::parse($appointment->date)->format('Y-m-d') : 'غير محدد' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $appointment->start_date ?? 'غير محدد' }}
+                            {{ $appointment->start_date ? \Carbon\Carbon::parse($appointment->start_date)->format('H:i') : 'غير محدد' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                قيد الانتظار
-                            </span>
+                            @if($appointment->canceled)
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                    ملغي
+                                </span>
+                            @elseif($appointment->completed)
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    مكتمل
+                                </span>
+                            @else
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    قيد الانتظار
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center gap-2">

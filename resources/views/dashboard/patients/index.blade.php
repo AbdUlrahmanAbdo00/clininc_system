@@ -74,61 +74,61 @@
                     </tr>
                 </thead>
                 <tbody id="patientsBody" class="bg-white divide-y divide-gray-200">
-                    {{-- @forelse($patients as $patient) --}}
+                    @forelse($patients as $patient)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                {{-- <img src="https://ui-avatars.com/api/?name={{ urlencode($patient->name) }}&background=0D9488&color=fff" 
-                                     alt="{{ $patient->name }}" class="w-10 h-10 rounded-full"> --}}
+                                <img src="https://ui-avatars.com/api/?name={{ urlencode($patient->user->first_name . ' ' . $patient->user->last_name) }}&background=0D9488&color=fff" 
+                                     alt="{{ $patient->user->first_name . ' ' . $patient->user->last_name }}" class="w-10 h-10 rounded-full">
                                 <div class="mr-4">
-                                    {{-- <div class="text-sm font-medium text-gray-900">{{ $patient->name }}</div>
-                                    <div class="text-sm text-gray-500">{{ $patient->email ?? 'لا يوجد بريد إلكتروني' }}</div> --}}
+                                    <div class="text-sm font-medium text-gray-900">{{ $patient->user->first_name . ' ' . $patient->user->last_name }}</div>
+                                    <div class="text-sm text-gray-500">{{ $patient->user->mother_name ?? 'لا يوجد' }}</div>
                                 </div>
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- {{ $patient->age ?? 'غير محدد' }} سنة --}}
+                            @if($patient->user->birth_day)
+                                {{ \Carbon\Carbon::parse($patient->user->birth_day)->age }} سنة
+                            @else
+                                غير محدد
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- {{ $patient->phone ?? 'غير محدد' }} --}}
+                            {{ $patient->user->number ?? 'غير محدد' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                {{-- {{ $patient->appointments_count ?? 0 }} موعد --}}
+                                {{ $patient->appointments_count ?? 0 }} موعد
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- {{ $patient->last_visit ? $patient->last_visit->format('Y-m-d') : 'لا توجد زيارات' }} --}}
+                            {{ $patient->user->created_at ? \Carbon\Carbon::parse($patient->user->created_at)->format('Y-m-d') : 'لا توجد زيارات' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-2">
-                                {{-- <a href="/dashboard/patients/{{ $patient->id }}" class="text-blue-600 hover:text-blue-900"><i class="fas fa-eye"></i></a>
-                                <a href="/dashboard/patients/{{ $patient->id }}/edit" class="text-teal-600 hover:text-teal-900"><i class="fas fa-edit"></i></a>
-                                <form action="/dashboard/patients/{{ $patient->id }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا المريض؟')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
-                                </form> --}}
+                                <a href="{{ route('dashboard.patients.edit', $patient->id) }}" class="text-teal-600 hover:text-teal-900">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
-                    {{-- @empty
+                    @empty
                     <tr>
                         <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                             لا توجد مرضى مسجلين حالياً
                         </td>
                     </tr>
-                    @endforelse --}}
+                    @endforelse
                 </tbody>
             </table>
         </div>
         
         <!-- Pagination -->
-        {{-- @if($patients->hasPages())
+        @if($patients->hasPages())
         <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
             {{ $patients->links() }}
         </div>
-        @endif --}}
+        @endif
     </div>
 </div>
 @endsection
