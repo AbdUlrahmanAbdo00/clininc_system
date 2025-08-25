@@ -20,6 +20,8 @@ return new class extends Migration
             $table->boolean('cancled');
             // $table->softDeletes(); 
             $table->date('date');
+            $table->boolean('is_paid')->default(false);
+
             $table->time('start_date');
             $table->time('end_date');
             $table->timestamps();

@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
 use App\Services\AppointmentBookingService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stichoza\GoogleTranslate\GoogleTranslate;
 
@@ -289,6 +290,8 @@ class AppointmentController extends Controller
                     'date' => $appointment->date,
                     'start_time' => \Carbon\Carbon::parse($appointment->start_date)->format('h:i A'),
                     'appointment_id' => $appointment->id,
+                                        'paid'=>$appointment->is_paid,
+
                     'doctor_name' => $doctorUser->first_name . ' ' . $doctorUser->last_name,
                     'patient_name' => $user->first_name . ' ' . $user->last_name,
                     'specialization' => $doctor->specialization->name
@@ -332,6 +335,8 @@ class AppointmentController extends Controller
                 $user = User::where('id', $patient->user_id)->first();
                 return [
                     'date' => $appointment->date,
+                    'paid' => $appointment->is_paid,
+
                     'start_time' => \Carbon\Carbon::parse($appointment->start_date)->format('h:i A'),
                     'appointment_id' => $appointment->id,
                     'doctor_name' => $doctorUser->first_name . ' ' . $doctorUser->last_name,
@@ -390,6 +395,7 @@ class AppointmentController extends Controller
                 return [
                     'date' => $appointment->date,
                     'start_time' => \Carbon\Carbon::parse($appointment->start_time)->format('h:i A'),
+                    'paid' => $appointment->is_paid,
 
                     'appointment_id' => $appointment->id,
                     'patient_name' => $patientUser->first_name . ' ' . $patientUser->last_name ?? 'Unknown',
@@ -401,30 +407,52 @@ class AppointmentController extends Controller
     }
 
     public function cancel(Request $request)
-    {
-        $request->validate([
-            'Appointment_id' => 'required|exists:appointments,id'
+{
+    $request->validate([
+        'Appointment_id' => 'required|exists:appointments,id'
+    ]);
+
+    $lan = request()->header('lan', 'en');
+    $translator = new GoogleTranslate($lan);
+
+    $appointment = Appointment::findOrFail($request->Appointment_id);
+
+    if ($appointment->cancel !== "") {
+        return response()->json([
+            'success' => true,
+            'message' => $translator->translate('الموعد ملغى مسبقا')
         ]);
+    }
 
-        $lan = request()->header('lan', 'en');
-        $translator = new GoogleTranslate($lan);
-        $appointment = Appointment::findOrFail($request->Appointment_id);
-        // if ($appointment->cancel !== "") {
-        //     return response()->json([
-        //         'success' => true,
-        //         'message' => $translator->translate('الموعد ملغى مسبقا ')
-        //     ]);
-        // }
+    $user = auth('sanctum')->user();
+    $user = User::find($user->id);
+    $patient = Patients::where('user_id', $user->id)->first();
+    $doctor = Doctors::where('user_id', $user->id)->first();
 
-        $user = auth('sanctum')->user();
-        $patient = Patients::where('user_id', $user->id)->first();
-        $doctor = Doctors::where('user_id', $user->id)->first();
+    $firebaseService = app(\App\Services\FirebaseService::class);
 
-        $firebaseService = app(\App\Services\FirebaseService::class);
+    $updateCancel = function ($entity, $role) use ($appointment, $firebaseService, $translator) {
+        $now = Carbon::now();
 
-        $updateCancel = function ($entity, $role) use ($appointment, $firebaseService) {
-            $now = Carbon::now();
+        // استرجاع ثمن المعاينة إذا كان الموعد مدفوع
+        if ($appointment->is_paid && ($role === 'patient' || $role === 'secretary')) {
+            $patientUser = $appointment->patient->user;
+            $doctor = $appointment->doctor;
 
+            // استرجاع الرصيد للمريض وخصم من الطبيب
+            $patientUser->balance += $doctor->price;
+            $patientUser->save();
+
+            $doctor->balance -= $doctor->price;
+            $doctor->save();
+
+            // تحديث حالة الدفع
+            $appointment->is_paid = false;
+            $appointment->save();
+        }
+
+        // إذا لم يكن السكرتيرة، نطبق العداد وحدود الإلغاءات
+        if ($role !== 'secretary') {
             if ($entity->last_canceled_at) {
                 $last = Carbon::parse($entity->last_canceled_at);
                 if ($last->month != $now->month || $last->year != $now->year) {
@@ -432,65 +460,75 @@ class AppointmentController extends Controller
                 }
             }
 
-            if ($entity->cancel_count < 10) {
-                $entity->increment('cancel_count');
-                $entity->last_canceled_at = $now;
-                $appointment->cancled = $role === 'doctor' ? 'cancled_by_doctor' : 'cancled_by_patient';
-                $entity->save();
-                $appointment->save();
-
-                if ($role === 'doctor') {
-                    $tokens = $appointment->patient->user->fcmTokens()->pluck('token');
-                } else {
-                    $tokens = $appointment->doctor->user->fcmTokens()->pluck('token');
-                }
-                $lan = request()->header('lan', 'en');
-
-                $translator = new GoogleTranslate($lan);
-
-                foreach ($tokens as $token) {
-                    try {
-                        $firebaseService->sendNotification(
-                            $token,
-                            'إلغاء موعد',
-                            $translator->translate('تم إلغاء الموعد من طرف ')
-                                . $translator->translate(($role === 'doctor' ? 'الطبيب' : 'المريض'))
-                                . $translator->translate(' بتاريخ ' . $appointment->date)
-                                . $translator->translate(' الساعة ' . $appointment->start_date)
-                        );
-                    } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
-                        \App\Models\FcmToken::where('token', $token)->delete();
-                    } catch (\Exception $e) {
-                        Log::error("فشل إرسال الإشعار للتوكن {$token}: " . $e->getMessage());
-                    }
-                }
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'تم إلغاء الموعد بنجاح.'
-                ]);
-            } else {
+            if ($entity->cancel_count >= 10) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'لقد وصلت إلى الحد الأقصى للإلغاءات هذا الشهر (5 مواعيد).'
+                    'message' => $translator->translate('لقد وصلت إلى الحد الأقصى للإلغاءات هذا الشهر (10 مواعيد).')
                 ]);
             }
-        };
 
-        if ($doctor && $appointment->doctor_id == $doctor->id) {
-            return $updateCancel($doctor, 'doctor');
-        } elseif ($patient) {
-            return $updateCancel($patient, 'patient');
+            $entity->increment('cancel_count');
+            $entity->last_canceled_at = $now;
+        }
+
+        // تعيين سبب الإلغاء
+        if ($role === 'doctor') {
+            $appointment->cancled = 'cancled_by_doctor';
+        } elseif ($role === 'patient') {
+            $appointment->cancled = 'cancled_by_patient';
+        } else {
+            $appointment->cancled = 'cancled_by_secretary';
+        }
+
+        $entity->save();
+        $appointment->save();
+
+        // إرسال الإشعارات للطرف الآخر
+        $tokens = ($role === 'doctor' || $role === 'secretary')
+            ? $appointment->patient->user->fcmTokens()->pluck('token')
+            : $appointment->doctor->user->fcmTokens()->pluck('token');
+
+        foreach ($tokens as $token) {
+            try {
+                $firebaseService->sendNotification(
+                    $token,
+                    $translator->translate('إلغاء موعد'),
+                    $translator->translate('تم إلغاء الموعد من طرف ')
+                        . $translator->translate($role === 'doctor' ? 'الطبيب' : ($role === 'patient' ? 'المريض' : 'السكرتيرة'))
+                        . $translator->translate(' بتاريخ ' . $appointment->date)
+                        . $translator->translate(' الساعة ' . $appointment->start_date)
+                );
+            } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
+                \App\Models\FcmToken::where('token', $token)->delete();
+            } catch (\Exception $e) {
+                Log::error("فشل إرسال الإشعار للتوكن {$token}: " . $e->getMessage());
+            }
         }
 
         return response()->json([
-            'success' => false,
-            'message' => 'لم يتم العثور على الطبيب أو المريض.'
+            'success' => true,
+            'message' => $translator->translate('تم إلغاء الموعد بنجاح. إذا كان الموعد مدفوعاً، تم إعادة المبلغ للمريض.')
         ]);
+    };
+
+    if ($doctor && $appointment->doctor_id == $doctor->id) {
+        return $updateCancel($doctor, 'doctor');
+    } elseif ($patient && $appointment->patient_id == $patient->id) {
+        return $updateCancel($patient, 'patient');
+    } elseif ($user && $user->hasRole('secretary')) {
+        return $updateCancel($user, 'secretary');
     }
+
+    return response()->json([
+        'success' => false,
+        'message' => $translator->translate('لم يتم العثور على الطبيب أو المريض.')
+    ]);
+}
+
+
     public function doctorsWorkingToday()
     {
-        $today = Carbon::now()->format('l'); // يرجع Monday, Tuesday...
+        $today = Carbon::now()->format('l');
 
         $doctors = Doctors::whereHas('shifts', function ($query) use ($today) {
             $query->whereJsonContains('doctor_shift.days', $today);
@@ -507,8 +545,8 @@ class AppointmentController extends Controller
                     'specialization_img' => $specialization->path,
                     'imageUrl' => $doctor->imageUrl,
                     'consultation_duration' => $doctor->consultation_duration,
-                    'start_time' => $shift?->start_time, // وقت بداية الدوام
-                    'end_time'   => $shift?->end_time,   // وقت نهاية الدوام
+                    'start_time' => $shift?->start_time,
+                    'end_time'   => $shift?->end_time,
                 ];
             });
 
@@ -518,4 +556,82 @@ class AppointmentController extends Controller
             'data' => $doctors,
         ], 200);
     }
+
+    public function payAppointment($appointmentId)
+    {
+        $appointment = Appointment::findOrFail($appointmentId);
+
+
+        $u = auth('sanctum')->user();
+        $patientUser = User::where('id', $u->id)->first();
+        $doctor  = $appointment->doctor;
+        $price   = $doctor->price;
+
+
+        if ($appointment->is_paid) {
+            return response()->json(['message' => 'الموعد مدفوع مسبقاً'], 400);
+        }
+
+
+        if ($patientUser->balance < $price) {
+            return response()->json(['message' => 'رصيدك غير كافي'], 400);
+        }
+        return DB::transaction(function () use ($patientUser, $doctor, $appointment, $price) {
+
+            $patientUser->balance -= $price;
+            $patientUser->save();
+
+            $doctor->balance += $price;
+            $doctor->save();
+
+            $appointment->is_paid = true;
+            $appointment->save();
+
+            return response()->json(['message' => 'تم الدفع بنجاح']);
+        });
+    }
+    public function payAppointment_bysecretary(Request $request, $appointmentId)
+{
+    $request->validate([
+        'payment_method' => 'required|in:balance,cash'
+    ]);
+
+    $appointment = Appointment::findOrFail($appointmentId);
+
+    $u = auth('sanctum')->user();
+    $patientUser = User::find($u->id);
+    $doctor = $appointment->doctor;
+    $price = $doctor->price;
+    $paymentMethod = $request->payment_method;
+
+    if ($appointment->is_paid) {
+        return response()->json(['message' => 'الموعد مدفوع مسبقاً'], 400);
+    }
+
+    return DB::transaction(function () use ($patientUser, $doctor, $appointment, $price, $paymentMethod) {
+
+        if ($paymentMethod === 'balance') {
+            // الدفع من رصيد المريض
+            if ($patientUser->balance < $price) {
+                return response()->json(['message' => 'رصيدك غير كافي'], 400);
+            }
+            $patientUser->balance -= $price;
+            $patientUser->save();
+        } 
+        // الدفع النقدي عند السكرتيرة: لا نقص من رصيد المريض
+        elseif ($paymentMethod === 'cash') {
+            // لا نفعل شيء لرصيد المريض
+        }
+
+        // رصيد الدكتور يزداد في كلتا الحالتين
+        $doctor->balance += $price;
+        $doctor->save();
+
+        $appointment->is_paid = true;
+        $appointment->save();
+
+        return response()->json(['message' => 'تم الدفع بنجاح']);
+    });
+}
+
 }

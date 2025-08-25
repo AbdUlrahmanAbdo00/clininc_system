@@ -27,8 +27,8 @@ class ShiftRequest extends FormRequest
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'shift_type' => 'required|string|max:255|unique:shifts,shift_type',
-            'start_break_time' => 'required|date_format:H:i',
-            'end_break_time' => 'required|date_format:H:i|after:start_break_time',
+            'start_break_time' => 'date_format:H:i',
+            'end_break_time' => 'date_format:H:i|after:start_break_time',
 
         ];
     }

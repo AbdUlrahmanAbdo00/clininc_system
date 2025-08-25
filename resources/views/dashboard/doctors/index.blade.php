@@ -5,12 +5,6 @@
 @section('page-description', 'عرض وإدارة جميع الأطباء')
 
 @section('content')
-{{-- 
-    المتغيرات المطلوبة من Controller:
-    $doctors = قائمة الأطباء مع علاقاتهم (specialization)
-    $specializations = قائمة جميع الاختصاصات للفلتر
-    إذا لم تتوفر المتغيرات أو الروابط، يمكن استخدام تعليقات أو بيانات وهمية
---}}
 <div class="space-y-6">
     <!-- Header Actions -->
     <div class="flex justify-between items-center">
@@ -18,109 +12,118 @@
             <h2 class="text-2xl font-bold text-gray-900">الأطباء</h2>
             <p class="text-gray-600">إدارة جميع الأطباء في المركز الصحي</p>
         </div>
-        {{-- رابط إضافة طبيب جديد --}}
-        {{-- <a href="/dashboard/doctors/create" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
+                        <a href="{{ route('dashboard.doctors.create') }}" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
             <i class="fas fa-plus ml-2"></i>
             إضافة طبيب جديد
-        </a> --}}
+        </a>
     </div>
     
     <!-- Search and Filter -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <input type="text" placeholder="البحث عن طبيب..." 
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+    <div class="bg-white rounded-2xl shadow p-6 card-hover">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <div class="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                    <i class="fas fa-search ml-2 text-gray-500"></i>
+                    <input id="doctorSearch" type="text" placeholder="البحث عن طبيب..." 
+                           class="w-full bg-transparent focus:outline-none text-sm">
+                </div>
             </div>
-            <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                <option value="">جميع الاختصاصات</option>
-                {{-- @foreach($specializations as $specialization)
-                    <option value="{{ $specialization->id }}">{{ $specialization->name }}</option>
-                @endforeach --}}
-                {{-- يمكن وضع تعليقات هنا بدلاً من المتغير --}}
-            </select>
+            <div>
+                <select id="specializationFilter" class="w-full border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                    <option value="">جميع الاختصاصات</option>
+                    @foreach($specializations as $specialization)
+                        <option value="{{ $specialization->name }}">{{ $specialization->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
     </div>
     
     <!-- Doctors Table -->
-    {{-- عرض قائمة الأطباء من متغير $doctors --}}
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="bg-white rounded-2xl shadow overflow-hidden card-hover">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الطبيب</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الاختصاص</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">البريد الإلكتروني</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الهاتف</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سنوات الخبرة</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرقم الوطني</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الهاتف</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجنس</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    {{-- @forelse($doctors as $doctor) --}}
+                <tbody id="doctorsBody" class="bg-white divide-y divide-gray-200">
+                    @forelse($doctors as $doctor)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{-- صورة واسم الطبيب --}}
-                            {{-- <img src="https://ui-avatars.com/api/?name={{ urlencode($doctor->name) }}&background=0D9488&color=fff" 
-                                 alt="{{ $doctor->name }}" class="w-10 h-10 rounded-full"> --}}
-                            <div class="mr-4">
-                                {{-- <div class="text-sm font-medium text-gray-900">{{ $doctor->name }}</div> --}}
-                                {{-- اسم الطبيب هنا --}}
-                                <div class="text-sm font-medium text-gray-900">اسم الطبيب</div>
-                            </div>
+                        <td class="px-6 py-4 whitespace-nowrap flex items-center">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode($doctor->user->first_name . ' ' . $doctor->user->last_name) }}&background=0D9488&color=fff" 
+                                 alt="{{ $doctor->user->first_name . ' ' . $doctor->user->last_name }}" class="w-10 h-10 rounded-full mr-4">
+                            <div class="text-sm font-medium text-gray-900">{{ $doctor->user->first_name . ' ' . $doctor->user->last_name }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            {{-- {{ $doctor->specialization->name ?? 'غير محدد' }} --}}
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                تخصص الطبيب
+                                {{ $doctor->specialization->name ?? 'غير محدد' }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- {{ $doctor->email }} --}}
-                            بريد الطبيب
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- {{ $doctor->phone }} --}}
-                            هاتف الطبيب
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- {{ $doctor->experience_years }} سنوات --}}
-                            سنوات الخبرة
-                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $doctor->user->national_number ?? 'غير محدد' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $doctor->user->number ?? 'غير محدد' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $doctor->user->gender ?? 'غير محدد' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-2">
-                                {{-- <a href="/dashboard/doctors/{{ $doctor->id }}/edit" class="text-teal-600 hover:text-teal-900">
+                                <a href="{{ route('dashboard.doctors.edit', $doctor->id) }}" class="text-teal-600 hover:text-teal-900">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="/dashboard/doctors/{{ $doctor->id }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطبيب؟')">
+                                <form action="{{ route('dashboard.doctors.destroy', $doctor->id) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطبيب؟')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-900">
                                         <i class="fas fa-trash"></i>
                                     </button>
-                                </form> --}}
-                                {{-- أزرار التعديل والحذف هنا --}}
+                                </form>
                             </div>
                         </td>
                     </tr>
-                    {{-- @empty
+                    @empty
                     <tr>
                         <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                             لا توجد أطباء مسجلين حالياً
                         </td>
                     </tr>
-                    @endforelse --}}
+                    @endforelse
                 </tbody>
             </table>
         </div>
         
         <!-- Pagination -->
-        {{-- @if($doctors->hasPages())
+        @if($doctors->hasPages())
         <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
             {{ $doctors->links() }}
         </div>
-        @endif --}}
+        @endif
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Local search/filter without touching routes or back-end
+    (function(){
+        function applyFilter() {
+            const q = (document.getElementById('doctorSearch')?.value || '').toLowerCase();
+            const spec = (document.getElementById('specializationFilter')?.value || '').toLowerCase();
+            const rows = document.querySelectorAll('#doctorsBody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const okQuery = !q || text.includes(q);
+                const okSpec = !spec || text.includes(spec);
+                row.classList.toggle('hidden', !(okQuery && okSpec));
+            });
+        }
+        document.addEventListener('input', (e) => {
+            if (e.target && (e.target.id === 'doctorSearch' || e.target.id === 'specializationFilter')) applyFilter();
+        });
+        document.addEventListener('dashboard:search', applyFilter);
+    })();
+</script>
+@endpush

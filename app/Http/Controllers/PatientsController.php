@@ -43,6 +43,8 @@ class PatientsController extends Controller
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
                 'id' => $user->id,
+                'patient_id'=> $patient->id,
+                'balance' => $user->balance,
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name,
                 'last_name' => $user->last_name,
@@ -77,6 +79,9 @@ class PatientsController extends Controller
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
                 'id' => $user->id,
+                'balance' => $user->balance,
+                'patient_id'=> $patient->id,
+
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name,
                 'last_name' => $user->last_name,

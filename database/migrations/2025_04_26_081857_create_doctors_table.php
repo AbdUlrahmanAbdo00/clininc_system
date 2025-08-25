@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('bio')->nullable();
             $table->string('imageUrl')->nullable();
             $table->integer('consultation_duration');
+                        $table->decimal('price', 10, 2)->default(0);
+
             $table->timestamps();
         });
     }

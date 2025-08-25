@@ -25,6 +25,8 @@ return new class extends Migration
             // $table->string('national_number');
             // $table->string('gender');
             // $table->date('birth_date') ;
+            $table->decimal('balance', 20, 2)->default(500000);
+
             $table->timestamp('number_verified_at')->nullable();
             $table->rememberToken()->nullable();
             $table->timestamps();

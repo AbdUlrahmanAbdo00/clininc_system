@@ -32,9 +32,9 @@ class ArchiveController extends Controller
         $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
-                ['patient_id', '=', $patient->id],
-                ['finished', '=', 0]
-            ])
+            ['patient_id', '=', $patient->id],
+            ['finished', '=', 0]
+        ])
             ->orderBy('date', 'asc')
             ->paginate($perPage);
 
@@ -52,6 +52,7 @@ class ArchiveController extends Controller
                 'patientName' => $patientUser
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
+                'paid' => $appointment->is_paid,
                 'date' => $appointment->date,
                 'recipe' => [
                     'diagnostics' => [],
@@ -86,10 +87,10 @@ class ArchiveController extends Controller
         $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
-                ['doctor_id', '=', $doctor->id],
-                ['finished', '=', 0],
-                ['canceled','=',null]
-            ])->paginate($perPage);
+            ['doctor_id', '=', $doctor->id],
+            ['finished', '=', 0],
+            ['canceled', '=', null]
+        ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
@@ -102,6 +103,8 @@ class ArchiveController extends Controller
                 'doctorName' => $doctorUser
                     ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
+                'paid' => $appointment->is_paid,
+
                 'patientName' => $patientUser
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
@@ -139,9 +142,9 @@ class ArchiveController extends Controller
         $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
-                ['patient_id', '=', $patient->id],
-                ['finished', '=', 1]
-            ])->paginate($perPage);
+            ['patient_id', '=', $patient->id],
+            ['finished', '=', 1]
+        ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
@@ -150,22 +153,24 @@ class ArchiveController extends Controller
             $patientUser = User::where('id', $patient->user_id)->first();
 
             $diagnostics = Analytics::where('appointment_id', $appointment->id)
-                            ->select('id', 'name', 'type')
-                            ->get();
+                ->select('id', 'name', 'type')
+                ->get();
 
             $analyzes = MedicalRecords::where('appointment_id', $appointment->id)
-                            ->select('id', 'name', 'image_path')
-                            ->get();
+                ->select('id', 'name', 'image_path')
+                ->get();
 
             $medicines = MedicineSchedules::where('appointment_id', $appointment->id)
-                            ->join('medicines', 'medicine_schedules.medicine_id', '=', 'medicines.id')
-                            ->select('medicine_schedules.id',
-                                'medicines.name as medicine_name',
-                                'medicine_schedules.quantity',
-                                'medicine_schedules.number_of_taken_doses',
-                                'medicine_schedules.rest_time',
-                                'medicine_schedules.last_time_has_taken')
-                            ->get();
+                ->join('medicines', 'medicine_schedules.medicine_id', '=', 'medicines.id')
+                ->select(
+                    'medicine_schedules.id',
+                    'medicines.name as medicine_name',
+                    'medicine_schedules.quantity',
+                    'medicine_schedules.number_of_taken_doses',
+                    'medicine_schedules.rest_time',
+                    'medicine_schedules.last_time_has_taken'
+                )
+                ->get();
 
             return [
                 'id' => $appointment->id,
@@ -176,6 +181,8 @@ class ArchiveController extends Controller
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
+                'paid' => $appointment->is_paid,
+
                 'recipe' => [
                     'diagnostics' => $diagnostics,
                     'analyzes' => $analyzes,
@@ -209,9 +216,9 @@ class ArchiveController extends Controller
         $perPage = $request->input('pageSize', 5);
 
         $appointments = Appointment::where([
-                ['doctor_id', '=', $doctor->id],
-                ['finished', '=', 1]
-            ])->paginate($perPage);
+            ['doctor_id', '=', $doctor->id],
+            ['finished', '=', 1]
+        ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
@@ -220,25 +227,29 @@ class ArchiveController extends Controller
             $patientUser = User::where('id', $patient->user_id)->first();
 
             $diagnostics = Analytics::where('appointment_id', $appointment->id)
-                            ->select('id', 'name', 'type')
-                            ->get();
+                ->select('id', 'name', 'type')
+                ->get();
 
             $analyzes = MedicalRecords::where('appointment_id', $appointment->id)
-                            ->select('id', 'name', 'image_path')
-                            ->get();
+                ->select('id', 'name', 'image_path')
+                ->get();
 
             $medicines = MedicineSchedules::where('appointment_id', $appointment->id)
-                            ->join('medicines', 'medicine_schedules.medicine_id', '=', 'medicines.id')
-                            ->select('medicine_schedules.id',
-                                'medicines.name as medicine_name',
-                                'medicine_schedules.quantity',
-                                'medicine_schedules.number_of_taken_doses',
-                                'medicine_schedules.rest_time',
-                                'medicine_schedules.last_time_has_taken')
-                            ->get();
+                ->join('medicines', 'medicine_schedules.medicine_id', '=', 'medicines.id')
+                ->select(
+                    'medicine_schedules.id',
+                    'medicines.name as medicine_name',
+                    'medicine_schedules.quantity',
+                    'medicine_schedules.number_of_taken_doses',
+                    'medicine_schedules.rest_time',
+                    'medicine_schedules.last_time_has_taken'
+                )
+                ->get();
 
             return [
                 'id' => $appointment->id,
+                'paid' => $appointment->is_paid,
+
                 'doctorName' => $doctorUser
                     ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',

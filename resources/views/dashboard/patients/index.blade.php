@@ -25,25 +25,30 @@
     </div>
     
     <!-- Search and Filter -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <input type="text" placeholder="البحث عن مريض..." 
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+    <div class="bg-white rounded-2xl shadow p-6 card-hover">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <div class="flex items-center bg-gray-100 rounded-full px-4 py-2">
+                    <i class="fas fa-search ml-2 text-gray-500"></i>
+                    <input id="patientSearch" type="text" placeholder="البحث عن مريض..." 
+                           class="w-full bg-transparent focus:outline-none text-sm">
+                </div>
             </div>
-            <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                <option value="">جميع الأعمار</option>
-                <option value="child">أطفال (0-12)</option>
-                <option value="teen">مراهقين (13-19)</option>
-                <option value="adult">بالغين (20-59)</option>
-                <option value="senior">كبار السن (60+)</option>
-            </select>
+            <div>
+                <select id="ageFilter" class="w-full border border-gray-300 rounded-full px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
+                    <option value="">جميع الأعمار</option>
+                    <option value="أطفال">أطفال (0-12)</option>
+                    <option value="مراهقين">مراهقين (13-19)</option>
+                    <option value="بالغين">بالغين (20-59)</option>
+                    <option value="كبار">كبار السن (60+)</option>
+                </select>
+            </div>
         </div>
     </div>
     
     <!-- Patients Table -->
     {{-- عرض قائمة المرضى من متغير $patients --}}
-    <div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="bg-white rounded-2xl shadow overflow-hidden card-hover">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
@@ -68,7 +73,7 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody id="patientsBody" class="bg-white divide-y divide-gray-200">
                     {{-- @forelse($patients as $patient) --}}
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -127,3 +132,26 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Local search/filter for patients
+    (function(){
+        function applyFilter(){
+            const q = (document.getElementById('patientSearch')?.value || '').toLowerCase();
+            const age = (document.getElementById('ageFilter')?.value || '').toLowerCase();
+            const rows = document.querySelectorAll('#patientsBody tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const okQuery = !q || text.includes(q);
+                const okAge = !age || text.includes(age);
+                row.classList.toggle('hidden', !(okQuery && okAge));
+            });
+        }
+        document.addEventListener('input', (e) => {
+            if (e.target && (e.target.id === 'patientSearch' || e.target.id === 'ageFilter')) applyFilter();
+        });
+        document.addEventListener('dashboard:search', applyFilter);
+    })();
+</script>
+@endpush

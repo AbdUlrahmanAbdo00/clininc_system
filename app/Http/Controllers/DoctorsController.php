@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ShiftRequest;
 use App\Models\Doctors;
 use App\Models\Specialization;
 use App\Models\User;
@@ -136,7 +137,7 @@ class DoctorsController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(ShiftRequest $request)
     {
         $lang = $request->header('lan', 'en');
         $translator = new GoogleTranslate($lang);
@@ -203,6 +204,8 @@ class DoctorsController extends Controller
             'message' => $translator->translate('user data retrieved successfully.'),
             'data' => [
                 'id' => $user->id,
+                'doctor_id'=>$doctor->id,
+                'price'=>$doctor->price,
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name,
                 'last_name' => $user->last_name,
