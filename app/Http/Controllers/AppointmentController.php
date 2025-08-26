@@ -545,7 +545,7 @@ class AppointmentController extends Controller
 
                 return [
                     'id' => $doctor->id,
-                    'name' => $doctor->user->name,
+                    'name' => $doctor->user->first_name . ' ' . $doctor->user->last_name,
                     'bio' => $doctor->bio,
                     'specialization' => $specialization->name,
                     'specialization_img' => $specialization->path,
