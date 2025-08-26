@@ -30,7 +30,8 @@ class User extends Authenticatable
         'mother_name', 
         'birth_day',
         'national_number',
-        'gender'
+        'gender',
+        'balance'
         
     ];
 
@@ -71,6 +72,11 @@ public function getJWTCustomClaims()
 public function fcmTokens()
 {
     return $this->hasMany(FcmToken::class);
+}
+
+public function doctor()
+{
+    return $this->hasOne(Doctors::class);
 }
 
 }

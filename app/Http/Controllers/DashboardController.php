@@ -67,6 +67,28 @@ class DashboardController extends Controller
     }
 
     /**
+     * حذف طبيب
+     */
+    public function destroyDoctor($id)
+    {
+        try {
+            $doctor = Doctors::findOrFail($id);
+            
+            // إزالة دور الطبيب من المستخدم
+            $doctor->user->removeRole('doctor');
+            
+            // حذف الطبيب
+            $doctor->delete();
+            
+            return redirect()->route('dashboard.doctors.index')
+                ->with('success', 'تم حذف الطبيب بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->route('dashboard.doctors.index')
+                ->with('error', 'حدث خطأ أثناء حذف الطبيب');
+        }
+    }
+
+    /**
      * عرض صفحة الاختصاصات
      */
     public function specializations()
