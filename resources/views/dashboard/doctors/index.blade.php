@@ -74,13 +74,6 @@
                                 <a href="{{ route('dashboard.doctors.edit', $doctor->id) }}" class="text-teal-600 hover:text-teal-900">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('dashboard.doctors.destroy', $doctor->id) }}" method="POST" class="inline" onsubmit="return confirm('هل أنت متأكد من حذف هذا الطبيب؟')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="text-red-600 hover:text-red-900">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
                             </div>
                         </td>
                     </tr>
