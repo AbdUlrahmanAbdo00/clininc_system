@@ -9,7 +9,7 @@ class Appointment extends Model
 {
     // use SoftDeletes;
 
-    protected $fillable = ['doctor_id', 'patient_id', 'date', 'start_date', 'end_date', 'finished', 'cancled'];
+    protected $fillable = ['doctor_id', 'patient_id', 'date', 'start_date', 'end_date', 'finished', 'cancled','is_paid'];
         
 
 
@@ -28,14 +28,14 @@ class Appointment extends Model
     }
 
     public function analytics() {
-        $this->hasMany(Analytics::class);
+        return $this->hasMany(Analytics::class);
     }
 
     public function medicalRecord() {
-        $this->hasMany(MedicalRecords::class);
+        return $this->hasMany(MedicalRecords::class);
     }
 
     public function medicineSchedule() {
-        $this->hasMany(MedicineSchedules::class);
+        return $this->hasMany(MedicineSchedules::class);
     }
 }

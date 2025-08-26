@@ -19,6 +19,11 @@ class Patients extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
 public function analytics()
 {
     return $this->hasManyThrough(

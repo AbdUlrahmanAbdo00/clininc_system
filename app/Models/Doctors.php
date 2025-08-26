@@ -11,7 +11,8 @@ class Doctors extends Model
         'specialization_id',
         'consultation_duration',
         'imageUrl',
-        'bio'
+        'bio',
+        'price',
     ];
 
     public function user()

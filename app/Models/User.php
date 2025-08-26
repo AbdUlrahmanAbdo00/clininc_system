@@ -79,4 +79,9 @@ public function doctor()
     return $this->hasOne(Doctors::class);
 }
 
+public function patient()
+{
+    return $this->hasOne(Patients::class);
+}
+
 }

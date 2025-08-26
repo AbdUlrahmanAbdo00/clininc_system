@@ -36,7 +36,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/doctors/create', [DashboardController::class, 'doctorsCreate'])->name('dashboard.doctors.create');
     Route::get('/dashboard/doctors/{id}/edit', [DashboardController::class, 'doctorsEdit'])->name('dashboard.doctors.edit');
     Route::post('/dashboard/doctors', [DashboardController::class, 'createDoctor'])->name('dashboard.doctors.store');
-    Route::delete('/dashboard/doctors/{id}', [DashboardController::class, 'destroyDoctor'])->name('dashboard.doctors.destroy');
 
     // إدارة الاختصاصات
     Route::get('/dashboard/specializations', [DashboardController::class, 'specializations'])->name('dashboard.specializations.index');
@@ -54,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
 
     // إدارة المرضى
     Route::get('/dashboard/patients', [DashboardController::class, 'patients'])->name('dashboard.patients.index');
+    Route::get('/dashboard/patients/create', [DashboardController::class, 'patientsCreate'])->name('dashboard.patients.create');
+    Route::get('/dashboard/patients/{id}/edit', [DashboardController::class, 'patientsEdit'])->name('dashboard.patients.edit');
 
     // إدارة المواعيد
     Route::get('/dashboard/appointments', [DashboardController::class, 'appointments'])->name('dashboard.appointments.index');

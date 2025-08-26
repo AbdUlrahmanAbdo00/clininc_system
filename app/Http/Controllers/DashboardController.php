@@ -67,28 +67,6 @@ class DashboardController extends Controller
     }
 
     /**
-     * حذف طبيب
-     */
-    public function destroyDoctor($id)
-    {
-        try {
-            $doctor = Doctors::findOrFail($id);
-            
-            // إزالة دور الطبيب من المستخدم
-            $doctor->user->removeRole('doctor');
-            
-            // حذف الطبيب
-            $doctor->delete();
-            
-            return redirect()->route('dashboard.doctors.index')
-                ->with('success', 'تم حذف الطبيب بنجاح');
-        } catch (\Exception $e) {
-            return redirect()->route('dashboard.doctors.index')
-                ->with('error', 'حدث خطأ أثناء حذف الطبيب');
-        }
-    }
-
-    /**
      * عرض صفحة الاختصاصات
      */
     public function specializations()
@@ -149,8 +127,28 @@ class DashboardController extends Controller
      */
     public function patients()
     {
-        $patients = Patients::with('user')->paginate(10);
+        $patients = Patients::with(['user', 'appointments'])
+            ->withCount('appointments')
+            ->withMax('appointments', 'date')
+            ->paginate(10);
         return view('dashboard.patients.index', compact('patients'));
+    }
+
+    /**
+     * عرض صفحة تعديل مريض
+     */
+    public function patientsEdit($id)
+    {
+        $patient = Patients::with('user')->findOrFail($id);
+        return view('dashboard.patients.edit', compact('patient'));
+    }
+
+    /**
+     * عرض صفحة إنشاء مريض جديد
+     */
+    public function patientsCreate()
+    {
+        return view('dashboard.patients.create');
     }
 
     /**
