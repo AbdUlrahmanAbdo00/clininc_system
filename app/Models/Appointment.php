@@ -9,7 +9,7 @@ class Appointment extends Model
 {
     // use SoftDeletes;
 
-    protected $fillable = ['doctor_id', 'patient_id', 'date', 'start_date', 'end_date', 'finished', 'cancled','is_paid'];
+    protected $fillable = ['doctor_id', 'patient_id', 'date', 'start_date', 'end_date', 'finished', 'cancled'];
         
 
 

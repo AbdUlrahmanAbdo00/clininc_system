@@ -21,8 +21,6 @@ return new class extends Migration
             // $table->softDeletes(); 
             $table->date('date');
             $table->boolean('is_paid')->default(false);
-            $table->decimal('price', 10, 2)->nullable();
-            $table->string('payment_method')->nullable();
 
             $table->time('start_date');
             $table->time('end_date');

@@ -17,11 +17,6 @@
             <h2 class="text-2xl font-bold text-gray-900">المرضى</h2>
             <p class="text-gray-600">إدارة جميع المرضى في المركز الصحي</p>
         </div>
-        <a href="{{ route('dashboard.patients.create') }}" 
-           class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
-            <i class="fas fa-plus ml-2"></i>
-            إضافة مريض جديد
-        </a>
     </div>
     
     <!-- Search and Filter -->
@@ -102,11 +97,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            @if($patient->appointments_max_date)
-                                {{ \Carbon\Carbon::parse($patient->appointments_max_date)->format('Y-m-d') }}
-                            @else
-                                لا توجد زيارات
-                            @endif
+                            {{ $patient->user->created_at ? \Carbon\Carbon::parse($patient->user->created_at)->format('Y-m-d') : 'لا توجد زيارات' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-2">

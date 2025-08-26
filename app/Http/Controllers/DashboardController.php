@@ -127,10 +127,15 @@ class DashboardController extends Controller
      */
     public function patients()
     {
-        $patients = Patients::with(['user', 'appointments'])
-            ->withCount('appointments')
-            ->withMax('appointments', 'date')
-            ->paginate(10);
+        $patients = Patients::with('user')->paginate(10);
+        
+        // إضافة عدد المواعيد وآخر موعد لكل مريض
+        foreach ($patients as $patient) {
+            $appointments = Appointment::where('patient_id', $patient->id)->get();
+            $patient->appointments_count = $appointments->count();
+            $patient->appointments_max_date = $appointments->max('date');
+        }
+        
         return view('dashboard.patients.index', compact('patients'));
     }
 
@@ -141,14 +146,6 @@ class DashboardController extends Controller
     {
         $patient = Patients::with('user')->findOrFail($id);
         return view('dashboard.patients.edit', compact('patient'));
-    }
-
-    /**
-     * عرض صفحة إنشاء مريض جديد
-     */
-    public function patientsCreate()
-    {
-        return view('dashboard.patients.create');
     }
 
     /**
@@ -374,5 +371,59 @@ class DashboardController extends Controller
             'message' => 'تم جلب الاختصاصات بنجاح.',
             'data' => $formatted,
         ]);
+    }
+
+    /**
+     * تحديث بيانات المريض
+     */
+    public function patientsUpdate(Request $request, $id)
+    {
+        $patient = Patients::with('user')->findOrFail($id);
+        
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'mother_name' => 'nullable|string|max:255',
+            'number' => 'required|string|unique:users,number,' . $patient->user_id,
+            'national_number' => 'nullable|string|max:255',
+            'birth_day' => 'nullable|date',
+            'gender' => 'nullable|in:ذكر,أنثى',
+            'daily_doses_number' => 'nullable|integer|min:0|max:10',
+            'taken_doses' => 'nullable|integer|max:10',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // تحديث بيانات المستخدم
+            $patient->user->update([
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'last_name' => $request->last_name,
+                'mother_name' => $request->mother_name,
+                'number' => $request->number,
+                'national_number' => $request->national_number,
+                'birth_day' => $request->birth_day,
+                'gender' => $request->gender,
+            ]);
+
+            // تحديث بيانات المريض
+            $patient->update([
+                'daily_doses_number' => $request->daily_doses_number ?? 0,
+                'taken_doses' => $request->taken_doses ?? 0,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('dashboard.patients.index')
+                ->with('success', 'تم تحديث بيانات المريض بنجاح');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث بيانات المريض: ' . $e->getMessage());
+        }
     }
 }
