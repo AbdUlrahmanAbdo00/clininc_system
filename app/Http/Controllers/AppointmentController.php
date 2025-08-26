@@ -631,7 +631,7 @@ class AppointmentController extends Controller
             $doctor->user->save();
 
             $appointment->is_paid = true;
-            $appointment->payment_method = $paymentMethod;
+            // $appointment->payment_method = $paymentMethod;
             $appointment->save();
 
             $message = $paymentMethod === 'cash' 
