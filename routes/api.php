@@ -34,7 +34,7 @@ Route::middleware(['auth:sanctum', 'doctor'])->group(function () {
 
 //appointments_pay
 Route::middleware('auth:sanctum')->post('/appointments/{id}/pay', [AppointmentController::class, 'payAppointment']);
-Route::middleware('auth:sanctum')->post('/appointments/secretary/{id}/pay', [AppointmentController::class, 'payAppointment_bysecretary']);
+// Route::middleware('auth:sanctum')->post('/appointments/secretary/{id}/pay', [AppointmentController::class, 'payAppointment_bysecretary']);
 
 
 Route::middleware(['auth:sanctum', 'patient'])->group(function () {

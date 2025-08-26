@@ -563,40 +563,40 @@ class AppointmentController extends Controller
         ], 200);
     }
 
-    public function payAppointment($appointmentId)
-    {
-        $appointment = Appointment::findOrFail($appointmentId);
+    // public function payAppointment($appointmentId)
+    // {
+    //     $appointment = Appointment::findOrFail($appointmentId);
 
 
-        $u = auth('sanctum')->user();
-        $patientUser = User::where('id', $u->id)->first();
-        $doctor  = $appointment->doctor;
-        $price   = $doctor->price;
+    //     $u = auth('sanctum')->user();
+    //     $patientUser = User::where('id', $u->id)->first();
+    //     $doctor  = $appointment->doctor;
+    //     $price   = $doctor->price;
 
 
-        if ($appointment->is_paid) {
-            return response()->json(['message' => 'الموعد مدفوع مسبقاً'], 400);
-        }
+    //     if ($appointment->is_paid) {
+    //         return response()->json(['message' => 'الموعد مدفوع مسبقاً'], 400);
+    //     }
 
 
-        if ($patientUser->balance < $price) {
-            return response()->json(['message' => 'رصيدك غير كافي'], 400);
-        }
-        return DB::transaction(function () use ($patientUser, $doctor, $appointment, $price) {
+    //     if ($patientUser->balance < $price) {
+    //         return response()->json(['message' => 'رصيدك غير كافي'], 400);
+    //     }
+    //     return DB::transaction(function () use ($patientUser, $doctor, $appointment, $price) {
 
-            $patientUser->balance -= $price;
-            $patientUser->save();
+    //         $patientUser->balance -= $price;
+    //         $patientUser->save();
 
-            $doctor->balance += $price;
-            $doctor->save();
+    //         $doctor->user->balance += $price;
+    //         $doctor->save();
 
-            $appointment->is_paid = true;
-            $appointment->save();
+    //         $appointment->is_paid = true;
+    //         $appointment->save();
 
-            return response()->json(['message' => 'تم الدفع بنجاح']);
-        });
-    }
-    public function payAppointment_bysecretary(Request $request, $appointmentId)
+    //         return response()->json(['message' => 'تم الدفع بنجاح']);
+    //     });
+    // }
+    public function payAppointment(Request $request, $appointmentId)
 {
     $request->validate([
         'payment_method' => 'required|in:balance,cash'
@@ -624,14 +624,11 @@ class AppointmentController extends Controller
             $patientUser->balance -= $price;
             $patientUser->save();
         } 
-        // الدفع النقدي عند السكرتيرة: لا نقص من رصيد المريض
         elseif ($paymentMethod === 'cash') {
-            // لا نفعل شيء لرصيد المريض
         }
 
-        // رصيد الدكتور يزداد في كلتا الحالتين
-        $doctor->balance += $price;
-        $doctor->save();
+        $doctor->user->balance += $price;
+        $doctor->user->save();
 
         $appointment->is_paid = true;
         $appointment->save();
