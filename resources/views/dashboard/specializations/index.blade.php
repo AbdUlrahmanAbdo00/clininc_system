@@ -72,7 +72,24 @@
             
             <!-- Content Section -->
             <div class="p-6">
+                <!-- Stats Row -->
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 bg-teal-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">نشط</span>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        <i class="fas fa-clock ml-1"></i>
+                        {{ $specialization->created_at->diffForHumans() }}
+                    </div>
+                </div>
                 
+                <!-- Info Section -->
+                <div class="text-center">
+                    <p class="text-sm text-gray-500">
+                        اضغط على الصورة لتعديل الاختصاص
+                    </p>
+                </div>
             </div>
         </div>
         @empty

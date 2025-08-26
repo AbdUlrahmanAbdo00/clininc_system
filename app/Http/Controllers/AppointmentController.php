@@ -217,6 +217,9 @@ class AppointmentController extends Controller
 
     public function book(Request $request, AppointmentBookingService $bookingService)
     {
+        $lan = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lan);
+    
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
@@ -226,15 +229,18 @@ class AppointmentController extends Controller
 
         if ($dateTime->isPast()) {
             return response()->json([
-                'error' => 'You cant afford to make a date in the past.',
+                'error' => $translator->translate('You cant afford to make a date in the past.'),
             ], 422); // Unprocessable Entity
         }
         try {
             $appointment = $bookingService->bookAppointment($request->all());
 
             return response()->json([
-                'message' => ' Your appointment has been booked successfully.',
-                //   'appointment' => $appointment,
+                'success' => true,
+                'message' => $translator->translate(' Your appointment has been booked successfully.'),
+                'data' => [
+                 'id'=>$appointment->id
+                ]                
             ]);
         } catch (\Exception $e) {
             return response()->json([
