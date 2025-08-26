@@ -639,8 +639,9 @@ class AppointmentController extends Controller
                 : 'تم الدفع من رصيد المريض بنجاح';
 
             return response()->json([
+                'success' => true,
                 'message' => $translator->translate($message),
-                'payment_method' => $paymentMethod
+                
             ]);
         });
     }
