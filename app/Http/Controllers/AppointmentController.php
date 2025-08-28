@@ -66,6 +66,7 @@ class AppointmentController extends Controller
 
                     if ($slotEnd->lte($breakStart) || $slotStart->gte($breakEnd)) {
                         $exists = \App\Models\Appointment::where('doctor_id', $doctor->id)
+                            ->where('cancled', NULL)
                             ->whereDate('date', $current->format('Y-m-d'))
                             ->where(function ($query) use ($slotStart, $slotEnd) {
                                 $query->whereBetween('start_date', [$slotStart->format('H:i:s'), $slotEnd->format('H:i:s')])
@@ -165,6 +166,7 @@ class AppointmentController extends Controller
                 }
 
                 $exists = \App\Models\Appointment::where('doctor_id', $doctor->id)
+                    ->where('cancled', NULL)
                     ->whereDate('date', $date->toDateString())
                     ->where(function ($query) use ($slotStart, $slotEnd) {
                         $query->where(function ($q) use ($slotStart, $slotEnd) {
@@ -423,7 +425,7 @@ class AppointmentController extends Controller
 
     $appointment = Appointment::findOrFail($request->Appointment_id);
 
-    if ($appointment->cancel !== 0) {
+    if ($appointment->cancel !== null) {
         return response()->json([
             'success' => true,
             'message' => $translator->translate('الموعد ملغى مسبقا')
@@ -522,7 +524,7 @@ class AppointmentController extends Controller
 
     return response()->json([
         'success' => false,
-        'message' => $translator->translate('لم يتم العثور على الطبيب أو المريض.')
+        'message' => $translator->translate('انت لا تملك صلاحية الغاء هذا الموعد    .')
     ]);
 }
 
