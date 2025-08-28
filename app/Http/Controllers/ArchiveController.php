@@ -34,7 +34,7 @@ class ArchiveController extends Controller
         $appointments = Appointment::where([
             ['patient_id', '=', $patient->id],
             ['finished', '=', 0],
-            ['canceled', '=', '0']
+            ['cancled', '=', NULL]
         ])
             ->orderBy('date', 'asc')
             ->paginate($perPage);
@@ -90,7 +90,7 @@ class ArchiveController extends Controller
         $appointments = Appointment::where([
             ['doctor_id', '=', $doctor->id],
             ['finished', '=', 0],
-            ['canceled', '=', '0']
+            ['cancled', '=', NULL]
         ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
@@ -145,7 +145,7 @@ class ArchiveController extends Controller
         $appointments = Appointment::where([
             ['patient_id', '=', $patient->id],
             ['finished', '=', 1],
-            ['canceled', '=', '0']
+            ['cancled', '=', NULL]
         ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
@@ -220,7 +220,7 @@ class ArchiveController extends Controller
         $appointments = Appointment::where([
             ['doctor_id', '=', $doctor->id],
             ['finished', '=', 1],
-            ['canceled', '=', '0']
+            ['cancled', '=', NULL]
         ])->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) {
