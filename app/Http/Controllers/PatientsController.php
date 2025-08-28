@@ -412,7 +412,8 @@ class PatientsController extends Controller
                 'message' => $translator->translate('Number of taken doses did not update.'),
                 'data' => [
                     'current_taken' => $medical->number_of_taken_doses,
-                    'total_quantity' => $medical->quantity
+                    'total_quantity' => $medical->quantity,
+                    'time'=> $medical->last_time_has_taken,
                 ]
             ]);
         }

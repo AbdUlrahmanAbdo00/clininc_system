@@ -423,7 +423,7 @@ class AppointmentController extends Controller
 
     $appointment = Appointment::findOrFail($request->Appointment_id);
 
-    if ($appointment->cancel !== "") {
+    if ($appointment->cancel !== 0) {
         return response()->json([
             'success' => true,
             'message' => $translator->translate('الموعد ملغى مسبقا')
@@ -440,24 +440,20 @@ class AppointmentController extends Controller
     $updateCancel = function ($entity, $role) use ($appointment, $firebaseService, $translator) {
         $now = Carbon::now();
 
-        // استرجاع ثمن المعاينة إذا كان الموعد مدفوع
         if ($appointment->is_paid && ($role === 'patient' || $role === 'secretary')) {
             $patientUser = $appointment->patient->user;
             $doctor = $appointment->doctor;
 
-            // استرجاع الرصيد للمريض وخصم من الطبيب
             $patientUser->balance += $doctor->price;
             $patientUser->save();
 
             $doctor->balance -= $doctor->price;
             $doctor->save();
 
-            // تحديث حالة الدفع
             $appointment->is_paid = false;
             $appointment->save();
         }
 
-        // إذا لم يكن السكرتيرة، نطبق العداد وحدود الإلغاءات
         if ($role !== 'secretary') {
             if ($entity->last_canceled_at) {
                 $last = Carbon::parse($entity->last_canceled_at);
@@ -477,7 +473,6 @@ class AppointmentController extends Controller
             $entity->last_canceled_at = $now;
         }
 
-        // تعيين سبب الإلغاء
         if ($role === 'doctor') {
             $appointment->cancled = 'cancled_by_doctor';
         } elseif ($role === 'patient') {
