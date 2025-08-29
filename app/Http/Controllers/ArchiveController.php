@@ -51,10 +51,10 @@ class ArchiveController extends Controller
             return [
                 'id' => $appointment->id,
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
-                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
+                    ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'paid' => $appointment->is_paid,
                 'date' => $appointment->date,
@@ -108,12 +108,12 @@ class ArchiveController extends Controller
             return [
                 'id' => $appointment->id,
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'paid' => $appointment->is_paid,
 
                 'patientName' => $patientUser
-                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
+                    ? $translator->$patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'recipe' => [
@@ -186,10 +186,10 @@ class ArchiveController extends Controller
             return [
                 'id' => $appointment->id,
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
+                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
-                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
+                    ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'paid' => $appointment->is_paid,
@@ -266,10 +266,10 @@ class ArchiveController extends Controller
                 'paid' => $appointment->is_paid,
 
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
+                    ? 'Dr. ' .$doctorUser->first_name . ' ' . $doctorUser->last_name
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
-                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
+                    ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'recipe' => [
