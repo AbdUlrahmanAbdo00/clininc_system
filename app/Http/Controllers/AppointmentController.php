@@ -163,11 +163,8 @@ class AppointmentController extends Controller
                 $now = Carbon::now('Asia/Beirut'); // مثال: 10:15:30
                 // dd( $slotStart);
                 
-          
-                if ($slotStart< $now) {
-                    // dd('here');
-                    continue; 
-                    // dd('here');
+                if ($date->isToday() && $slotStart < $now) {
+                    continue;
                 }
                 $slotEnd = $slotStart->copy()->addMinutes($consultationDuration);
     
