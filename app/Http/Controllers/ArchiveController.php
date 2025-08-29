@@ -234,6 +234,7 @@ class ArchiveController extends Controller
         $translator = new GoogleTranslate($lang);
 
         $user = Auth::user();
+        $user = User::where('id', $user->id)->first();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
 
