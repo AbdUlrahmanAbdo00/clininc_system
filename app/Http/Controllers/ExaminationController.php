@@ -24,7 +24,7 @@ class ExaminationController extends Controller
         abort_unless($user, 404);
     
         $validated = $request->validate([
-            'user_id' => 'required|exists:users,id', 
+            'patient_id' => 'required|exists:users,id', 
             'diagnoses' => [
                 'nullable',
                 'array',
