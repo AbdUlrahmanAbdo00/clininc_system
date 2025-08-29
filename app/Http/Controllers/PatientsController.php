@@ -415,7 +415,7 @@ class PatientsController extends Controller
                         } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                             \App\Models\FcmToken::where('token', $token)->delete();
                         } catch (\Exception $e) {
-                            continue; // يتجاهل التوكن اللي فشل
+                            continue; //
                         }
                     }
                 }
@@ -426,7 +426,8 @@ class PatientsController extends Controller
                 'message' => $translator->translate('💚  Wishing you good health.'),
                 'data' => [
                     'current_taken' => $medical->number_of_taken_doses,
-                    'total_quantity' => $medical->quantity
+                    'total_quantity' => $medical->quantity,
+                    'time'=> $medical->last_time_has_taken
                 ]
             ]);
         } else {

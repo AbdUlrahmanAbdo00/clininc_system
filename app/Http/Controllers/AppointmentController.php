@@ -132,8 +132,7 @@ class AppointmentController extends Controller
             'doctor_id' => 'required|integer|exists:doctors,id',
         ]);
     
-        $timezone = 'Asia/Damascus'; // سوريا
-        $date = Carbon::parse($request->date, $timezone);
+        $date = Carbon::parse($request->date);
         $doctor = Doctors::findOrFail($request->doctor_id);
         $shifts = $doctor->shifts;
     
@@ -151,28 +150,27 @@ class AppointmentController extends Controller
     
         $consultationDuration = $doctor->consultation_duration ?? 30;
         $availableSlots = [];
-        $now = Carbon::now($timezone);
+        $now = Carbon::now();
     
         foreach ($shiftsForDay as $shift) {
-            $shiftStart = Carbon::parse($date->toDateString() . ' ' . $shift->start_time, $timezone);
-            $shiftEnd   = Carbon::parse($date->toDateString() . ' ' . $shift->end_time, $timezone);
+            $shiftStart = Carbon::parse($date->toDateString() . ' ' . $shift->start_time);
+            $shiftEnd = Carbon::parse($date->toDateString() . ' ' . $shift->end_time);
     
-            $breakStart = isset($shift->start_break_time)
-                ? Carbon::parse($date->toDateString() . ' ' . $shift->start_break_time, $timezone)
-                : null;
-            $breakEnd = isset($shift->end_break_time)
-                ? Carbon::parse($date->toDateString() . ' ' . $shift->end_break_time, $timezone)
-                : null;
+            $breakStart = isset($shift->start_break_time) ? Carbon::parse($date->toDateString() . ' ' . $shift->start_break_time) : null;
+            $breakEnd = isset($shift->end_break_time) ? Carbon::parse($date->toDateString() . ' ' . $shift->end_break_time) : null;
     
             for ($slotStart = $shiftStart->copy(); $slotStart->lt($shiftEnd); $slotStart->addMinutes($consultationDuration)) {
+               
+                // dd( $slotStart);
                 $slotEnd = $slotStart->copy()->addMinutes($consultationDuration);
-    
-                // تجاهل أي slot ماضي (انتهى وقته) إذا التاريخ اليوم
-                if ($date->isToday() && $slotEnd->lte($now)) {
+                $now = Carbon::now('Asia/Beirut'); // مثال: 10:15:30
+;
+                if ($date->isToday() && $slotStart < $now) {
+
                     continue;
                 }
     
-                // تجاهل slot إذا وقع ضمن فترة الاستراحة
+             
                 if ($breakStart && $breakEnd) {
                     $overlapsWithBreak = $slotStart->lt($breakEnd) && $slotEnd->gt($breakStart);
                     if ($overlapsWithBreak) {
@@ -180,7 +178,6 @@ class AppointmentController extends Controller
                     }
                 }
     
-                // تحقق إذا كان في حجز موجود
                 $exists = \App\Models\Appointment::where('doctor_id', $doctor->id)
                     ->whereNull('cancled')
                     ->whereDate('date', $date->toDateString())
