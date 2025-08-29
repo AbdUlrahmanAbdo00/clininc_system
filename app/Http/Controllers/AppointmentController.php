@@ -425,7 +425,7 @@ class AppointmentController extends Controller
 
     $appointment = Appointment::findOrFail($request->Appointment_id);
 
-    if ($appointment->cancel !== null) {
+    if ($appointment->cancled !== null) {
         return response()->json([
             'success' => true,
             'message' => $translator->translate('الموعد ملغى مسبقا')
@@ -449,7 +449,7 @@ class AppointmentController extends Controller
             $patientUser->balance += $doctor->price;
             $patientUser->save();
 
-            $doctor->balance -= $doctor->price;
+            $doctor->user->balance -= $doctor->price;
             $doctor->save();
 
             $appointment->is_paid = false;
@@ -486,7 +486,6 @@ class AppointmentController extends Controller
         $entity->save();
         $appointment->save();
 
-        // إرسال الإشعارات للطرف الآخر
         $tokens = ($role === 'doctor' || $role === 'secretary')
             ? $appointment->patient->user->fcmTokens()->pluck('token')
             : $appointment->doctor->user->fcmTokens()->pluck('token');
