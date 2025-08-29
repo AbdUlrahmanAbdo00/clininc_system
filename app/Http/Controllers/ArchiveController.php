@@ -25,6 +25,9 @@ class ArchiveController extends Controller
 
     public function showUpcomingArchive_P(Request $request)
     {
+        $lang = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lang);
+
         $user = Auth::user();
         abort_unless($user, 404);
         $patient = Patients::where('user_id', $user->id)->first();
@@ -39,7 +42,7 @@ class ArchiveController extends Controller
             ->orderBy('date', 'asc')
             ->paginate($perPage);
 
-        $transformedItems = $appointments->getCollection()->map(function ($appointment) {
+        $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
             $doctorUser = User::where('id', $doctor->user_id)->first();
             $patient = Patients::where('id', $appointment->patient_id)->first();
@@ -48,10 +51,10 @@ class ArchiveController extends Controller
             return [
                 'id' => $appointment->id,
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
+                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
-                    ? $patientUser->first_name . ' ' . $patientUser->last_name
+                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
                     : 'Patient Not Found',
                 'paid' => $appointment->is_paid,
                 'date' => $appointment->date,
@@ -81,6 +84,9 @@ class ArchiveController extends Controller
 
     public function showUpcomingArchive_D(Request $request)
     {
+        $lang = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lang);
+
         $user = Auth::user();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -93,7 +99,7 @@ class ArchiveController extends Controller
             ['cancled', '=', NULL]
         ])->paginate($perPage);
 
-        $transformedItems = $appointments->getCollection()->map(function ($appointment) {
+        $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
             $doctorUser = User::where('id', $doctor->user_id)->first();
             $patient = Patients::where('id', $appointment->patient_id)->first();
@@ -102,12 +108,12 @@ class ArchiveController extends Controller
             return [
                 'id' => $appointment->id,
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
+                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
                     : 'Doctor Not Found',
                 'paid' => $appointment->is_paid,
 
                 'patientName' => $patientUser
-                    ? $patientUser->first_name . ' ' . $patientUser->last_name
+                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'recipe' => [
@@ -136,6 +142,9 @@ class ArchiveController extends Controller
 
     public function showFinishedArchive_P(Request $request)
     {
+        $lang = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lang);
+
         $user = Auth::user();
         abort_unless($user, 404);
         $patient = Patients::where('user_id', $user->id)->first();
@@ -148,7 +157,7 @@ class ArchiveController extends Controller
             ['cancled', '=', NULL]
         ])->paginate($perPage);
 
-        $transformedItems = $appointments->getCollection()->map(function ($appointment) {
+        $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
             $doctorUser = User::where('id', $doctor->user_id)->first();
             $patient = Patients::where('id', $appointment->patient_id)->first();
@@ -177,10 +186,10 @@ class ArchiveController extends Controller
             return [
                 'id' => $appointment->id,
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
+                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
-                    ? $patientUser->first_name . ' ' . $patientUser->last_name
+                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'paid' => $appointment->is_paid,
@@ -211,6 +220,9 @@ class ArchiveController extends Controller
 
     public function showFinishedArchive_D(Request $request)
     {
+        $lang = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lang);
+
         $user = Auth::user();
         abort_unless($user, 404);
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -223,7 +235,7 @@ class ArchiveController extends Controller
             ['cancled', '=', NULL]
         ])->paginate($perPage);
 
-        $transformedItems = $appointments->getCollection()->map(function ($appointment) {
+        $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
             $doctorUser = User::where('id', $doctor->user_id)->first();
             $patient = Patients::where('id', $appointment->patient_id)->first();
@@ -254,10 +266,10 @@ class ArchiveController extends Controller
                 'paid' => $appointment->is_paid,
 
                 'doctorName' => $doctorUser
-                    ? 'Dr. ' . $doctorUser->first_name . ' ' . $doctorUser->last_name
+                    ? 'Dr. ' . $translator->translate($doctorUser->first_name) . ' ' . $translator->translate($doctorUser->last_name)
                     : 'Doctor Not Found',
                 'patientName' => $patientUser
-                    ? $patientUser->first_name . ' ' . $patientUser->last_name
+                    ? $translator->translate($patientUser->first_name) . ' ' . $translator->translate($patientUser->last_name)
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'recipe' => [
