@@ -44,10 +44,12 @@ class DoctorsController extends Controller
 
     public function getDoctorsBySpecialization(Request $request, $specializationId)
     {
+        $user = Auth::user();
         $lang = $request->header('lan', 'en');
         $translator = new GoogleTranslate($lang);
         $doctors = Doctors::with('specialization')
             ->where('specialization_id', $specializationId)
+            ->where('user_id', '!=', $user->id)
             ->get();
 
         $formattedDoctors = $doctors->map(function ($doctor) use ($translator) {
