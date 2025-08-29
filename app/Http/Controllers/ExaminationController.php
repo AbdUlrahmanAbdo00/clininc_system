@@ -8,6 +8,7 @@ use App\Models\Doctors;
 use App\Models\MedicalDiagnostic;
 use App\Models\MedicalRecords;
 use App\Models\MedicineSchedules;
+use App\Models\Patients;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
@@ -23,7 +24,7 @@ class ExaminationController extends Controller
         abort_unless($user, 404);
     
         $validated = $request->validate([
-            'patient_id' => 'required|exists:patients,id',
+            'user_id' => 'required|exists:users,id', 
             'diagnoses' => [
                 'nullable',
                 'array',
@@ -82,20 +83,21 @@ class ExaminationController extends Controller
     
         $appointment = null;
         $doctor = Doctors::where('user_id', $user->id)->first();
-    
+        $patient = Patients::where('user_id', $validated['user_id'])->firstOrFail();
+
         $appointment = Appointment::where('doctor_id', $doctor->id)
-            ->where('patient_id', $request['patient_id'])
+            ->where('patient_id', $patient->id)
             ->whereBetween('start_date', [
                 $now->copy()->subHours(1),
                 $now->copy()->addHours(1)
             ])
             ->first();
     
-        DB::transaction(function () use ($validated, $now, &$appointment, $doctor) {
+        DB::transaction(function () use ($validated, $now, &$appointment, $doctor, $patient) {
             if (!$appointment) {
                 $appointment = Appointment::create([
                     'doctor_id' => $doctor->id,
-                    'patient_id' => $validated['patient_id'],
+                    'patient_id' => $patient->id,
                     'date' => $now,
                     'start_date' => $now,
                     'end_date' => $now,

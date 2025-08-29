@@ -57,6 +57,77 @@
 
     </div>
 
+    <!-- Top Performers Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- أفضل 5 أطباء -->
+        <div class="bg-white rounded-2xl shadow p-6 hover-glow hover-scale transform transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-trophy text-yellow-600 ml-2"></i>
+                أفضل 5 أطباء هذا الشهر
+            </h3>
+            <div class="space-y-3">
+                @if(count($doctorStats['top_doctors']) > 0)
+                    @foreach($doctorStats['top_doctors'] as $index => $doctor)
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-{{ $index == 0 ? 'yellow' : ($index == 1 ? 'gray' : ($index == 2 ? 'orange' : 'blue')) }}-100 text-{{ $index == 0 ? 'yellow' : ($index == 1 ? 'gray' : ($index == 2 ? 'orange' : 'blue')) }}-600 rounded-full flex items-center justify-center text-sm font-bold">
+                                {{ $index + 1 }}
+                            </div>
+                            <div class="mr-3">
+                                <p class="font-medium text-gray-900">{{ $doctor['name'] }}</p>
+                                <p class="text-xs text-gray-600">{{ $doctor['specialization'] }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-blue-600">{{ $doctor['appointments_count'] }}</p>
+                            <p class="text-xs text-gray-500">موعد</p>
+                        </div>
+                    </div>
+                    @endforeach
+                @else
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-info-circle text-2xl mb-2"></i>
+                        <p>لا توجد بيانات متاحة</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- أفضل 5 اختصاصات -->
+        <div class="bg-white rounded-2xl shadow p-6 hover-glow hover-scale transform transition-all duration-300">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-star text-purple-600 ml-2"></i>
+                أفضل 5 اختصاصات
+            </h3>
+            <div class="space-y-3">
+                @if(count($specializationStats['top_specializations']) > 0)
+                    @foreach($specializationStats['top_specializations'] as $index => $specialization)
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-{{ $index == 0 ? 'purple' : ($index == 1 ? 'blue' : ($index == 2 ? 'green' : 'yellow')) }}-100 text-{{ $index == 0 ? 'purple' : ($index == 1 ? 'blue' : ($index == 2 ? 'green' : 'yellow')) }}-600 rounded-full flex items-center justify-center text-sm font-bold">
+                                {{ $index + 1 }}
+                            </div>
+                            <div class="mr-3">
+                                <p class="font-medium text-gray-900">{{ $specialization['name'] }}</p>
+                                <p class="text-xs text-gray-600">اختصاص طبي</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-purple-600">{{ $specialization['doctors_count'] }}</p>
+                            <p class="text-xs text-gray-500">طبيب</p>
+                        </div>
+                    </div>
+                    @endforeach
+                @else
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-info-circle text-2xl mb-2"></i>
+                        <p>لا توجد بيانات متاحة</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         @foreach($quickActions as $action)
