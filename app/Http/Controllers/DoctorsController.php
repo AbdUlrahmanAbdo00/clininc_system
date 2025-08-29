@@ -45,23 +45,24 @@ class DoctorsController extends Controller
     public function getDoctorsBySpecialization(Request $request, $specializationId)
     {
         $lang = $request->header('lan', 'en');
+        $translator = new GoogleTranslate($lang);
         $doctors = Doctors::with('specialization')
             ->where('specialization_id', $specializationId)
             ->get();
 
-        $formattedDoctors = $doctors->map(function ($doctor) {
+        $formattedDoctors = $doctors->map(function ($doctor) use ($translator) {
             $user = User::find($doctor->user_id);
             $spec = Specialization::find($doctor->specialization_id);
             return [
                 'id' => (string) $doctor->id,
                 'imageUrl' => $doctor->imageUrl,
-                'name' => $user->first_name ?? 'Unknown',
-                'bio' => $doctor->bio,
+                'name' => $translator->translate($user->first_name) .' '.$translator->translate($user->last_name)?? 'Unknown',
+                'bio' => $translator->translate($doctor->bio),
                 'session_cost'=>$doctor->price,
 
                 'speciality' => [
                     'id' => (string) $spec->id,
-                    'name' => $spec->name,
+                    'name' => $translator->translate($spec->name),
                     'iconUrl' => $spec->path
                 ]
             ];
