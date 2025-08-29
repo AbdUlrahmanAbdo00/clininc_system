@@ -53,10 +53,11 @@ class DoctorsController extends Controller
         $formattedDoctors = $doctors->map(function ($doctor) use ($translator) {
             $user = User::find($doctor->user_id);
             $spec = Specialization::find($doctor->specialization_id);
+            $fullName = $user->first_name .' '.$user->last_name;
             return [
                 'id' => (string) $doctor->id,
                 'imageUrl' => $doctor->imageUrl,
-                'name' => $translator->translate($user->first_name) .' '.$translator->translate($user->last_name)?? 'Unknown',
+                'name' => $translator->translate($fullName)?? 'Unknown',
                 'bio' => $translator->translate($doctor->bio),
                 'session_cost'=>$doctor->price,
 
@@ -165,9 +166,9 @@ class DoctorsController extends Controller
             $user->assignRole('doctor');
         }
 
-        $defaultPath = "https://res.cloudinary.com/.../specializations/default.png";
+        $defaultPath = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750781057/Doctors/n4slf6rirxa6t5rprda6.png";
         if ($user->gender === 'female') {
-            $defaultPath = "https://res.cloudinary.com/.../specializations/default_female.png";
+            $defaultPath = "https://res.cloudinary.com/dydpyygpw/image/upload/v1750773377/specializations/i5ismob0hksxd5tlhvvi.png";
         }
 
         $doctor = Doctors::updateOrCreate(
