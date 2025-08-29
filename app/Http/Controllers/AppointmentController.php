@@ -137,23 +137,20 @@ class AppointmentController extends Controller
         $shifts = $doctor->shifts;
     
         $dayShifts = $this->groupShiftsByDays($shifts);
-    
         $dayName = $date->format('l');
         $shiftsForDay = $dayShifts->get($dayName, collect());
     
         if ($shiftsForDay->isEmpty()) {
             return response()->json([
                 'success' => true,
-                'message' => 'No available slots for this day.',
-                'data' => [
-                    'available_slots' => []
-                ]
+                'message' => 'لا توجد أوقات متاحة لهذا اليوم.',
+                'data' => ['available_slots' => []]
             ]);
         }
     
         $consultationDuration = $doctor->consultation_duration ?? 30;
         $availableSlots = [];
-        $now = Carbon::now(); // الوقت الحالي
+        $now = Carbon::now();
     
         foreach ($shiftsForDay as $shift) {
             $shiftStart = Carbon::parse($date->toDateString() . ' ' . $shift->start_time);
@@ -165,7 +162,7 @@ class AppointmentController extends Controller
             for ($slotStart = $shiftStart->copy(); $slotStart->lt($shiftEnd); $slotStart->addMinutes($consultationDuration)) {
                 $slotEnd = $slotStart->copy()->addMinutes($consultationDuration);
     
-                if ($slotEnd->lte($now)) {
+                if ($slotStart->lte($now)) {
                     continue;
                 }
     
@@ -177,7 +174,7 @@ class AppointmentController extends Controller
                 }
     
                 $exists = \App\Models\Appointment::where('doctor_id', $doctor->id)
-                    ->where('cancled', NULL)
+                    ->whereNull('cancled')
                     ->whereDate('date', $date->toDateString())
                     ->where(function ($query) use ($slotStart, $slotEnd) {
                         $query->where(function ($q) use ($slotStart, $slotEnd) {
@@ -187,30 +184,21 @@ class AppointmentController extends Controller
                     })
                     ->exists();
     
-                if (!$exists) {
-                    $availableSlots[] = [
-                        'available' => true,
-                        'start' => $slotStart->format('H:i'),
-                        'end' => $slotEnd->format('H:i'),
-                    ];
-                } else {
-                    $availableSlots[] = [
-                        'available' => false,
-                        'start' => $slotStart->format('H:i'),
-                        'end' => $slotEnd->format('H:i'),
-                    ];
-                }
+                $availableSlots[] = [
+                    'available' => !$exists,
+                    'start' => $slotStart->format('H:i'),
+                    'end' => $slotEnd->format('H:i'),
+                ];
             }
         }
     
         return response()->json([
             'success' => true,
-            'message' => 'This is the available times.',
-            'data' => [
-                'available_slots' => $availableSlots
-            ]
+            'message' => 'هذه هي الأوقات المتاحة.',
+            'data' => ['available_slots' => $availableSlots]
         ]);
     }
+    
     
     public function groupShiftsByDays($shifts): Collection //function return collection the key is the day and the value the shifts like {'sunday'= ['morining',evning']}
     {
