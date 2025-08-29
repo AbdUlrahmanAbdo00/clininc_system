@@ -150,7 +150,7 @@ class AppointmentController extends Controller
     
         $consultationDuration = $doctor->consultation_duration ?? 30;
         $availableSlots = [];
-        $now = Carbon::now();
+        $now = Carbon::now()->addHours(3);
     
         foreach ($shiftsForDay as $shift) {
             $shiftStart = Carbon::parse($date->toDateString() . ' ' . $shift->start_time);
@@ -445,7 +445,7 @@ class AppointmentController extends Controller
     $firebaseService = app(\App\Services\FirebaseService::class);
 
     $updateCancel = function ($entity, $role) use ($appointment, $firebaseService, $translator) {
-        $now = Carbon::now();
+        $now = Carbon::now()->addHours(3);
 
         if ($appointment->is_paid && ($role === 'patient' || $role === 'secretary')) {
             $patientUser = $appointment->patient->user;

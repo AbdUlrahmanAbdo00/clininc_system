@@ -79,7 +79,7 @@ class ExaminationController extends Controller
         $validated['analysiss'] = $validated['analysiss'] ?? [];
         $validated['medicines'] = $validated['medicines'] ?? [];
     
-        $now = Carbon::now();
+        $now = Carbon::now()->addHours(3);
     
         $appointment = null;
         $doctor = Doctors::where('user_id', $user->id)->first();
@@ -224,7 +224,7 @@ class ExaminationController extends Controller
         $validated['analysiss'] = $validated['analysiss'] ?? [];
         $validated['medicines'] = $validated['medicines'] ?? [];
 
-        $now = Carbon::now();
+        $now = Carbon::now()->addHours(3);
 
         $appointment = null;
                     $doctor = Doctors::where('user_id',$user->id)->first();
