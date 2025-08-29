@@ -21,7 +21,7 @@ class ExaminationController extends Controller
     public function addExamin(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
-
+    
         $validated = $request->validate([
             'patient_id' => 'required|exists:patients,id',
             'diagnoses' => [
@@ -73,25 +73,26 @@ class ExaminationController extends Controller
             'medicines.*.quantity' => 'required|integer|min:1',
             'medicines.*.description' => 'nullable|string'
         ]);
-
+    
         $validated['diagnoses'] = $validated['diagnoses'] ?? [];
         $validated['analysiss'] = $validated['analysiss'] ?? [];
         $validated['medicines'] = $validated['medicines'] ?? [];
-
+    
         $now = Carbon::now();
-
         $appointment = null;
-                    $doctor = Doctors::where('user_id',$user->id)->first();
-
+        $doctor = Doctors::where('user_id',$user->id)->first();
+    
         $appointment = Appointment::where('doctor_id', $doctor->id)
-        ->where('patient_id', $request['patient_id'])
-        ->whereBetween('start_date', [
-            $now->copy()->subHours(1),
-            $now->copy()->addHours(1)
-        ])
-        ->first();
-        
-        DB::transaction(function () use ($validated, $user, $now, &$appointment,$doctor) {
+            ->where('patient_id', $request['patient_id'])
+            ->whereBetween('start_date', [
+                $now->copy()->subHours(1),
+                $now->copy()->addHours(1)
+            ])
+            ->first();
+    
+        try {
+            DB::beginTransaction();
+    
             if (!$appointment) {
                 $appointment = Appointment::create([
                     'doctor_id' => $doctor->id,
@@ -103,7 +104,7 @@ class ExaminationController extends Controller
                     'cancled' => NULL
                 ]);
             }
-
+    
             if ($validated['diagnoses']) {
                 foreach($validated['diagnoses'] as $diagnose) {
                     Analytics::create([
@@ -115,18 +116,18 @@ class ExaminationController extends Controller
                     ]);
                 }
             }
-
+    
             if ($validated['analysiss']) {
                 $cloudinary = app(Cloudinary::class);
-
+    
                 foreach ($validated['analysiss'] as $analysisData) {
                     $file = $analysisData['analysis_image'];
-
+    
                     $uploadedFile = $cloudinary->uploadApi()->upload(
                         $file->getRealPath(),
                         ['folder' => 'analysis_images']
                     );
-
+    
                     $uploadedFileUrl = $uploadedFile['secure_url'];
                 
                     MedicalRecords::create([
@@ -138,7 +139,7 @@ class ExaminationController extends Controller
                     ]);
                 }   
             }
-
+    
             if ($validated['medicines']) {
                 foreach ($validated['medicines'] as $medicineData) {
                     MedicineSchedules::create([
@@ -150,20 +151,29 @@ class ExaminationController extends Controller
                     ]);
                 }
             }
-        });
-
+    
+            DB::commit(); 
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    
         return response()->json([
             'success' => true,
             'message' => 'Doctor data saved successfully'
         ], 200);
     }
+    
 
-        public function addExamin_by_appointment_id(Request $request) {
+    public function addExamin_by_appointment_id(Request $request) {
         $user = Auth::user();
         abort_unless($user, 404);
-
+    
         $validated = $request->validate([
-'apointment_id' => 'required|exists:appointments,id',
+            'apointment_id' => 'required|exists:appointments,id',
             'diagnoses' => [
                 'nullable',
                 'array',
@@ -213,23 +223,21 @@ class ExaminationController extends Controller
             'medicines.*.quantity' => 'required|integer|min:1',
             'medicines.*.description' => 'nullable|string'
         ]);
-
+    
         $validated['diagnoses'] = $validated['diagnoses'] ?? [];
         $validated['analysiss'] = $validated['analysiss'] ?? [];
         $validated['medicines'] = $validated['medicines'] ?? [];
-
+    
         $now = Carbon::now();
-
-        $appointment = null;
-                    $doctor = Doctors::where('user_id',$user->id)->first();
-
-        $appointment = Appointment::where('id', $request->apointment_id)
-        ->first();
-        DB::transaction(function () use ($validated, &$appointment) {
-  
-
+    
+        $doctor = Doctors::where('user_id', $user->id)->first();
+        $appointment = Appointment::where('id', $request->apointment_id)->first();
+    
+        try {
+            DB::beginTransaction();
+    
             if ($validated['diagnoses']) {
-                foreach($validated['diagnoses'] as $diagnose) {
+                foreach ($validated['diagnoses'] as $diagnose) {
                     Analytics::create([
                         'appointment_id' => $appointment->id,
                         'name' => $diagnose['diagnose_name'],
@@ -239,18 +247,18 @@ class ExaminationController extends Controller
                     ]);
                 }
             }
-
+    
             if ($validated['analysiss']) {
                 $cloudinary = app(Cloudinary::class);
-
+    
                 foreach ($validated['analysiss'] as $analysisData) {
                     $file = $analysisData['analysis_image'];
-
+    
                     $uploadedFile = $cloudinary->uploadApi()->upload(
                         $file->getRealPath(),
                         ['folder' => 'analysis_images']
                     );
-
+    
                     $uploadedFileUrl = $uploadedFile['secure_url'];
                 
                     MedicalRecords::create([
@@ -262,7 +270,7 @@ class ExaminationController extends Controller
                     ]);
                 }   
             }
-
+    
             if ($validated['medicines']) {
                 foreach ($validated['medicines'] as $medicineData) {
                     MedicineSchedules::create([
@@ -274,12 +282,21 @@ class ExaminationController extends Controller
                     ]);
                 }
             }
-        });
-
+    
+            DB::commit(); 
+        } catch (\Exception $e) {
+            DB::rollBack(); 
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    
         return response()->json([
             'success' => true,
             'message' => 'Doctor data saved successfully'
         ], 200);
     }
+    
     
 }
