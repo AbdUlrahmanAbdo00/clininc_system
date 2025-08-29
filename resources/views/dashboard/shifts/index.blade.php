@@ -122,10 +122,16 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex items-center gap-2">
-                                        <a href="{{ route('dashboard.shifts.edit', $shift->id) }}" class="text-blue-600 hover:text-blue-900">
+                                        <a href="{{ route('dashboard.shifts.edit_data', $shift->id) }}" class="text-green-600 hover:text-green-900" title="تعديل بيانات الشيفت">
+                                            <i class="fas fa-cog"></i>
+                                        </a>
+                                        <a href="{{ route('dashboard.shifts.edit_doctor', $shift->id) }}" class="text-blue-600 hover:text-blue-900" title="تعديل الأطباء والأيام">
+                                            <i class="fas fa-user-edit"></i>
+                                        </a>
+                                        <a href="{{ route('dashboard.shifts.edit', $shift->id) }}" class="text-yellow-600 hover:text-yellow-900" title="تعديل عام">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button class="text-red-600 hover:text-red-900" onclick="deleteShift({{ $shift->id }})">
+                                        <button class="text-red-600 hover:text-red-900" onclick="deleteShift({{ $shift->id }})" title="حذف">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>

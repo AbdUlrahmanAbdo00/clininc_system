@@ -48,8 +48,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/shifts', [DashboardController::class, 'shifts'])->name('dashboard.shifts.index');
     Route::get('/dashboard/shifts/create', [DashboardController::class, 'shiftsCreate'])->name('dashboard.shifts.create');
     Route::get('/dashboard/shifts/{id}/edit', [DashboardController::class, 'shiftsEdit'])->name('dashboard.shifts.edit');
+    Route::get('/dashboard/shifts/{id}/edit-data', [DashboardController::class, 'shiftsEditData'])->name('dashboard.shifts.edit_data');
+    Route::get('/dashboard/shifts/{id}/edit-doctor', [DashboardController::class, 'shiftsEditDoctor'])->name('dashboard.shifts.edit_doctor');
     Route::post('/dashboard/shifts', [DashboardController::class, 'createShift'])->name('dashboard.shifts.store');
     Route::post('/dashboard/shifts/assign', [DashboardController::class, 'assignShiftToDoctor'])->name('dashboard.shifts.assign');
+    Route::put('/dashboard/shifts/{id}/update-data', [DashboardController::class, 'shiftsUpdateData'])->name('dashboard.shifts.update_data');
+    Route::put('/dashboard/shifts/{id}/update-doctor', [DashboardController::class, 'shiftsUpdateDoctor'])->name('dashboard.shifts.update_doctor');
 
     // إدارة المرضى
     Route::get('/dashboard/patients', [DashboardController::class, 'patients'])->name('dashboard.patients.index');

@@ -132,7 +132,7 @@ class DashboardController extends Controller
      */
     public function shifts()
     {
-        $shifts = Shift::with(['doctors.user', 'doctors.specialization'])->paginate(10);
+        $shifts = Shift::with('doctor')->paginate(10);
 
         return view('dashboard.shifts.index', compact('shifts'));
     }
@@ -155,6 +155,91 @@ class DashboardController extends Controller
         $shift = Shift::findOrFail($id);
         $doctors = Doctors::all();
         return view('dashboard.shifts.edit', compact('shift', 'doctors'));
+    }
+
+    /**
+     * عرض صفحة تعديل بيانات الشيفت نفسه
+     */
+    public function shiftsEditData($id)
+    {
+        $shift = Shift::findOrFail($id);
+        return view('dashboard.shifts.edit_data', compact('shift'));
+    }
+
+    /**
+     * عرض صفحة تعديل ارتباط الطبيب بالشيفت
+     */
+    public function shiftsEditDoctor($id)
+    {
+        $shift = Shift::findOrFail($id);
+        $doctors = Doctors::with('user', 'specialization')->get();
+        $shiftDoctors = $shift->doctors()->with('user', 'specialization')->get();
+        
+        return view('dashboard.shifts.edit_doctor', compact('shift', 'doctors', 'shiftDoctors'));
+    }
+
+    /**
+     * تحديث بيانات الشيفت نفسه
+     */
+    public function shiftsUpdateData(Request $request, $id)
+    {
+        $request->validate([
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'shift_type' => 'required|string|unique:shifts,shift_type,' . $id,
+            'start_break_time' => 'required|date_format:H:i',
+            'end_break_time' => 'required|date_format:H:i|after:start_break_time',
+        ]);
+
+        $shift = Shift::findOrFail($id);
+        $shift->update($request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'تم تحديث بيانات الشيفت بنجاح'
+        ]);
+    }
+
+    /**
+     * تحديث ارتباط الطبيب بالشيفت
+     */
+    public function shiftsUpdateDoctor(Request $request, $id)
+    {
+        $request->validate([
+            'doctor_id' => 'required|exists:doctors,id',
+            'days' => 'required|array',
+            'days.*' => 'in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
+            'action' => 'required|in:update,delete'
+        ]);
+
+        $shift = Shift::findOrFail($id);
+        $doctorId = $request->doctor_id;
+        $days = $request->days;
+        $action = $request->action;
+
+        if ($action === 'delete') {
+            // إلغاء الارتباط
+            $shift->doctors()->detach($doctorId);
+            $message = 'تم إلغاء ارتباط الطبيب بالشيفت بنجاح';
+        } else {
+            // تحديث أو إضافة الارتباط
+            $existing = $shift->doctors()->where('doctor_id', $doctorId)->first();
+            
+            if ($existing) {
+                // تحديث الأيام
+                $shift->doctors()->updateExistingPivot($doctorId, ['days' => json_encode($days)]);
+                $message = 'تم تحديث أيام الشيفت للطبيب بنجاح';
+            } else {
+                // إضافة ارتباط جديد
+                $shift->doctors()->attach($doctorId, ['days' => json_encode($days)]);
+                $message = 'تم إضافة الطبيب للشيفت بنجاح';
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => $message
+        ]);
     }
 
     /**
