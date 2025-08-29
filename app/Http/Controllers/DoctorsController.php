@@ -45,6 +45,7 @@ class DoctorsController extends Controller
     public function getDoctorsBySpecialization(Request $request, $specializationId)
     {
         $user = Auth::user();
+        // dd($user);
         $lang = $request->header('lan', 'en');
         $translator = new GoogleTranslate($lang);
         $doctors = Doctors::with('specialization')
@@ -59,7 +60,7 @@ class DoctorsController extends Controller
             return [
                 'id' => (string) $doctor->id,
                 'imageUrl' => $doctor->imageUrl,
-                'name' => $translator->translate($fullName)?? 'Unknown',
+                'name' => $fullName ?? 'Unknown',
                 'bio' => $translator->translate($doctor->bio),
                 'session_cost'=>$doctor->price,
 
