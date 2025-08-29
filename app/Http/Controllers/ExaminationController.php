@@ -83,7 +83,7 @@ class ExaminationController extends Controller
     
         $appointment = null;
         $doctor = Doctors::where('user_id', $user->id)->first();
-        $patient = Patients::where('user_id', $validated['user_id'])->firstOrFail();
+        $patient = Patients::where('user_id', $validated['patient_id'])->firstOrFail();
 
         $appointment = Appointment::where('doctor_id', $doctor->id)
             ->where('patient_id', $patient->id)
