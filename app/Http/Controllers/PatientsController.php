@@ -250,7 +250,7 @@ class PatientsController extends Controller
 
         $medicines = $patient && $patient->medicineSchedule
             ? $patient->medicineSchedule()
-            ->with('medicine') // جلب اسم الدواء
+            ->with('medicine') 
             ->get()
             ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
             ->map(function ($record) {
@@ -259,7 +259,7 @@ class PatientsController extends Controller
                     'quantity'              => $record->quantity,
                     'number_of_taken_doses' => $record->number_of_taken_doses,
                     'rest_time'             => $record->rest_time,
-                    'last_time_has_taken'   => \Carbon\Carbon::parse($record->last_time_has_taken)->toISOString(),
+                    'last_time_has_taken'   =>$record->last_time_has_taken ?: "لم يأخذ أي جرعة بعد",
                 ];
             })
             ->values()
@@ -287,7 +287,7 @@ class PatientsController extends Controller
                 'quantity'              => $medicine['quantity'],
                 'number_of_taken_doses' => $medicine['number_of_taken_doses'],
                 'rest_time'             => $medicine['rest_time'],
-                'last_time_has_taken'   => $medicine['last_time_has_taken'],
+                'last_time_has_taken'   =>$medicine['last_time_has_taken'],
             ];
         }, $medicines);
 

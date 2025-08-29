@@ -208,19 +208,19 @@ class DoctorsController extends Controller
                 'id' => $user->id,
                 'doctor_id'=>$doctor->id,
                 'price'=>$doctor->price,
-                'first_name' => $user->first_name,
-                'middle_name' => $user->middle_name,
-                'last_name' => $user->last_name,
+                'first_name' => $translator->translate($user->first_name),
+                'middle_name' => $translator->translate($user->middle_name),
+                'last_name' => $translator->translate($user->last_name),
                 'number' => $user->number,
-                'mother_name' => $user->mother_name,
+                'mother_name' => $translator->translate($user->mother_name),
                 'birth_day' => $user->birth_day,
                 'national_number' => $user->national_number,
-                'gender' => $user->gender,
+                'gender' => $translator->translate($user->gender),
                 'escape_counter' => $doctor->escape_counter,
-                'bio' => $doctor->bio,
+                'bio' => $translator->translate($doctor->bio),
                 'imageUrl' => $doctor->imageUrl,
                 'consultation_duration' => $doctor->consultation_duration,
-                'specialization' => $spec->name ?? 'Unknown'
+                'specialization' => $translator->translate($spec->name) ?? 'Unknown'
             ]
         ]);
     }
@@ -255,19 +255,19 @@ class DoctorsController extends Controller
                 'id' => $user->id,
                 'doctor_id'=>$doctor->id,
 
-                'first_name' => $user->first_name,
-                'middle_name' => $user->middle_name,
-                'last_name' => $user->last_name,
+                'first_name' => $translator->translate($user->first_name),
+                'middle_name' => $translator->translate($user->middle_name),
+                'last_name' => $translator->translate($user->last_name),
                 'number' => $user->number,
-                'mother_name' => $user->mother_name,
+                'mother_name' => $translator->translate($user->mother_name),
                 'birth_day' => $user->birth_day,
                 'national_number' => $user->national_number,
-                'gender' => $user->gender,
+                'gender' => $translator->translate($user->gender),
                 'escape_counter' => $doctor->escape_counter,
-                'bio' => $doctor->bio,
+                'bio' => $translator->translate($doctor->bio),
                 'imageUrl' => $doctor->imageUrl,
                 'consultation_duration' => $doctor->consultation_duration,
-                'specialization' => $spec->name ?? 'Unknown'
+                'specialization' => $translator->translate($spec->name) ?? 'Unknown'
             ]
         ]);
     }
