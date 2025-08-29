@@ -121,6 +121,7 @@ class ArchiveController extends Controller
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
+                'start_time' => $appointment->start_date,
                 'recipe' => [
                     'diagnostics' => [],
                     'analyzes' => [],
@@ -200,6 +201,7 @@ class ArchiveController extends Controller
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
+                'start_time' => $appointment->start_date,
                 'paid' => $appointment->is_paid,
 
                 'recipe' => [
@@ -283,6 +285,8 @@ class ArchiveController extends Controller
                     ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
+                'start_time' => $appointment->start_date,
+
                 'recipe' => [
                     'diagnostics' => $diagnostics,
                     'analyzes' => $analyzes,

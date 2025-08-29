@@ -23,5 +23,9 @@ class MedicineSchedules extends Model
   public function medicine() {
     return $this->belongsTo(Medicines::class, 'medicine_id');
 }
+public function doctor()
+{
+    return $this->belongsTo(Doctors::class, 'doctor_id');
+}
 
 }

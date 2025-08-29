@@ -364,21 +364,20 @@ class PatientsController extends Controller
         ]);
     }
 
-
     public function confirmTaken(Request $request)
     {
         $lan = $request->header('lan', 'en');
         $translator = new GoogleTranslate($lan);
-
+    
         $user = auth('sanctum')->user();
-
+    
         if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => $translator->translate('Unauthorized')
             ], 401);
         }
-
+    
         $patient = Patients::where('user_id', $user->id)->first();
         if (!$patient) {
             return response()->json([
@@ -386,18 +385,42 @@ class PatientsController extends Controller
                 'message' => $translator->translate('Patient not found.')
             ], 404);
         }
-
+    
         $request->validate([
             'MedicineSchedules_id' => 'required|exists:medicine_schedules,id'
         ]);
-
+    
         $medical = MedicineSchedules::find($request->MedicineSchedules_id);
-
+    
         if ($medical->number_of_taken_doses < $medical->quantity) {
             $medical->number_of_taken_doses++;
             $medical->last_time_has_taken = now();
             $medical->save();
-            // dd($medical->last_time_has_taken);
+    
+            // ✅ إذا وصل لآخر جرعة ابعت إشعار للدكتور
+            if ($medical->number_of_taken_doses == $medical->quantity) {
+                $doctor = $medical->doctor; // لازم يكون عندك علاقة doctor بالـ MedicineSchedules
+                if ($doctor && $doctor->user) {
+                    $firebaseService = app(\App\Services\FirebaseService::class);
+                    $tokens = $doctor->user->fcmTokens()->pluck('token');
+    
+                    foreach ($tokens as $token) {
+                        try {
+                            $firebaseService->sendNotification(
+                                $token,
+                                $translator->translate('انتهاء الدواء'),
+                                $translator->translate('المريض ') . $patient->user->name .
+                                $translator->translate(' أنهى جميع جرعات دوائه. يرجى المتابعة معه.')
+                            );
+                        } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
+                            \App\Models\FcmToken::where('token', $token)->delete();
+                        } catch (\Exception $e) {
+                            continue; // يتجاهل التوكن اللي فشل
+                        }
+                    }
+                }
+            }
+    
             return response()->json([
                 'success' => true,
                 'message' => $translator->translate('💚  Wishing you good health.'),
@@ -418,4 +441,5 @@ class PatientsController extends Controller
             ]);
         }
     }
+    
 }
