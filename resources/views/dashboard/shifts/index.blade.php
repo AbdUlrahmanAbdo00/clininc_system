@@ -5,11 +5,6 @@
 @section('page-description', 'عرض وإدارة جميع شيفتات الأطباء')
 
 @section('content')
-{{-- 
-    المتغيرات المطلوبة من Controller:
-    $shifts = قائمة الشيفتات مع علاقاتهم (doctor)
-    $doctors = قائمة جميع الأطباء للفلتر
---}}
 
 <div class="space-y-6">
     <!-- Header Actions -->
@@ -18,7 +13,7 @@
             <h2 class="text-2xl font-bold text-gray-900">الشيفتات</h2>
             <p class="text-gray-600">إدارة جميع شيفتات الأطباء في المركز الصحي</p>
         </div>
-        <a href="/dashboard/shifts/create" 
+        <a href="{{ route('dashboard.shifts.create') }}" 
            class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors">
             <i class="fas fa-plus ml-2"></i>
             إضافة شيفت جديد
@@ -34,8 +29,6 @@
             </div>
             <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 <option value="">جميع الأطباء</option>
-                {{-- foreach($doctors as $doctor) --}}
-                {{-- <option value="{{ $doctor->id }}">{{ $doctor->name }}</option> --}}
             </select>
             <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
                 <option value="">جميع الأيام</option>
@@ -51,7 +44,6 @@
     </div>
     
     <!-- Shifts Table -->
-    {{-- عرض قائمة الشيفتات من متغير $shifts --}}
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -78,44 +70,93 @@
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
-                    {{-- @forelse($shifts as $shift) --}}
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{-- عرض اسم الطبيب وصورته --}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            {{-- عرض اليوم --}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- عرض وقت البداية --}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- عرض وقت النهاية --}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{-- عرض مدة الشيفت --}}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {{-- أزرار التعديل والحذف --}}
-                        </td>
-                    </tr>
-                    {{-- @empty --}}
+                    @forelse($shifts as $shift)
+                        @if($shift->doctors->count() > 0)
+                            @foreach($shift->doctors as $doctor)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($doctor->user->first_name . ' ' . $doctor->user->last_name) }}&background=0D9488&color=fff" alt="">
+                                        <div class="mr-4">
+                                            <div class="text-sm font-medium text-gray-900">{{ $doctor->user->first_name . ' ' . $doctor->user->last_name }}</div>
+                                            <div class="text-sm text-gray-500">{{ $doctor->specialization->name ?? 'غير محدد' }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $days = json_decode($doctor->pivot->days, true);
+                                        $arabicDays = [
+                                            'Saturday' => 'السبت',
+                                            'Sunday' => 'الأحد',
+                                            'Monday' => 'الاثنين',
+                                            'Tuesday' => 'الثلاثاء',
+                                            'Wednesday' => 'الأربعاء',
+                                            'Thursday' => 'الخميس',
+                                            'Friday' => 'الجمعة'
+                                        ];
+                                    @endphp
+                                    @if($days)
+                                        @foreach($days as $day)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mr-1">
+                                                {{ $arabicDays[$day] ?? $day }}
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-gray-500">غير محدد</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $shift->start_time }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ $shift->end_time }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @php
+                                        $start = \Carbon\Carbon::parse($shift->start_time);
+                                        $end = \Carbon\Carbon::parse($shift->end_time);
+                                        $duration = $start->diffInHours($end);
+                                    @endphp
+                                    {{ $duration }} ساعة
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ route('dashboard.shifts.edit', $shift->id) }}" class="text-blue-600 hover:text-blue-900">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="text-red-600 hover:text-red-900" onclick="deleteShift({{ $shift->id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                    لا يوجد أطباء مسند إليهم هذا الشيفت
+                                </td>
+                            </tr>
+                        @endif
+                    @empty
                     <tr>
                         <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                             لا توجد شيفتات مسجلة حالياً
                         </td>
                     </tr>
-                    {{-- @endforelse --}}
+                    @endforelse
                 </tbody>
             </table>
         </div>
         
         <!-- Pagination -->
-        {{-- @if($shifts->hasPages()) --}}
+        @if($shifts->hasPages())
         <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-            {{-- {{ $shifts->links() }} --}}
+            {{ $shifts->links() }}
         </div>
-        {{-- @endif --}}
+        @endif
     </div>
 </div>
+
 @endsection

@@ -18,5 +18,9 @@ class Shift extends Model
     {
         return $this->belongsToMany(Doctors::class, 'doctor_shift', 'shift_id', 'doctor_id')->withPivot('days');
     }
+    public function doctors()
+    {
+        return $this->belongsToMany(Doctors::class, 'doctor_shift', 'shift_id', 'doctor_id')->withPivot('days');
+    }
 }
     

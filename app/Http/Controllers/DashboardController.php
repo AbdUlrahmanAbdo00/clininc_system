@@ -58,44 +58,14 @@ class DashboardController extends Controller
             'by_specialization' => Doctors::with('specialization')
                 ->get()
                 ->groupBy('specialization.name')
-                ->map->count(),
-            'top_doctors' => Doctors::with(['user', 'specialization'])
-                ->withCount(['appointments' => function($query) {
-                    $query->whereBetween('date', [now()->startOfMonth(), now()->endOfMonth()]);
-                }])
-                ->orderBy('appointments_count', 'desc')
-                ->limit(5)
-                ->get()
-                ->map(function($doctor) {
-                    return [
-                        'name' => $doctor->user->first_name . ' ' . $doctor->user->last_name,
-                        'specialization' => $doctor->specialization->name ?? 'غير محدد',
-                        'appointments_count' => $doctor->appointments_count
-                    ];
-                })
-        ];
-
-        // إحصائيات الاختصاصات
-        $specializationStats = [
-            'total' => Specialization::count(),
-            'top_specializations' => Specialization::withCount('doctors')
-                ->orderBy('doctors_count', 'desc')
-                ->limit(5)
-                ->get()
-                ->map(function($specialization) {
-                    return [
-                        'name' => $specialization->name,
-                        'doctors_count' => $specialization->doctors_count
-                    ];
-                })
+                ->map->count()
         ];
 
         return view('dashboard.index', compact(
             'stats', 
             'appointmentStats', 
             'patientStats', 
-            'doctorStats',
-            'specializationStats'
+            'doctorStats'
         ));
     }
 
@@ -162,7 +132,7 @@ class DashboardController extends Controller
      */
     public function shifts()
     {
-        $shifts = Shift::with('doctor')->paginate(10);
+        $shifts = Shift::with(['doctors.user', 'doctors.specialization'])->paginate(10);
 
         return view('dashboard.shifts.index', compact('shifts'));
     }
