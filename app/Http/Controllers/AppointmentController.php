@@ -160,12 +160,18 @@ class AppointmentController extends Controller
             $breakEnd = isset($shift->end_break_time) ? Carbon::parse($date->toDateString() . ' ' . $shift->end_break_time) : null;
     
             for ($slotStart = $shiftStart->copy(); $slotStart->lt($shiftEnd); $slotStart->addMinutes($consultationDuration)) {
+                $now = Carbon::now('Asia/Beirut')->format('H:i:s'); // مثال: 10:15:30
+                // dd( $slotStart);
+                
+          
+                if ($slotStart->format('H:i:s') < $now) {
+                    // dd('here');
+                    continue; 
+                    // dd('here');
+                }
                 $slotEnd = $slotStart->copy()->addMinutes($consultationDuration);
     
-                if ($slotStart->lte($now)) {
-                    continue;
-                }
-    
+             
                 if ($breakStart && $breakEnd) {
                     $overlapsWithBreak = $slotStart->lt($breakEnd) && $slotEnd->gt($breakStart);
                     if ($overlapsWithBreak) {

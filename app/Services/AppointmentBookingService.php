@@ -28,6 +28,7 @@ class AppointmentBookingService
 
             
             $exists = Appointment::where('doctor_id', $doctorId)
+                ->whereNull('cancled')
                 ->whereDate('date', $date)
                 ->where('start_date', $startTime)
                 ->exists();
