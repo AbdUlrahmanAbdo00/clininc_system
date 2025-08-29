@@ -118,7 +118,7 @@ class ArchiveController extends Controller
                 'paid' => $appointment->is_paid,
 
                 'patientName' => $patientUser
-                    ? $translator->$patientUser->first_name . ' ' . $patientUser->last_name
+                    ? $patientUser->first_name . ' ' . $patientUser->last_name
                     : 'Patient Not Found',
                 'date' => $appointment->date,
                 'recipe' => [
