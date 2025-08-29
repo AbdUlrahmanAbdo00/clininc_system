@@ -134,6 +134,11 @@ class ExaminationController extends Controller
                 Log::info("Medicine schedule created: {$medicineSchedule->id}");
             }
 
+            // تحديث حالة الموعد إلى finished
+            $appointment->finished = 1;
+            $appointment->save();
+            Log::info("Appointment marked as finished: {$appointment->id}");
+
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
@@ -249,6 +254,10 @@ class ExaminationController extends Controller
                 ]);
                 Log::info("Medicine schedule created: {$medicineSchedule->id}");
             }
+
+            $appointment->finished = 1;
+            $appointment->save();
+            Log::info("Appointment marked as finished: {$appointment->id}");
 
             DB::commit();
         } catch (\Exception $e) {
