@@ -29,4 +29,9 @@ class Doctors extends Model
     return $this->belongsTo(Specialization::class);
 }
 
+public function appointments()
+{
+    return $this->hasMany(Appointment::class, 'doctor_id');
+}
+
 }

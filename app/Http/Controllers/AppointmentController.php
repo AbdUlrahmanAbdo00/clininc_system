@@ -131,75 +131,87 @@ class AppointmentController extends Controller
             'date' => 'required|date_format:Y-m-d',
             'doctor_id' => 'required|integer|exists:doctors,id',
         ]);
+    
         $date = Carbon::parse($request->date);
         $doctor = Doctors::findOrFail($request->doctor_id);
         $shifts = $doctor->shifts;
-
+    
         $dayShifts = $this->groupShiftsByDays($shifts);
-
+    
         $dayName = $date->format('l');
         $shiftsForDay = $dayShifts->get($dayName, collect());
-
+    
         if ($shiftsForDay->isEmpty()) {
-            return response()->json(['available_slots' => []]);
+            return response()->json([
+                'success' => true,
+                'message' => 'No available slots for this day.',
+                'data' => [
+                    'available_slots' => []
+                ]
+            ]);
         }
-
+    
         $consultationDuration = $doctor->consultation_duration ?? 30;
         $availableSlots = [];
-
+        $now = Carbon::now(); // الوقت الحالي
+    
         foreach ($shiftsForDay as $shift) {
             $shiftStart = Carbon::parse($date->toDateString() . ' ' . $shift->start_time);
             $shiftEnd = Carbon::parse($date->toDateString() . ' ' . $shift->end_time);
-
+    
             $breakStart = isset($shift->start_break_time) ? Carbon::parse($date->toDateString() . ' ' . $shift->start_break_time) : null;
             $breakEnd = isset($shift->end_break_time) ? Carbon::parse($date->toDateString() . ' ' . $shift->end_break_time) : null;
-
-
+    
             for ($slotStart = $shiftStart->copy(); $slotStart->lt($shiftEnd); $slotStart->addMinutes($consultationDuration)) {
                 $slotEnd = $slotStart->copy()->addMinutes($consultationDuration);
-
+    
+                if ($slotEnd->lte($now)) {
+                    continue;
+                }
+    
                 if ($breakStart && $breakEnd) {
                     $overlapsWithBreak = $slotStart->lt($breakEnd) && $slotEnd->gt($breakStart);
                     if ($overlapsWithBreak) {
                         continue;
                     }
                 }
-
+    
                 $exists = \App\Models\Appointment::where('doctor_id', $doctor->id)
                     ->where('cancled', NULL)
                     ->whereDate('date', $date->toDateString())
                     ->where(function ($query) use ($slotStart, $slotEnd) {
                         $query->where(function ($q) use ($slotStart, $slotEnd) {
                             $q->where('start_date', '<', $slotEnd->format('H:i:s'))
-                                ->where('end_date', '>', $slotStart->format('H:i:s'));
+                              ->where('end_date', '>', $slotStart->format('H:i:s'));
                         });
                     })
                     ->exists();
-
+    
                 if (!$exists) {
                     $availableSlots[] = [
                         'available' => true,
                         'start' => $slotStart->format('H:i'),
                         'end' => $slotEnd->format('H:i'),
                     ];
-                } else
+                } else {
                     $availableSlots[] = [
                         'available' => false,
                         'start' => $slotStart->format('H:i'),
                         'end' => $slotEnd->format('H:i'),
                     ];
+                }
             }
         }
-
+    
         return response()->json([
             'success' => true,
-            'message' => 'This is the avaliable times.',
+            'message' => 'This is the available times.',
             'data' => [
                 'available_slots' => $availableSlots
-            ],
-
+            ]
         ]);
     }
+    
     public function groupShiftsByDays($shifts): Collection //function return collection the key is the day and the value the shifts like {'sunday'= ['morining',evning']}
     {
         $dayShifts = collect();

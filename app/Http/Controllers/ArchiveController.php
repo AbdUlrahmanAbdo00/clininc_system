@@ -39,7 +39,8 @@ class ArchiveController extends Controller
             ['finished', '=', 0],
             ['cancled', '=', NULL]
         ])
-            ->orderBy('date', 'asc')
+        ->orderBy('date', 'asc')
+        ->orderBy('start_date', 'asc')
             ->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
@@ -58,6 +59,7 @@ class ArchiveController extends Controller
                     : 'Patient Not Found',
                 'paid' => $appointment->is_paid,
                 'date' => $appointment->date,
+                'start_time' => $appointment->start_date,
                 'recipe' => [
                     'diagnostics' => [],
                     'analyzes' => [],
@@ -97,7 +99,10 @@ class ArchiveController extends Controller
             ['doctor_id', '=', $doctor->id],
             ['finished', '=', 0],
             ['cancled', '=', NULL]
-        ])->paginate($perPage);
+        ])
+        ->orderBy('date', 'asc')
+        ->orderBy('start_date', 'asc')
+        ->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
@@ -155,7 +160,10 @@ class ArchiveController extends Controller
             ['patient_id', '=', $patient->id],
             ['finished', '=', 1],
             ['cancled', '=', NULL]
-        ])->paginate($perPage);
+        ])
+        ->orderBy('date', 'asc')
+        ->orderBy('start_date', 'asc')
+        ->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();
@@ -233,7 +241,10 @@ class ArchiveController extends Controller
             ['doctor_id', '=', $doctor->id],
             ['finished', '=', 1],
             ['cancled', '=', NULL]
-        ])->paginate($perPage);
+        ])
+        ->orderBy('date', 'asc')
+        ->orderBy('start_date', 'asc')
+        ->paginate($perPage);
 
         $transformedItems = $appointments->getCollection()->map(function ($appointment) use ($translator) {
             $doctor = Doctors::where('id', $appointment->doctor_id)->first();

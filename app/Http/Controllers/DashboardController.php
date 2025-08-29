@@ -31,7 +31,42 @@ class DashboardController extends Controller
             'appointments' => Appointment::count(),
         ];
 
-        return view('dashboard.index', compact('stats'));
+        // إحصائيات المواعيد الحقيقية
+        $appointmentStats = [
+            'total' => Appointment::count(),
+            'today' => Appointment::whereDate('date', today())->count(),
+            'this_month' => Appointment::whereMonth('date', now()->month)->count(),
+            'finished' => Appointment::where('finished', true)->count(),
+            'cancelled' => Appointment::where('cancled', true)->count(),
+        ];
+
+        // إحصائيات المرضى الحقيقية
+        $patientStats = [
+            'total' => Patients::count(),
+            'new_this_month' => Patients::whereMonth('created_at', now()->month)->count(),
+            'active' => Patients::whereHas('appointments', function($query) {
+                $query->where('date', '>=', now()->subMonths(3));
+            })->count(),
+        ];
+
+        // إحصائيات الأطباء الحقيقية
+        $doctorStats = [
+            'total' => Doctors::count(),
+            'with_appointments_today' => Doctors::whereHas('appointments', function($query) {
+                $query->whereDate('date', today());
+            })->count(),
+            'by_specialization' => Doctors::with('specialization')
+                ->get()
+                ->groupBy('specialization.name')
+                ->map->count()
+        ];
+
+        return view('dashboard.index', compact(
+            'stats', 
+            'appointmentStats', 
+            'patientStats', 
+            'doctorStats'
+        ));
     }
 
     /**
