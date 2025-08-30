@@ -341,53 +341,90 @@ class DashboardController extends Controller
     
     /**
      * تحديث ارتباط الطبيب بالشيفت
+     * يعمل مع جدول pivot: doctor_shift
      */
     public function shiftsUpdateDoctor(Request $request, $id)
     {
         try {
+            // التحقق من البيانات
             $request->validate([
-                'doctor_id' => 'required|exists:doctors,id',
+                'doctor_id' => 'required|integer|exists:doctors,id',
                 'days' => 'required|array',
-                'days.*' => 'in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
-                'action' => 'required|in:update,delete,add'
+                'days.*' => 'required|string|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
+                'action' => 'required|string|in:update,delete,add'
             ]);
 
+            // البحث عن الشيفت
             $shift = Shift::findOrFail($id);
-            $doctorId = $request->doctor_id;
+            $doctorId = (int) $request->doctor_id;
             $days = $request->days;
             $action = $request->action;
 
-            if ($action === 'delete') {
-                // إلغاء الارتباط - حذف العلاقة من جدول pivot
-                $shift->doctors()->detach($doctorId);
-                $message = 'تم إلغاء ارتباط الطبيب بالشيفت بنجاح';
-                
-            } elseif ($action === 'add') {
-                // إضافة ارتباط جديد - استخدام syncWithoutDetaching لتجنب Duplicate entry
-                $shift->doctors()->syncWithoutDetaching([
-                    $doctorId => ['days' => json_encode($days)]
-                ]);
-                $message = 'تم إضافة الطبيب للشيفت بنجاح';
-                
-            } else {
-                // تحديث الأيام - التحقق من وجود العلاقة أولاً
-                if ($shift->doctors()->where('doctors.id', $doctorId)->exists()) {
+            // معالجة العملية حسب النوع
+            switch ($action) {
+                case 'delete':
+                    // إلغاء الارتباط - حذف العلاقة من جدول pivot
+                    $deleted = $shift->doctors()->detach($doctorId);
+                    
+                    if ($deleted > 0) {
+                        $message = 'تم إلغاء ارتباط الطبيب بالشيفت بنجاح';
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'الطبيب غير مرتبط بهذا الشيفت'
+                        ], 400);
+                    }
+                    break;
+
+                case 'add':
+                    // إضافة ارتباط جديد - التحقق من عدم وجود العلاقة مسبقاً
+                    if ($shift->doctors()->where('doctors.id', $doctorId)->exists()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'الطبيب مرتبط بالفعل بهذا الشيفت'
+                        ], 400);
+                    }
+                    
+                    // إضافة العلاقة مع أيام العمل
+                    $shift->doctors()->attach($doctorId, [
+                        'days' => json_encode($days)
+                    ]);
+                    $message = 'تم إضافة الطبيب للشيفت بنجاح';
+                    break;
+
+                case 'update':
+                    // تحديث الأيام - التحقق من وجود العلاقة أولاً
+                    if (!$shift->doctors()->where('doctors.id', $doctorId)->exists()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'الطبيب غير مرتبط بهذا الشيفت'
+                        ], 400);
+                    }
+                    
                     // تحديث البيانات في جدول pivot
                     $shift->doctors()->updateExistingPivot($doctorId, [
                         'days' => json_encode($days)
                     ]);
                     $message = 'تم تحديث أيام الشيفت للطبيب بنجاح';
-                } else {
+                    break;
+
+                default:
                     return response()->json([
                         'success' => false,
-                        'message' => 'الطبيب غير مرتبط بهذا الشيفت'
+                        'message' => 'نوع العملية غير صحيح'
                     ], 400);
-                }
             }
 
+            // إرجاع رسالة النجاح
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
+                'data' => [
+                    'shift_id' => $shift->id,
+                    'doctor_id' => $doctorId,
+                    'action' => $action,
+                    'days' => $days
+                ]
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -396,10 +433,16 @@ class DashboardController extends Controller
                 'message' => 'خطأ في التحقق من البيانات',
                 'errors' => $e->errors()
             ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الشيفت غير موجود'
+            ], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage()
+                'message' => 'حدث خطأ أثناء تحديث البيانات',
+                'debug' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }

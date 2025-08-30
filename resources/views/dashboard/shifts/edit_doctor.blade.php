@@ -104,7 +104,8 @@
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-3">
                                                          <!-- Edit Days Button -->
-                             <button type="button" onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
+                             <button type="button" 
+                                     onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
                                      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
                                  <i class="fas fa-edit"></i>
                                  <span>تعديل الأيام</span>
@@ -131,12 +132,12 @@
 </div>
 
 <!-- Edit Days Modal -->
-<div id="editDaysModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] hidden">
+<div id="editDaysModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999]" style="display: none;">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-2xl border-2 border-blue-200">
+        <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-2xl border-2 border-blue-200 transform transition-all duration-300">
             <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="text-lg font-semibold text-gray-900">تعديل أيام العمل</h3>
-                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
+                <button type="button" onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -150,7 +151,7 @@
                     <div class="grid grid-cols-2 gap-2">
                         @foreach(['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'] as $day)
                         <label class="flex items-center p-3 hover:bg-blue-50 rounded-lg cursor-pointer border border-gray-200 hover:border-blue-300 transition-colors">
-                            <input type="checkbox" name="days[]" value="{{ $day }}" class="mr-3 h-5 w-5 text-blue-600 rounded">
+                            <input type="checkbox" name="days[]" value="{{ $day }}" class="mr-3 h-5 w-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500">
                             <span class="text-sm font-medium">{{ $arabicDays[$day] }}</span>
                         </label>
                         @endforeach
@@ -185,32 +186,39 @@
 
 @keyframes modalSlideIn {
     from {
-        transform: translateY(-50px);
+        transform: translateY(-50px) scale(0.95);
         opacity: 0;
     }
     to {
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
         opacity: 1;
     }
 }
 
 /* تأكيد ظهور النافذة المنبثقة */
-#editDaysModal:not(.hidden) {
+#editDaysModal.show {
     display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* تأكيد إخفاء النافذة المنبثقة */
-#editDaysModal.hidden {
+#editDaysModal {
     display: none !important;
     visibility: hidden !important;
     opacity: 0 !important;
 }
 
-/* تأكيد ظهور النافذة المنبثقة عند إزالة hidden */
-#editDaysModal.modal-active {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+/* تحسين مظهر checkboxes */
+#editDaysForm input[type="checkbox"]:checked {
+    background-color: #2563eb;
+    border-color: #2563eb;
+}
+
+#editDaysForm input[type="checkbox"]:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #3b82f6;
 }
 </style>
 @endpush
@@ -240,10 +248,17 @@ function editDoctorDays(doctorId, currentDays) {
     
     try {
         // تعيين معرف الطبيب
-        document.getElementById('edit_doctor_id').value = doctorId;
+        const doctorIdInput = document.getElementById('edit_doctor_id');
+        if (doctorIdInput) {
+            doctorIdInput.value = doctorId;
+        } else {
+            console.error('Doctor ID input not found!');
+            return;
+        }
 
         // إلغاء تحديد جميع الأيام أولاً
-        document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach(checkbox => {
+        const checkboxes = document.querySelectorAll('#editDaysForm input[name="days[]"]');
+        checkboxes.forEach(checkbox => {
             checkbox.checked = false;
         });
 
@@ -261,8 +276,8 @@ function editDoctorDays(doctorId, currentDays) {
         // إظهار النافذة المنبثقة
         const modal = document.getElementById('editDaysModal');
         if (modal) {
-            // إزالة class hidden
-            modal.classList.remove('hidden');
+            // إضافة class show للظهور
+            modal.classList.add('show');
             
             // تأكيد الظهور
             modal.style.display = 'block';
@@ -270,9 +285,6 @@ function editDoctorDays(doctorId, currentDays) {
             modal.style.opacity = '1';
             
             console.log('Modal should be visible now');
-            
-            // إضافة class للتحكم
-            modal.classList.add('modal-active');
         } else {
             console.error('Modal not found!');
             alert('خطأ: النافذة المنبثقة غير موجودة');
@@ -286,16 +298,13 @@ function editDoctorDays(doctorId, currentDays) {
 function closeEditModal() {
     const modal = document.getElementById('editDaysModal');
     if (modal) {
-        // إضافة class hidden
-        modal.classList.add('hidden');
+        // إزالة class show للإخفاء
+        modal.classList.remove('show');
         
         // تأكيد الإخفاء
         modal.style.display = 'none';
         modal.style.visibility = 'hidden';
         modal.style.opacity = '0';
-        
-        // إزالة class للتحكم
-        modal.classList.remove('modal-active');
         
         console.log('Modal closed');
     }
