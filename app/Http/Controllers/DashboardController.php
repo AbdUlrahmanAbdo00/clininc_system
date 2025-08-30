@@ -58,14 +58,43 @@ class DashboardController extends Controller
             'by_specialization' => Doctors::with('specialization')
                 ->get()
                 ->groupBy('specialization.name')
-                ->map->count()
+                ->map->count(),
+            'top_doctors' => Doctors::with(['user', 'specialization'])
+                ->withCount(['appointments' => function($query) {
+                    $query->whereMonth('date', now()->month);
+                }])
+                ->orderBy('appointments_count', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function($doctor) {
+                    return [
+                        'name' => $doctor->user->first_name . ' ' . $doctor->user->last_name,
+                        'specialization' => $doctor->specialization->name ?? 'غير محدد',
+                        'appointments_count' => $doctor->appointments_count
+                    ];
+                })
+        ];
+
+        // إحصائيات الاختصاصات
+        $specializationStats = [
+            'top_specializations' => Specialization::withCount('doctors')
+                ->orderBy('doctors_count', 'desc')
+                ->limit(5)
+                ->get()
+                ->map(function($specialization) {
+                    return [
+                        'name' => $specialization->name,
+                        'doctors_count' => $specialization->doctors_count
+                    ];
+                })
         ];
 
         return view('dashboard.index', compact(
             'stats', 
             'appointmentStats', 
             'patientStats', 
-            'doctorStats'
+            'doctorStats',
+            'specializationStats'
         ));
     }
 
