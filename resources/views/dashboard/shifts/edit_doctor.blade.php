@@ -103,12 +103,19 @@
                         
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-3">
-                            <!-- Edit Days Button -->
-                            <button onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
-                                <i class="fas fa-edit"></i>
-                                <span>تعديل الأيام</span>
-                            </button>
+                                                         <!-- Edit Days Button -->
+                             <button onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
+                                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                 <i class="fas fa-edit"></i>
+                                 <span>تعديل الأيام</span>
+                             </button>
+                             
+                             <!-- Test Button -->
+                             <button onclick="testModal()" 
+                                     class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2">
+                                 <i class="fas fa-bug"></i>
+                                 <span>اختبار</span>
+                             </button>
                             
                             <!-- Remove Relationship Button -->
                             <button onclick="removeDoctorRelationship({{ $doctor->id }}, '{{ $doctor->user->first_name }} {{ $doctor->user->last_name }}', '{{ $doctor->shift_info['shift_type'] ?? 'غير محدد' }}')" 
@@ -131,12 +138,12 @@
 </div>
 
 <!-- Edit Days Modal -->
-<div id="editDaysModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+<div id="editDaysModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" style="display: none;">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg p-6 w-96 max-w-full">
+        <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-2xl">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-semibold text-gray-900">تعديل أيام العمل</h3>
-                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 p-1">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -149,8 +156,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-3">اختر أيام العمل الجديدة</label>
                     <div class="grid grid-cols-2 gap-2">
                         @foreach(['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'] as $day)
-                        <label class="flex items-center">
-                            <input type="checkbox" name="days[]" value="{{ $day }}" class="mr-2">
+                        <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                            <input type="checkbox" name="days[]" value="{{ $day }}" class="mr-2 h-4 w-4 text-blue-600">
                             <span class="text-sm">{{ $arabicDays[$day] }}</span>
                         </label>
                         @endforeach
@@ -194,24 +201,54 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function editDoctorDays(doctorId, currentDays) {
+    console.log('Opening modal for doctor:', doctorId, 'with days:', currentDays);
+    
+    // تعيين معرف الطبيب
     document.getElementById('edit_doctor_id').value = doctorId;
 
+    // إلغاء تحديد جميع الأيام أولاً
     document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach(checkbox => {
         checkbox.checked = false;
     });
 
+    // تحديد الأيام الحالية
     if (currentDays && Array.isArray(currentDays)) {
         currentDays.forEach(day => {
             const checkbox = document.querySelector(`#editDaysForm input[value="${day}"]`);
-            if (checkbox) checkbox.checked = true;
+            if (checkbox) {
+                checkbox.checked = true;
+                console.log('Checked day:', day);
+            }
         });
     }
 
-    document.getElementById('editDaysModal').classList.remove('hidden');
+    // إظهار النافذة المنبثقة
+    const modal = document.getElementById('editDaysModal');
+    modal.style.display = 'block';
+    console.log('Modal should be visible now');
 }
 
 function closeEditModal() {
-    document.getElementById('editDaysModal').classList.add('hidden');
+    const modal = document.getElementById('editDaysModal');
+    modal.style.display = 'none';
+    console.log('Modal closed');
+}
+
+function testModal() {
+    console.log('Testing modal...');
+    const modal = document.getElementById('editDaysModal');
+    if (modal) {
+        console.log('Modal found, showing...');
+        modal.style.display = 'block';
+        
+        // تعيين أيام تجريبية
+        document.getElementById('edit_doctor_id').value = 'test';
+        document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach((checkbox, index) => {
+            checkbox.checked = index % 2 === 0; // تحديد أيام زوجية للاختبار
+        });
+    } else {
+        console.error('Modal not found!');
+    }
 }
 
 function removeDoctorRelationship(doctorId, doctorName, shiftType) {
