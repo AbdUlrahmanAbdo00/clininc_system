@@ -5,6 +5,19 @@
 @section('page-description', 'تعديل أو حذف علاقة الطبيب بالشيفت')
 
 @section('content')
+@php
+    // تعريف الأيام بالعربية
+    $arabicDays = [
+        'Saturday' => 'السبت',
+        'Sunday' => 'الأحد',
+        'Monday' => 'الاثنين',
+        'Tuesday' => 'الثلاثاء',
+        'Wednesday' => 'الأربعاء',
+        'Thursday' => 'الخميس',
+        'Friday' => 'الجمعة'
+    ];
+@endphp
+
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex items-center justify-between">
@@ -28,6 +41,9 @@
         @if($shiftDoctors->count() > 0)
             <div class="space-y-4">
                 @foreach($shiftDoctors as $doctor)
+                @php
+                    $days = json_decode($doctor->pivot->days, true) ?? [];
+                @endphp
                 <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                     <div class="flex items-center justify-between">
                         <!-- Doctor and Shift Info -->
@@ -61,7 +77,7 @@
                                             {{ $doctor->shift_info['shift_type'] ?? 'غير محدد' }}
                                         </h4>
                                         <p class="text-sm text-gray-600">
-                                            {{ isset($doctor->shift_info['start_time']) ? \Carbon\Carbon::parse($doctor->shift_info['start_time'])->format('H:i') : '-' }} - 
+                                            {{ isset($doctor->shift_info['start_time']) ? \Carbon\Carbon::parse($doctor->shift_info['start_time'])->format('H:i') : '-' }} -
                                             {{ isset($doctor->shift_info['end_time']) ? \Carbon\Carbon::parse($doctor->shift_info['end_time'])->format('H:i') : '-' }}
                                         </p>
                                     </div>
@@ -72,19 +88,7 @@
                             <div class="mt-3">
                                 <span class="text-sm text-gray-600 ml-16">أيام العمل الحالية:</span>
                                 <div class="flex flex-wrap gap-2 mt-2 ml-16">
-                                    @php
-                                        $days = json_decode($doctor->pivot->days, true);
-                                        $arabicDays = [
-                                            'Saturday' => 'السبت',
-                                            'Sunday' => 'الأحد',
-                                            'Monday' => 'الاثنين',
-                                            'Tuesday' => 'الثلاثاء',
-                                            'Wednesday' => 'الأربعاء',
-                                            'Thursday' => 'الخميس',
-                                            'Friday' => 'الجمعة'
-                                        ];
-                                    @endphp
-                                    @if($days)
+                                    @if(count($days) > 0)
                                         @foreach($days as $day)
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                                 {{ $arabicDays[$day] ?? $day }}
@@ -191,23 +195,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function editDoctorDays(doctorId, currentDays) {
     document.getElementById('edit_doctor_id').value = doctorId;
-    
-    // إلغاء تحديد جميع الأيام أولاً
+
     document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach(checkbox => {
         checkbox.checked = false;
     });
-    
-    // تحديد الأيام الحالية
+
     if (currentDays && Array.isArray(currentDays)) {
         currentDays.forEach(day => {
             const checkbox = document.querySelector(`#editDaysForm input[value="${day}"]`);
-            if (checkbox) {
-                checkbox.checked = true;
-            }
+            if (checkbox) checkbox.checked = true;
         });
     }
-    
-    // إظهار النافذة المنبثقة
+
     document.getElementById('editDaysModal').classList.remove('hidden');
 }
 
@@ -240,9 +239,7 @@ async function updateDoctorShift(shiftId, doctorId, days, action) {
         
         if (data.success) {
             showMessage(data.message, 'success');
-            setTimeout(() => {
-                window.location.reload();
-            }, 2000);
+            setTimeout(() => window.location.reload(), 2000);
         } else {
             showMessage('حدث خطأ: ' + data.message, 'error');
         }
@@ -268,7 +265,7 @@ function showMessage(message, type) {
     }
     
     document.body.appendChild(messageDiv);
-    setTimeout(() => { messageDiv.classList.remove('translate-x-full'); }, 100);
+    setTimeout(() => messageDiv.classList.remove('translate-x-full'), 100);
     setTimeout(() => { messageDiv.classList.add('translate-x-full'); setTimeout(() => messageDiv.remove(), 300); }, 3000);
 }
 </script>
