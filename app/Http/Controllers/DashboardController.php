@@ -174,8 +174,9 @@ class DashboardController extends Controller
         $shift = Shift::findOrFail($id);
         $doctors = Doctors::with('user', 'specialization')->get();
         $shiftDoctors = $shift->doctors()->with('user', 'specialization')->get();
+        $shifts = Shift::all(); // إضافة جميع الشيفتات للاختيار منها
         
-        return view('dashboard.shifts.edit_doctor', compact('shift', 'doctors', 'shiftDoctors'));
+        return view('dashboard.shifts.edit_doctor', compact('shift', 'doctors', 'shiftDoctors', 'shifts'));
     }
 
     /**

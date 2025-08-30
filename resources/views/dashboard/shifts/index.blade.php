@@ -146,11 +146,21 @@
 <script>
 function removeDoctorFromShift(shiftId, doctorId) {
     if (confirm('هل أنت متأكد من إلغاء ارتباط هذا الطبيب بالشيفت؟')) {
+        // الحصول على CSRF token
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                     document.querySelector('input[name="_token"]')?.value;
+        
+        if (!token) {
+            alert('خطأ: لم يتم العثور على CSRF token');
+            return;
+        }
+
         fetch(`/dashboard/shifts/${shiftId}/update-doctor`, {
             method: 'PUT',
             headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-CSRF-TOKEN': token,
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
             },
             body: JSON.stringify({
                 doctor_id: doctorId,
@@ -158,18 +168,23 @@ function removeDoctorFromShift(shiftId, doctorId) {
                 action: 'delete'
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert(data.message);
                 window.location.reload();
             } else {
-                alert('حدث خطأ: ' + data.message);
+                alert('حدث خطأ: ' + (data.message || 'خطأ غير معروف'));
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('حدث خطأ أثناء إلغاء الارتباط');
+            alert('حدث خطأ أثناء إلغاء الارتباط: ' + error.message);
         });
     }
 }
