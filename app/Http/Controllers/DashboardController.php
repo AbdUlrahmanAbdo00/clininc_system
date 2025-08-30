@@ -274,9 +274,10 @@ class DashboardController extends Controller
     /**
      * تحديث بيانات الشيفت نفسه
      */
-    public function shiftsUpdateData(Request $request, $id)
+    ppublic function shiftsUpdateData(Request $request, $id)
     {
         try {
+            // التحقق من صحة البيانات
             $request->validate([
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
@@ -284,13 +285,22 @@ class DashboardController extends Controller
                 'start_break_time' => 'required|date_format:H:i',
                 'end_break_time' => 'required|date_format:H:i|after:start_break_time',
             ]);
-
+    
+            // البحث عن الشيفت
             $shift = Shift::findOrFail($id);
-            
-            // التحقق من أن البيانات تم تغييرها
-            $updated = $shift->update($request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time']));
-            
-            if ($updated) {
+    
+            // تعبئة البيانات الجديدة
+            $shift->fill($request->only([
+                'start_time',
+                'end_time',
+                'shift_type',
+                'start_break_time',
+                'end_break_time'
+            ]));
+    
+            // التحقق من وجود تغييرات فعلية
+            if ($shift->isDirty()) {
+                $shift->save();
                 return response()->json([
                     'success' => true,
                     'message' => 'تم تحديث بيانات الشيفت بنجاح'
@@ -298,9 +308,10 @@ class DashboardController extends Controller
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'لم يتم تحديث أي بيانات'
+                    'message' => 'لم يتم تغيير أي بيانات'
                 ]);
             }
+    
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -314,7 +325,7 @@ class DashboardController extends Controller
             ], 500);
         }
     }
-
+    
     /**
      * تحديث ارتباط الطبيب بالشيفت
      */
