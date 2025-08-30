@@ -18,9 +18,9 @@
         </a>
     </div>
 
-    <!-- Current Shifts for Doctor -->
+    <!-- Current Doctors for Shift -->
     <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">الشيفتات المرتبطة بالطبيب حالياً</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">الأطباء المرتبطين بهذا الشيفت حالياً</h3>
         @if($shiftDoctors->count() > 0)
             <div class="space-y-3">
                 @foreach($shiftDoctors as $doctor)
@@ -64,7 +64,7 @@
         @else
             <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-info-circle text-2xl mb-2"></i>
-                <p>لا يوجد شيفتات مرتبطة بهذا الطبيب حالياً</p>
+                <p>لا يوجد أطباء مرتبطين بهذا الشيفت حالياً</p>
             </div>
         @endif
     </div>
@@ -210,7 +210,13 @@ document.getElementById('addShiftForm').addEventListener('submit', function(e) {
         return;
     }
     
-    updateDoctorShift(formData.get('shift_id'), {{ $shiftDoctors->first()->id }}, days, 'update');
+    // إضافة طبيب لشيفت جديد
+    const doctorId = {{ $shiftDoctors->count() > 0 ? $shiftDoctors->first()->id : 'null' }};
+    if (doctorId) {
+        updateDoctorShift(formData.get('shift_id'), doctorId, days, 'add');
+    } else {
+        alert('لا يمكن إضافة شيفت جديد - لا يوجد طبيب محدد');
+    }
 });
 
 // تعديل أيام الطبيب

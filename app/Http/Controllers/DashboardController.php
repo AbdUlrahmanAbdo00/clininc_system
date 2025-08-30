@@ -239,7 +239,7 @@ class DashboardController extends Controller
             'doctor_id' => 'required|exists:doctors,id',
             'days' => 'required|array',
             'days.*' => 'in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',
-            'action' => 'required|in:update,delete'
+            'action' => 'required|in:update,delete,add'
         ]);
 
         $shift = Shift::findOrFail($id);
@@ -251,18 +251,19 @@ class DashboardController extends Controller
             // إلغاء الارتباط
             $shift->doctors()->detach($doctorId);
             $message = 'تم إلغاء ارتباط الطبيب بالشيفت بنجاح';
+        } elseif ($action === 'add') {
+            // إضافة ارتباط جديد
+            $shift->doctors()->attach($doctorId, ['days' => json_encode($days)]);
+            $message = 'تم إضافة الطبيب للشيفت بنجاح';
         } else {
-            // تحديث أو إضافة الارتباط
+            // تحديث الأيام
             $existing = $shift->doctors()->where('doctor_id', $doctorId)->first();
             
             if ($existing) {
-                // تحديث الأيام
                 $shift->doctors()->updateExistingPivot($doctorId, ['days' => json_encode($days)]);
                 $message = 'تم تحديث أيام الشيفت للطبيب بنجاح';
             } else {
-                // إضافة ارتباط جديد
-                $shift->doctors()->attach($doctorId, ['days' => json_encode($days)]);
-                $message = 'تم إضافة الطبيب للشيفت بنجاح';
+                $message = 'الطبيب غير مرتبط بهذا الشيفت';
             }
         }
 
