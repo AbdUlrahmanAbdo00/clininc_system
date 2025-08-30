@@ -38,7 +38,7 @@ class DashboardController extends Controller
             'today' => Appointment::whereDate('date', today())->count(),
             'this_month' => Appointment::whereMonth('date', now()->month)->count(),
             'finished' => Appointment::where('finished', true)->count(),
-            'cancelled' => Appointment::where('cancled', true)->count(),
+            'cancelled' => Appointment::where('cancled', '!=', null)->count(),
         ];
 
         // إحصائيات المرضى الحقيقية
@@ -142,7 +142,7 @@ class DashboardController extends Controller
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
-            'number' => 'required|string|unique:users,number,' . $doctor->user_id,
+            'number' => 'required|string|unique:users,number,' . $doctor->user->id,
             'national_number' => 'nullable|string|max:255',
             'birth_day' => 'nullable|date',
             'gender' => 'nullable|in:ذكر,أنثى',
@@ -270,12 +270,6 @@ class DashboardController extends Controller
     public function shiftsUpdateData(Request $request, $id)
     {
         try {
-            // معالجة _method=PUT إذا كان موجوداً
-            if ($request->has('_method') && $request->_method === 'PUT') {
-                // تجاهل _method من البيانات
-                $request->merge($request->except('_method'));
-            }
-            
             $request->validate([
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
@@ -285,12 +279,6 @@ class DashboardController extends Controller
             ]);
 
             $shift = Shift::findOrFail($id);
-            
-            // تسجيل البيانات الواردة للتأكد
-            \Log::info('Shift Update Request', [
-                'shift_id' => $id,
-                'data' => $request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time'])
-            ]);
             
             // التحقق من أن البيانات تم تغييرها
             $updated = $shift->update($request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time']));
@@ -368,15 +356,11 @@ class DashboardController extends Controller
      */
     public function patients()
     {
-        $patients = Patients::with('user')->paginate(10);
-
-        // إضافة عدد المواعيد وآخر موعد لكل مريض
-        foreach ($patients as $patient) {
-            $appointments = Appointment::where('patient_id', $patient->id)->get();
-            $patient->appointments_count = $appointments->count();
-            $patient->appointments_max_date = $appointments->max('date');
-        }
-
+        $patients = Patients::with('user')
+            ->withCount('appointments')
+            ->withMax('appointments', 'date')
+            ->paginate(10);
+        
         return view('dashboard.patients.index', compact('patients'));
     }
 
@@ -459,7 +443,8 @@ class DashboardController extends Controller
             'specialization_id' => 'required|exists:specializations,id',
             'consultation_duration' => 'required|integer|min:1|max:1440',
             'user_id' => 'required|exists:users,id',
-            'bio' => 'required|string'
+            'bio' => 'required|string',
+            'price' => 'required|numeric|min:0.01'
         ]);
 
         try {
@@ -486,6 +471,7 @@ class DashboardController extends Controller
                     'specialization_id' => $validated['specialization_id'],
                     'consultation_duration' => $validated['consultation_duration'],
                     'bio' => $validated['bio'],
+                    'price' => $validated['price'],
                     'imageUrl' => $defaultPath
                 ]
             );
@@ -569,7 +555,8 @@ class DashboardController extends Controller
                 }
             }
 
-            Doctors::find($doctorId)->shifts()->attach($shift->id, [
+            $doctor = Doctors::findOrFail($doctorId);
+            $doctor->shifts()->attach($shift->id, [
                 'days' => json_encode($days)
             ]);
 
@@ -625,7 +612,7 @@ class DashboardController extends Controller
             'middle_name' => 'nullable|string|max:255',
             'last_name' => 'nullable|string|max:255',
             'mother_name' => 'nullable|string|max:255',
-            'number' => 'required|string|unique:users,number,' . $patient->user_id,
+            'number' => 'required|string|unique:users,number,' . $patient->user->id,
             'national_number' => 'nullable|string|max:255',
             'birth_day' => 'nullable|date',
             'gender' => 'nullable|in:ذكر,أنثى',
