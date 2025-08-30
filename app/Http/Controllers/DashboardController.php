@@ -132,7 +132,7 @@ class DashboardController extends Controller
      */
     public function shifts()
     {
-        $shifts = Shift::with('doctor')->paginate(10);
+        $shifts = Shift::with(['doctors.user', 'doctors.specialization'])->paginate(10);
 
         return view('dashboard.shifts.index', compact('shifts'));
     }

@@ -131,8 +131,8 @@
                                         <a href="{{ route('dashboard.shifts.edit', $shift->id) }}" class="text-yellow-600 hover:text-yellow-900" title="تعديل عام">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button class="text-red-600 hover:text-red-900" onclick="deleteShift({{ $shift->id }})" title="حذف">
-                                            <i class="fas fa-trash"></i>
+                                        <button class="text-red-600 hover:text-red-900" onclick="removeDoctorFromShift({{ $shift->id }}, {{ $doctor->id }})" title="إلغاء ارتباط الطبيب">
+                                            <i class="fas fa-unlink"></i>
                                         </button>
                                     </div>
                                 </td>
@@ -165,4 +165,38 @@
     </div>
 </div>
 
+@endsection
+
+@section('scripts')
+<script>
+function removeDoctorFromShift(shiftId, doctorId) {
+    if (confirm('هل أنت متأكد من إلغاء ارتباط هذا الطبيب بالشيفت؟')) {
+        fetch(`/dashboard/shifts/${shiftId}/update-doctor`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                days: [],
+                action: 'delete'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                window.location.reload();
+            } else {
+                alert('حدث خطأ: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء إلغاء الارتباط');
+        });
+    }
+}
+</script>
 @endsection
