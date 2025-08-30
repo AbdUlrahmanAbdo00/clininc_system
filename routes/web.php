@@ -35,7 +35,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard/doctors', [DashboardController::class, 'doctors'])->name('dashboard.doctors.index');
     Route::get('/dashboard/doctors/create', [DashboardController::class, 'doctorsCreate'])->name('dashboard.doctors.create');
     Route::get('/dashboard/doctors/{id}/edit', [DashboardController::class, 'doctorsEdit'])->name('dashboard.doctors.edit');
-    Route::post('/dashboard/doctors', [DashboardController::class, 'createDoctor'])->name('dashboard.doctors.store');
+Route::put('/dashboard/doctors/{id}', [DashboardController::class, 'doctorsUpdate'])->name('dashboard.doctors.update');
+Route::post('/dashboard/doctors', [DashboardController::class, 'createDoctor'])->name('dashboard.doctors.store');
 
     // إدارة الاختصاصات
     Route::get('/dashboard/specializations', [DashboardController::class, 'specializations'])->name('dashboard.specializations.index');

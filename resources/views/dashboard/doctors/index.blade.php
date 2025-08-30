@@ -50,6 +50,7 @@
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرقم الوطني</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">رقم الهاتف</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجنس</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">سعر الجلسة</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
                     </tr>
                 </thead>
@@ -69,6 +70,11 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $doctor->user->national_number ?? 'غير محدد' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $doctor->user->number ?? 'غير محدد' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $doctor->user->gender ?? 'غير محدد' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ ($doctor->price ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ ($doctor->price ?? 0) }} ريال
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-2">
                                 <a href="{{ route('dashboard.doctors.edit', $doctor->id) }}" class="text-teal-600 hover:text-teal-900">
@@ -79,7 +85,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                             لا توجد أطباء مسجلين حالياً
                         </td>
                     </tr>

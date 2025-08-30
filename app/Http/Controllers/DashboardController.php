@@ -126,9 +126,64 @@ class DashboardController extends Controller
      */
     public function doctorsEdit($id)
     {
-        $doctor = Doctors::findOrFail($id);
+        $doctor = Doctors::with(['user', 'specialization'])->findOrFail($id);
         $specializations = Specialization::all();
         return view('dashboard.doctors.edit', compact('doctor', 'specializations'));
+    }
+
+    /**
+     * تحديث بيانات الطبيب
+     */
+    public function doctorsUpdate(Request $request, $id)
+    {
+        $doctor = Doctors::with('user')->findOrFail($id);
+
+        $request->validate([
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
+            'number' => 'required|string|unique:users,number,' . $doctor->user_id,
+            'national_number' => 'nullable|string|max:255',
+            'birth_day' => 'nullable|date',
+            'gender' => 'nullable|in:ذكر,أنثى',
+            'specialization_id' => 'required|exists:specializations,id',
+            'consultation_duration' => 'nullable|integer|min:15|max:120',
+            'price' => 'required|numeric|min:0.01',
+            'bio' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // تحديث بيانات المستخدم
+            $doctor->user->update([
+                'first_name' => $request->first_name,
+                'middle_name' => $request->middle_name,
+                'last_name' => $request->last_name,
+                'number' => $request->number,
+                'national_number' => $request->national_number,
+                'birth_day' => $request->birth_day,
+                'gender' => $request->gender,
+            ]);
+
+            // تحديث بيانات الطبيب
+            $doctor->update([
+                'specialization_id' => $request->specialization_id,
+                'consultation_duration' => $request->consultation_duration ?? 30,
+                'price' => $request->price,
+                'bio' => $request->bio,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('dashboard.doctors.index')
+                ->with('success', 'تم تحديث بيانات الطبيب بنجاح');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث بيانات الطبيب: ' . $e->getMessage());
+        }
     }
 
     /**
