@@ -104,7 +104,7 @@
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-3">
                                                          <!-- Edit Days Button -->
-                             <button onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
+                             <button type="button" onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
                                      class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
                                  <i class="fas fa-edit"></i>
                                  <span>تعديل الأيام</span>
@@ -198,6 +198,20 @@
 #editDaysModal:not(.hidden) {
     display: block !important;
 }
+
+/* تأكيد إخفاء النافذة المنبثقة */
+#editDaysModal.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* تأكيد ظهور النافذة المنبثقة عند إزالة hidden */
+#editDaysModal.modal-active {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
 </style>
 @endpush
 
@@ -224,40 +238,65 @@ document.addEventListener('DOMContentLoaded', function() {
 function editDoctorDays(doctorId, currentDays) {
     console.log('Opening modal for doctor:', doctorId, 'with days:', currentDays);
     
-    // تعيين معرف الطبيب
-    document.getElementById('edit_doctor_id').value = doctorId;
+    try {
+        // تعيين معرف الطبيب
+        document.getElementById('edit_doctor_id').value = doctorId;
 
-    // إلغاء تحديد جميع الأيام أولاً
-    document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach(checkbox => {
-        checkbox.checked = false;
-    });
-
-    // تحديد الأيام الحالية
-    if (currentDays && Array.isArray(currentDays)) {
-        currentDays.forEach(day => {
-            const checkbox = document.querySelector(`#editDaysForm input[value="${day}"]`);
-            if (checkbox) {
-                checkbox.checked = true;
-                console.log('Checked day:', day);
-            }
+        // إلغاء تحديد جميع الأيام أولاً
+        document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach(checkbox => {
+            checkbox.checked = false;
         });
-    }
 
-    // إظهار النافذة المنبثقة
-    const modal = document.getElementById('editDaysModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        console.log('Modal should be visible now');
-    } else {
-        console.error('Modal not found!');
-        alert('خطأ: النافذة المنبثقة غير موجودة');
+        // تحديد الأيام الحالية
+        if (currentDays && Array.isArray(currentDays)) {
+            currentDays.forEach(day => {
+                const checkbox = document.querySelector(`#editDaysForm input[value="${day}"]`);
+                if (checkbox) {
+                    checkbox.checked = true;
+                    console.log('Checked day:', day);
+                }
+            });
+        }
+
+        // إظهار النافذة المنبثقة
+        const modal = document.getElementById('editDaysModal');
+        if (modal) {
+            // إزالة class hidden
+            modal.classList.remove('hidden');
+            
+            // تأكيد الظهور
+            modal.style.display = 'block';
+            modal.style.visibility = 'visible';
+            modal.style.opacity = '1';
+            
+            console.log('Modal should be visible now');
+            
+            // إضافة class للتحكم
+            modal.classList.add('modal-active');
+        } else {
+            console.error('Modal not found!');
+            alert('خطأ: النافذة المنبثقة غير موجودة');
+        }
+    } catch (error) {
+        console.error('Error in editDoctorDays:', error);
+        alert('حدث خطأ أثناء فتح النافذة المنبثقة');
     }
 }
 
 function closeEditModal() {
     const modal = document.getElementById('editDaysModal');
     if (modal) {
+        // إضافة class hidden
         modal.classList.add('hidden');
+        
+        // تأكيد الإخفاء
+        modal.style.display = 'none';
+        modal.style.visibility = 'hidden';
+        modal.style.opacity = '0';
+        
+        // إزالة class للتحكم
+        modal.classList.remove('modal-active');
+        
         console.log('Modal closed');
     }
 }
