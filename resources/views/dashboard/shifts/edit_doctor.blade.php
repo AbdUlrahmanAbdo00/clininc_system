@@ -109,13 +109,6 @@
                                  <i class="fas fa-edit"></i>
                                  <span>تعديل الأيام</span>
                              </button>
-                             
-                             <!-- Test Button -->
-                             <button onclick="testModal()" 
-                                     class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors flex items-center gap-2">
-                                 <i class="fas fa-bug"></i>
-                                 <span>اختبار</span>
-                             </button>
                             
                             <!-- Remove Relationship Button -->
                             <button onclick="removeDoctorRelationship({{ $doctor->id }}, '{{ $doctor->user->first_name }} {{ $doctor->user->last_name }}', '{{ $doctor->shift_info['shift_type'] ?? 'غير محدد' }}')" 
@@ -138,12 +131,12 @@
 </div>
 
 <!-- Edit Days Modal -->
-<div id="editDaysModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 z-50" style="display: none;">
+<div id="editDaysModal" class="fixed inset-0 bg-black bg-opacity-50 z-[9999] hidden">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-2xl">
-            <div class="flex items-center justify-between mb-4">
+        <div class="bg-white rounded-lg p-6 w-96 max-w-full shadow-2xl border-2 border-blue-200">
+            <div class="flex items-center justify-between mb-4 border-b pb-2">
                 <h3 class="text-lg font-semibold text-gray-900">تعديل أيام العمل</h3>
-                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 p-1">
+                <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
@@ -156,20 +149,20 @@
                     <label class="block text-sm font-medium text-gray-700 mb-3">اختر أيام العمل الجديدة</label>
                     <div class="grid grid-cols-2 gap-2">
                         @foreach(['Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday'] as $day)
-                        <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
-                            <input type="checkbox" name="days[]" value="{{ $day }}" class="mr-2 h-4 w-4 text-blue-600">
-                            <span class="text-sm">{{ $arabicDays[$day] }}</span>
+                        <label class="flex items-center p-3 hover:bg-blue-50 rounded-lg cursor-pointer border border-gray-200 hover:border-blue-300 transition-colors">
+                            <input type="checkbox" name="days[]" value="{{ $day }}" class="mr-3 h-5 w-5 text-blue-600 rounded">
+                            <span class="text-sm font-medium">{{ $arabicDays[$day] }}</span>
                         </label>
                         @endforeach
                     </div>
                 </div>
                 
-                <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <div class="flex gap-3 pt-2">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
                         <i class="fas fa-save ml-2"></i>
                         حفظ التغييرات
                     </button>
-                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                    <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors font-medium">
                         إلغاء
                     </button>
                 </div>
@@ -179,6 +172,34 @@
 </div>
 
 @endsection
+
+@push('styles')
+<style>
+#editDaysModal {
+    transition: all 0.3s ease;
+}
+
+#editDaysModal .bg-white {
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* تأكيد ظهور النافذة المنبثقة */
+#editDaysModal:not(.hidden) {
+    display: block !important;
+}
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -224,32 +245,24 @@ function editDoctorDays(doctorId, currentDays) {
 
     // إظهار النافذة المنبثقة
     const modal = document.getElementById('editDaysModal');
-    modal.style.display = 'block';
-    console.log('Modal should be visible now');
+    if (modal) {
+        modal.classList.remove('hidden');
+        console.log('Modal should be visible now');
+    } else {
+        console.error('Modal not found!');
+        alert('خطأ: النافذة المنبثقة غير موجودة');
+    }
 }
 
 function closeEditModal() {
     const modal = document.getElementById('editDaysModal');
-    modal.style.display = 'none';
-    console.log('Modal closed');
-}
-
-function testModal() {
-    console.log('Testing modal...');
-    const modal = document.getElementById('editDaysModal');
     if (modal) {
-        console.log('Modal found, showing...');
-        modal.style.display = 'block';
-        
-        // تعيين أيام تجريبية
-        document.getElementById('edit_doctor_id').value = 'test';
-        document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach((checkbox, index) => {
-            checkbox.checked = index % 2 === 0; // تحديد أيام زوجية للاختبار
-        });
-    } else {
-        console.error('Modal not found!');
+        modal.classList.add('hidden');
+        console.log('Modal closed');
     }
 }
+
+
 
 function removeDoctorRelationship(doctorId, doctorName, shiftType) {
     if (confirm(`هل أنت متأكد من حذف الصلة بين الطبيب "${doctorName}" والشيفت "${shiftType}"؟`)) {
