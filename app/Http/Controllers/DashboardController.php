@@ -358,19 +358,24 @@ class DashboardController extends Controller
             $action = $request->action;
 
             if ($action === 'delete') {
-                // إلغاء الارتباط
+                // إلغاء الارتباط - حذف العلاقة من جدول pivot
                 $shift->doctors()->detach($doctorId);
                 $message = 'تم إلغاء ارتباط الطبيب بالشيفت بنجاح';
+                
             } elseif ($action === 'add') {
-                // إضافة ارتباط جديد
-                $shift->doctors()->attach($doctorId, ['days' => json_encode($days)]);
+                // إضافة ارتباط جديد - استخدام syncWithoutDetaching لتجنب Duplicate entry
+                $shift->doctors()->syncWithoutDetaching([
+                    $doctorId => ['days' => json_encode($days)]
+                ]);
                 $message = 'تم إضافة الطبيب للشيفت بنجاح';
+                
             } else {
-                // تحديث الأيام
-                $existing = $shift->doctors()->where('doctor_id', $doctorId)->first();
-
-                if ($existing) {
-                    $shift->doctors()->updateExistingPivot($doctorId, ['days' => json_encode($days)]);
+                // تحديث الأيام - التحقق من وجود العلاقة أولاً
+                if ($shift->doctors()->where('doctors.id', $doctorId)->exists()) {
+                    // تحديث البيانات في جدول pivot
+                    $shift->doctors()->updateExistingPivot($doctorId, [
+                        'days' => json_encode($days)
+                    ]);
                     $message = 'تم تحديث أيام الشيفت للطبيب بنجاح';
                 } else {
                     return response()->json([
