@@ -97,13 +97,14 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $patient->user->created_at ? \Carbon\Carbon::parse($patient->user->created_at)->format('Y-m-d') : 'لا توجد زيارات' }}
+                            {{ $patient->appointments_max_date ? \Carbon\Carbon::parse($patient->appointments_max_date)->format('Y-m-d') : 'لا توجد زيارات' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-2">
-                                <a href="{{ route('dashboard.patients.edit', $patient->id) }}" class="text-teal-600 hover:text-teal-900">
-                                    <i class="fas fa-edit"></i>
-                                </a>
+                                <button onclick="showRechargeModal({{ $patient->id }}, '{{ $patient->user->first_name . ' ' . $patient->user->last_name }}', {{ $patient->user->balance ?? 0 }})" 
+                                        class="text-blue-600 hover:text-blue-900" title="شحن الرصيد">
+                                    <i class="fas fa-credit-card"></i>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -124,6 +125,45 @@
             {{ $patients->links() }}
         </div>
         @endif
+    </div>
+</div>
+
+<!-- Modal شحن الرصيد -->
+<div id="rechargeModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white rounded-lg p-6 w-96">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">شحن رصيد المريض</h3>
+            <form id="rechargeForm">
+                @csrf
+                <input type="hidden" id="recharge_patient_id" name="patient_id">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">اسم المريض</label>
+                    <input type="text" id="recharge_patient_name" class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100" readonly>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">الرصيد الحالي</label>
+                    <input type="text" id="recharge_current_balance" class="w-full border border-gray-300 rounded-lg px-4 py-2 bg-gray-100" readonly>
+                </div>
+                
+                <div class="mb-4">
+                    <label for="recharge_amount" class="block text-sm font-medium text-gray-700 mb-2">مبلغ الشحن</label>
+                    <input type="number" name="amount" id="recharge_amount" 
+                           class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                           placeholder="أدخل المبلغ" min="1" step="0.01" required>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        شحن الرصيد
+                    </button>
+                    <button type="button" onclick="closeRechargeModal()" class="flex-1 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                        إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 @endsection
@@ -148,5 +188,59 @@
         });
         document.addEventListener('dashboard:search', applyFilter);
     })();
+    
+    // دوال شحن الرصيد
+    function showRechargeModal(patientId, patientName, currentBalance) {
+        document.getElementById('recharge_patient_id').value = patientId;
+        document.getElementById('recharge_patient_name').value = patientName;
+        document.getElementById('recharge_current_balance').value = currentBalance + ' ريال';
+        document.getElementById('recharge_amount').value = '';
+        document.getElementById('rechargeModal').classList.remove('hidden');
+    }
+    
+    function closeRechargeModal() {
+        document.getElementById('rechargeModal').classList.add('hidden');
+    }
+    
+    // معالجة نموذج شحن الرصيد
+    document.getElementById('rechargeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const patientId = formData.get('patient_id');
+        const amount = formData.get('amount');
+        
+        if (!amount || amount <= 0) {
+            alert('يرجى إدخال مبلغ صحيح');
+            return;
+        }
+        
+        // إرسال طلب شحن الرصيد
+        fetch(`/dashboard/patients/${patientId}/recharge`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                amount: parseFloat(amount)
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                closeRechargeModal();
+                window.location.reload(); // إعادة تحميل الصفحة لتحديث البيانات
+            } else {
+                alert('حدث خطأ: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء شحن الرصيد');
+        });
+    });
 </script>
 @endpush

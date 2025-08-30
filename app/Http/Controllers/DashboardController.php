@@ -610,4 +610,35 @@ class DashboardController extends Controller
                 ->with('error', 'حدث خطأ أثناء تحديث بيانات المريض: ' . $e->getMessage());
         }
     }
+
+    /**
+     * شحن رصيد مريض
+     */
+    public function patientsRecharge(Request $request, $id)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+        ]);
+
+        try {
+            $patient = Patients::findOrFail($id);
+            $user = $patient->user;
+            
+            // إضافة المبلغ إلى الرصيد الحالي
+            $currentBalance = $user->balance ?? 0;
+            $newBalance = $currentBalance + $request->amount;
+            
+            $user->update(['balance' => $newBalance]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'تم شحن الرصيد بنجاح. الرصيد الجديد: ' . $newBalance . ' ريال'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء شحن الرصيد: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
