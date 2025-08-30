@@ -58,10 +58,11 @@
                                     </div>
                                     <div>
                                         <h4 class="font-semibold text-gray-900 text-lg">
-                                            {{ $doctor->shift->shift_type }}
+                                            {{ $doctor->shift_info['shift_type'] ?? 'غير محدد' }}
                                         </h4>
                                         <p class="text-sm text-gray-600">
-                                            {{ \Carbon\Carbon::parse($doctor->shift->start_time)->format('H:i') }} - {{ \Carbon\Carbon::parse($doctor->shift->end_time)->format('H:i') }}
+                                            {{ isset($doctor->shift_info['start_time']) ? \Carbon\Carbon::parse($doctor->shift_info['start_time'])->format('H:i') : '-' }} - 
+                                            {{ isset($doctor->shift_info['end_time']) ? \Carbon\Carbon::parse($doctor->shift_info['end_time'])->format('H:i') : '-' }}
                                         </p>
                                     </div>
                                 </div>
@@ -106,7 +107,7 @@
                             </button>
                             
                             <!-- Remove Relationship Button -->
-                            <button onclick="removeDoctorRelationship({{ $doctor->id }}, '{{ $doctor->user->first_name }} {{ $doctor->user->last_name }}', '{{ $doctor->shift->shift_type }}')" 
+                            <button onclick="removeDoctorRelationship({{ $doctor->id }}, '{{ $doctor->user->first_name }} {{ $doctor->user->last_name }}', '{{ $doctor->shift_info['shift_type'] ?? 'غير محدد' }}')" 
                                     class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
                                 <i class="fas fa-unlink"></i>
                                 <span>حذف الصلة</span>
