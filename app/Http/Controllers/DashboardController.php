@@ -274,7 +274,7 @@ class DashboardController extends Controller
     /**
      * تحديث بيانات الشيفت نفسه
      */
-    ppublic function shiftsUpdateData(Request $request, $id)
+    public function shiftsUpdateData(Request $request, $id)
     {
         try {
             // التحقق من صحة البيانات
