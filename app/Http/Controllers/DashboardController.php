@@ -248,6 +248,13 @@ class DashboardController extends Controller
     public function shiftsEditData($id)
     {
         $shift = Shift::findOrFail($id);
+        
+        // تنسيق الوقت للتأكد من عرضه بشكل صحيح في input type="time"
+        $shift->start_time = \Carbon\Carbon::parse($shift->start_time)->format('H:i');
+        $shift->end_time = \Carbon\Carbon::parse($shift->end_time)->format('H:i');
+        $shift->start_break_time = \Carbon\Carbon::parse($shift->start_break_time)->format('H:i');
+        $shift->end_break_time = \Carbon\Carbon::parse($shift->end_break_time)->format('H:i');
+        
         return view('dashboard.shifts.edit_data', compact('shift'));
     }
 

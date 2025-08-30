@@ -196,43 +196,45 @@
 
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
-// إضافة شيفت جديد للطبيب
-document.getElementById('addShiftForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const days = Array.from(formData.getAll('days'));
-    
-    if (days.length === 0) {
-        alert('يرجى اختيار يوم واحد على الأقل');
-        return;
-    }
-    
-    // إضافة طبيب لشيفت جديد
-    const doctorId = {{ $shiftDoctors->count() > 0 ? $shiftDoctors->first()->id : 'null' }};
-    if (doctorId) {
-        updateDoctorShift(formData.get('shift_id'), doctorId, days, 'add');
-    } else {
-        alert('لا يمكن إضافة شيفت جديد - لا يوجد طبيب محدد');
-    }
-});
+document.addEventListener('DOMContentLoaded', function() {
+    // إضافة شيفت جديد للطبيب
+    document.getElementById('addShiftForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const days = Array.from(formData.getAll('days'));
+        
+        if (days.length === 0) {
+            showMessage('يرجى اختيار يوم واحد على الأقل', 'error');
+            return;
+        }
+        
+        // إضافة طبيب لشيفت جديد
+        const doctorId = {{ $shiftDoctors->count() > 0 ? $shiftDoctors->first()->id : 'null' }};
+        if (doctorId) {
+            updateDoctorShift(formData.get('shift_id'), doctorId, days, 'add');
+        } else {
+            showMessage('لا يمكن إضافة شيفت جديد - لا يوجد طبيب محدد', 'error');
+        }
+    });
 
-// تعديل أيام الطبيب
-document.getElementById('editDaysForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    const days = Array.from(formData.getAll('days'));
-    
-    if (days.length === 0) {
-        alert('يرجى اختيار يوم واحد على الأقل');
-        return;
-    }
-    
-    updateDoctorShift({{ $shift->id }}, formData.get('doctor_id'), days, 'update');
-    closeEditModal();
+    // تعديل أيام الطبيب
+    document.getElementById('editDaysForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const days = Array.from(formData.getAll('days'));
+        
+        if (days.length === 0) {
+            showMessage('يرجى اختيار يوم واحد على الأقل', 'error');
+            return;
+        }
+        
+        updateDoctorShift({{ $shift->id }}, formData.get('doctor_id'), days, 'update');
+        closeEditModal();
+    });
 });
 
 function editDoctorDays(doctorId, currentDays) {
@@ -264,32 +266,83 @@ function removeDoctor(doctorId) {
     }
 }
 
-function updateDoctorShift(shiftId, doctorId, days, action) {
-    fetch(`/dashboard/shifts/${shiftId}/update-doctor`, {
-        method: 'PUT',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            doctor_id: doctorId,
-            days: days,
-            action: action
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
+async function updateDoctorShift(shiftId, doctorId, days, action) {
+    try {
+        const response = await fetch(`/dashboard/shifts/${shiftId}/update-doctor`, {
+            method: 'PUT',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                doctor_id: doctorId,
+                days: days,
+                action: action
+            })
+        });
+
+        const data = await response.json();
+        
         if (data.success) {
-            alert(data.message);
-            window.location.reload();
+            showMessage(data.message, 'success');
+            // إعادة تحميل الصفحة بعد ثانيتين
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         } else {
-            alert('حدث خطأ: ' + data.message);
+            showMessage('حدث خطأ: ' + data.message, 'error');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error:', error);
-        alert('حدث خطأ أثناء تحديث البيانات');
-    });
+        showMessage('حدث خطأ أثناء تحديث البيانات', 'error');
+    }
+}
+
+function showMessage(message, type) {
+    // إزالة الرسائل السابقة
+    const existingMessage = document.querySelector('.message-toast');
+    if (existingMessage) {
+        existingMessage.remove();
+    }
+    
+    // إنشاء رسالة جديدة
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message-toast fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+    
+    if (type === 'success') {
+        messageDiv.className += ' bg-green-500 text-white';
+        messageDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-check-circle ml-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+    } else {
+        messageDiv.className += ' bg-red-500 text-white';
+        messageDiv.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-circle ml-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+    }
+    
+    document.body.appendChild(messageDiv);
+    
+    // عرض الرسالة
+    setTimeout(() => {
+        messageDiv.classList.remove('translate-x-full');
+    }, 100);
+    
+    // إخفاء الرسالة بعد 3 ثوان
+    setTimeout(() => {
+        messageDiv.classList.add('translate-x-full');
+        setTimeout(() => {
+            if (messageDiv.parentNode) {
+                messageDiv.remove();
+            }
+        }, 300);
+    }, 3000);
 }
 </script>
-@endsection
+@endpush
