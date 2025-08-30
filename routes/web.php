@@ -42,6 +42,7 @@ Route::post('/dashboard/doctors', [DashboardController::class, 'createDoctor'])-
     Route::get('/dashboard/specializations', [DashboardController::class, 'specializations'])->name('dashboard.specializations.index');
     Route::get('/dashboard/specializations/create', [DashboardController::class, 'specializationsCreate'])->name('dashboard.specializations.create');
     Route::get('/dashboard/specializations/{id}/edit', [DashboardController::class, 'specializationsEdit'])->name('dashboard.specializations.edit');
+    Route::put('/dashboard/specializations/{id}', [DashboardController::class, 'specializationsUpdate'])->name('dashboard.specializations.update');
     Route::post('/dashboard/specializations', [DashboardController::class, 'createSpecialization'])->name('dashboard.specializations.store');
     Route::get('/dashboard/specializations-api', [DashboardController::class, 'getAllSpecializations'])->name('dashboard.specializations.api');
 

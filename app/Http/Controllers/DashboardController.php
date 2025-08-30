@@ -213,6 +213,43 @@ class DashboardController extends Controller
     }
 
     /**
+     * تحديث بيانات الاختصاص
+     */
+    public function specializationsUpdate(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|unique:specializations,name,' . $id,
+            'image' => 'nullable|mimetypes:image/jpeg,image/png,image/jpg,image/gif,image/svg+xml|max:2048',
+        ]);
+
+        try {
+            $specialization = Specialization::findOrFail($id);
+            
+            // تحديث الاسم
+            $specialization->name = $request->name;
+            
+            // تحديث الصورة إذا تم رفع صورة جديدة
+            if ($request->hasFile('image')) {
+                $cloudinary = app(Cloudinary::class);
+                $uploaded = $cloudinary->uploadApi()->upload(
+                    $request->file('image')->getRealPath(),
+                    ['folder' => 'specializations']
+                );
+                $specialization->path = $uploaded['secure_url'];
+            }
+            
+            $specialization->save();
+
+            return redirect()->route('dashboard.specializations.index')
+                ->with('success', 'تم تحديث بيانات الاختصاص بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'حدث خطأ أثناء تحديث بيانات الاختصاص: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * عرض صفحة الشيفتات
      */
     public function shifts()

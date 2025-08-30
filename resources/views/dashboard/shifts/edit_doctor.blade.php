@@ -101,23 +101,23 @@
                             </div>
                         </div>
                         
-                        <!-- Action Buttons -->
-                        <div class="flex items-center gap-3">
-                                                         <!-- Edit Days Button -->
+                                                 <!-- Action Buttons -->
+                         <div class="flex items-center gap-3">
+                             <!-- Edit Days Button - معلق مؤقتاً -->
                              <button type="button" 
-                                     onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
-                                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                                     disabled
+                                     class="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed flex items-center gap-2 opacity-50">
                                  <i class="fas fa-edit"></i>
-                                 <span>تعديل الأيام</span>
+                                 <span>تعديل الأيام (معلق)</span>
                              </button>
-                            
-                            <!-- Remove Relationship Button -->
-                            <button onclick="removeDoctorRelationship({{ $doctor->id }}, '{{ $doctor->user->first_name }} {{ $doctor->user->last_name }}', '{{ $doctor->shift_info['shift_type'] ?? 'غير محدد' }}')" 
-                                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2">
-                                <i class="fas fa-unlink"></i>
-                                <span>حذف الصلة</span>
-                            </button>
-                        </div>
+                             
+                             <!-- Remove Relationship Button - معلق مؤقتاً -->
+                             <button disabled
+                                     class="bg-gray-400 text-white px-4 py-2 rounded-lg cursor-not-allowed flex items-center gap-2 opacity-50">
+                                 <i class="fas fa-unlink"></i>
+                                 <span>حذف الصلة (معلق)</span>
+                             </button>
+                         </div>
                     </div>
                 </div>
                 @endforeach

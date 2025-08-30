@@ -43,7 +43,7 @@ class PatientsController extends Controller
             'message' => $translator->translate('User data retrieved successfully.'),
             'data' => [
                 'id' => $user->id,
-                'patient_id'=> $patient->id,
+                'patient_id' => $patient->id,
                 'balance' => $user->balance,
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name,
@@ -80,7 +80,7 @@ class PatientsController extends Controller
             'data' => [
                 'id' => $user->id,
                 'balance' => $user->balance,
-                'patient_id'=> $patient->id,
+                'patient_id' => $patient->id,
 
                 'first_name' => $user->first_name,
                 'middle_name' => $user->middle_name,
@@ -250,7 +250,7 @@ class PatientsController extends Controller
 
         $medicines = $patient && $patient->medicineSchedule
             ? $patient->medicineSchedule()
-            ->with('medicine') 
+            ->with('medicine')
             ->get()
             ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
             ->map(function ($record) {
@@ -259,7 +259,7 @@ class PatientsController extends Controller
                     'quantity'              => $record->quantity,
                     'number_of_taken_doses' => $record->number_of_taken_doses,
                     'rest_time'             => $record->rest_time,
-                    'last_time_has_taken'   =>$record->last_time_has_taken ?: "لم يأخذ أي جرعة بعد",
+                    'last_time_has_taken'   => $record->last_time_has_taken ?: "لم يأخذ أي جرعة بعد",
                 ];
             })
             ->values()
@@ -287,7 +287,7 @@ class PatientsController extends Controller
                 'quantity'              => $medicine['quantity'],
                 'number_of_taken_doses' => $medicine['number_of_taken_doses'],
                 'rest_time'             => $medicine['rest_time'],
-                'last_time_has_taken'   =>$medicine['last_time_has_taken'],
+                'last_time_has_taken'   => $medicine['last_time_has_taken'],
             ];
         }, $medicines);
 
@@ -335,7 +335,9 @@ class PatientsController extends Controller
                     'number_of_taken_doses' => $record->number_of_taken_doses,
                     'rest_time'             => $record->rest_time,
 
-                    'last_time_has_taken' => $record->last_time_has_taken ?? 'لم يأخذ أي جرعة بعد',
+                    'last_time_has_taken' => $record->last_time_has_taken
+                        ? Carbon::parse($record->last_time_has_taken)->format('d/m/Y H:i')
+                        : 'لم يأخذ أي جرعة بعد',
                 ];
             })
             ->values()
@@ -368,16 +370,16 @@ class PatientsController extends Controller
     {
         $lan = $request->header('lan', 'en');
         $translator = new GoogleTranslate($lan);
-    
+
         $user = auth('sanctum')->user();
-    
+
         if (!$user) {
             return response()->json([
                 'success' => false,
                 'message' => $translator->translate('Unauthorized')
             ], 401);
         }
-    
+
         $patient = Patients::where('user_id', $user->id)->first();
         if (!$patient) {
             return response()->json([
@@ -385,32 +387,32 @@ class PatientsController extends Controller
                 'message' => $translator->translate('Patient not found.')
             ], 404);
         }
-    
+
         $request->validate([
             'MedicineSchedules_id' => 'required|exists:medicine_schedules,id'
         ]);
-    
+
         $medical = MedicineSchedules::find($request->MedicineSchedules_id);
-    
+
         if ($medical->number_of_taken_doses < $medical->quantity) {
             $medical->number_of_taken_doses++;
-            $medical->last_time_has_taken = now();
+            $medical->last_time_has_taken = now()->addHours(3);
             $medical->save();
-    
+
             // ✅ إذا وصل لآخر جرعة ابعت إشعار للدكتور
             if ($medical->number_of_taken_doses == $medical->quantity) {
                 $doctor = $medical->doctor; // لازم يكون عندك علاقة doctor بالـ MedicineSchedules
                 if ($doctor && $doctor->user) {
                     $firebaseService = app(\App\Services\FirebaseService::class);
                     $tokens = $doctor->user->fcmTokens()->pluck('token');
-    
+
                     foreach ($tokens as $token) {
                         try {
                             $firebaseService->sendNotification(
                                 $token,
                                 $translator->translate('انتهاء الدواء'),
                                 $translator->translate('المريض ') . $patient->user->name .
-                                $translator->translate(' أنهى جميع جرعات دوائه. يرجى المتابعة معه.')
+                                    $translator->translate(' أنهى جميع جرعات دوائه. يرجى المتابعة معه.')
                             );
                         } catch (\Kreait\Firebase\Exception\Messaging\NotFound $e) {
                             \App\Models\FcmToken::where('token', $token)->delete();
@@ -420,14 +422,14 @@ class PatientsController extends Controller
                     }
                 }
             }
-    
+
             return response()->json([
                 'success' => true,
                 'message' => $translator->translate('💚  Wishing you good health.'),
                 'data' => [
                     'current_taken' => $medical->number_of_taken_doses,
                     'total_quantity' => $medical->quantity,
-                    'time'=> $medical->last_time_has_taken
+                    'time' => $medical->last_time_has_taken
                 ]
             ]);
         } else {
@@ -437,10 +439,9 @@ class PatientsController extends Controller
                 'data' => [
                     'current_taken' => $medical->number_of_taken_doses,
                     'total_quantity' => $medical->quantity,
-                    'time'=> $medical->last_time_has_taken,
+                    'time' => $medical->last_time_has_taken,
                 ]
             ]);
         }
     }
-    
 }
