@@ -259,9 +259,10 @@ class PatientsController extends Controller
                     'quantity'              => $record->quantity,
                     'number_of_taken_doses' => $record->number_of_taken_doses,
                     'rest_time'             => $record->rest_time,
-'last_time_has_taken' => $record->last_time_has_taken
-    ? Carbon::parse($record->last_time_has_taken)->toIso8601String()
-    : 'لم يأخذ أي جرعة بعد',                ];
+                    'last_time_has_taken' => $record->last_time_has_taken 
+                        ? str_replace(' ', 'T', $record->last_time_has_taken) . 'Z'
+                        : 'لم يأخذ أي جرعة بعد',
+                ];
             })
             ->values()
             ->toArray()
@@ -329,6 +330,7 @@ class PatientsController extends Controller
             ->get()
             ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
             ->map(function ($record) {
+
                 return [
                     'medicine_name'         => $record->medicine->name,
                     'medicine_id'           => $record->id,
@@ -336,10 +338,10 @@ class PatientsController extends Controller
                     'number_of_taken_doses' => $record->number_of_taken_doses,
                     'rest_time'             => $record->rest_time,
 
-         
-'last_time_has_taken' => $record->last_time_has_taken
-? Carbon::parse($record->last_time_has_taken)->toIso8601String()
-: 'لم يأخذ أي جرعة بعد',
+
+                  'last_time_has_taken' => $record->last_time_has_taken 
+                        ? str_replace(' ', 'T', $record->last_time_has_taken) . 'Z'
+                        : 'لم يأخذ أي جرعة بعد ',
                 ];
             })
             ->values()
