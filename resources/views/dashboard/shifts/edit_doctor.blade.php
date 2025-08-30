@@ -100,7 +100,7 @@
                         <!-- Action Buttons -->
                         <div class="flex items-center gap-3">
                             <!-- Edit Days Button -->
-                            <button onclick="editDoctorDays({{ $doctor->id }}, {{ json_encode($days) }})" 
+                            <button onclick="editDoctorDays({{ $doctor->id }}, @json($days))" 
                                     class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
                                 <i class="fas fa-edit"></i>
                                 <span>تعديل الأيام</span>
@@ -192,17 +192,22 @@ document.addEventListener('DOMContentLoaded', function() {
 function editDoctorDays(doctorId, currentDays) {
     document.getElementById('edit_doctor_id').value = doctorId;
     
+    // إلغاء تحديد جميع الأيام أولاً
     document.querySelectorAll('#editDaysForm input[name="days[]"]').forEach(checkbox => {
         checkbox.checked = false;
     });
     
-    if (currentDays) {
+    // تحديد الأيام الحالية
+    if (currentDays && Array.isArray(currentDays)) {
         currentDays.forEach(day => {
             const checkbox = document.querySelector(`#editDaysForm input[value="${day}"]`);
-            if (checkbox) checkbox.checked = true;
+            if (checkbox) {
+                checkbox.checked = true;
+            }
         });
     }
     
+    // إظهار النافذة المنبثقة
     document.getElementById('editDaysModal').classList.remove('hidden');
 }
 
