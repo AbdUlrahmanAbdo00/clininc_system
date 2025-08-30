@@ -2,7 +2,7 @@
 
 @section('title', 'تعديل ارتباط الطبيب بالشيفت - مركز صحي')
 @section('page-title', 'تعديل ارتباط الطبيب بالشيفت')
-@section('page-description', 'تعديل الأطباء المسند إليهم الشيفت والأيام')
+@section('page-description', 'تعديل الشيفتات المرتبطة بالطبيب والأيام')
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6">
@@ -10,7 +10,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">تعديل ارتباط الطبيب بالشيفت</h2>
-            <p class="text-gray-600">الشيفت: {{ $shift->shift_type }} ({{ $shift->start_time }} - {{ $shift->end_time }})</p>
+            <p class="text-gray-600">الطبيب: {{ $shiftDoctors->first()->user->first_name . ' ' . $shiftDoctors->first()->user->last_name ?? 'غير محدد' }}</p>
         </div>
         <a href="{{ route('dashboard.shifts.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
             <i class="fas fa-arrow-right ml-2"></i>
@@ -18,18 +18,17 @@
         </a>
     </div>
 
-    <!-- Current Doctors -->
+    <!-- Current Shifts for Doctor -->
     <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">الأطباء المسند إليهم حالياً</h3>
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">الشيفتات المرتبطة بالطبيب حالياً</h3>
         @if($shiftDoctors->count() > 0)
             <div class="space-y-3">
                 @foreach($shiftDoctors as $doctor)
                 <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                     <div class="flex items-center">
-                        <img class="h-10 w-10 rounded-full" src="https://ui-avatars.com/api/?name={{ urlencode($doctor->user->first_name . ' ' . $doctor->user->last_name) }}&background=0D9488&color=fff" alt="">
                         <div class="mr-4">
-                            <div class="text-sm font-medium text-gray-900">{{ $doctor->user->first_name . ' ' . $doctor->user->last_name }}</div>
-                            <div class="text-sm text-gray-500">{{ $doctor->specialization->name ?? 'غير محدد' }}</div>
+                            <div class="text-sm font-medium text-gray-900">{{ $shift->shift_type }}</div>
+                            <div class="text-sm text-gray-500">{{ $shift->start_time }} - {{ $shift->end_time }}</div>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -65,28 +64,28 @@
         @else
             <div class="text-center py-8 text-gray-500">
                 <i class="fas fa-info-circle text-2xl mb-2"></i>
-                <p>لا يوجد أطباء مسند إليهم هذا الشيفت حالياً</p>
+                <p>لا يوجد شيفتات مرتبطة بهذا الطبيب حالياً</p>
             </div>
         @endif
     </div>
 
-    <!-- Add New Doctor -->
+    <!-- Add New Shift for Doctor -->
     <div class="bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">إضافة طبيب جديد للشيفت</h3>
-        <form id="addDoctorForm">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">إضافة شيفت جديد للطبيب</h3>
+        <form id="addShiftForm">
             @csrf
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Doctor Selection -->
+                <!-- Shift Selection -->
                 <div>
-                    <label for="doctor_id" class="block text-sm font-medium text-gray-700 mb-2">اختر الطبيب</label>
-                    <select name="doctor_id" id="doctor_id" 
+                    <label for="shift_id" class="block text-sm font-medium text-gray-700 mb-2">اختر الشيفت</label>
+                    <select name="shift_id" id="shift_id" 
                             class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent" required>
-                        <option value="">اختر الطبيب</option>
-                        @foreach($doctors as $doctor)
-                            @if(!$shiftDoctors->contains('id', $doctor->id))
-                                <option value="{{ $doctor->id }}">
-                                    {{ $doctor->user->first_name . ' ' . $doctor->user->last_name }} - {{ $doctor->specialization->name ?? 'غير محدد' }}
+                        <option value="">اختر الشيفت</option>
+                        @foreach($shifts as $shiftOption)
+                            @if(!$shiftDoctors->contains('id', $shiftOption->id))
+                                <option value="{{ $shiftOption->id }}">
+                                    {{ $shiftOption->shift_type }} ({{ $shiftOption->start_time }} - {{ $shiftOption->end_time }})
                                 </option>
                             @endif
                         @endforeach
@@ -132,7 +131,7 @@
             <div class="mt-4">
                 <button type="submit" class="bg-teal-600 text-white px-6 py-2 rounded-lg hover:bg-teal-700 transition-colors">
                     <i class="fas fa-plus ml-2"></i>
-                    إضافة الطبيب للشيفت
+                    إضافة الشيفت للطبيب
                 </button>
             </div>
         </form>
@@ -199,8 +198,8 @@
 
 @section('scripts')
 <script>
-// إضافة طبيب جديد
-document.getElementById('addDoctorForm').addEventListener('submit', function(e) {
+// إضافة شيفت جديد للطبيب
+document.getElementById('addShiftForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
@@ -211,7 +210,7 @@ document.getElementById('addDoctorForm').addEventListener('submit', function(e) 
         return;
     }
     
-    updateDoctorShift({{ $shift->id }}, formData.get('doctor_id'), days, 'update');
+    updateDoctorShift(formData.get('shift_id'), {{ $shiftDoctors->first()->id }}, days, 'update');
 });
 
 // تعديل أيام الطبيب

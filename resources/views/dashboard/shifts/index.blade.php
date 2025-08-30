@@ -19,30 +19,7 @@
             إضافة شيفت جديد
         </a>
     </div>
-    
-    <!-- Search and Filter -->
-    <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex gap-4">
-            <div class="flex-1">
-                <input type="text" placeholder="البحث عن شيفت..." 
-                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-            </div>
-            <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                <option value="">جميع الأطباء</option>
-            </select>
-            <select class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-teal-500 focus:border-transparent">
-                <option value="">جميع الأيام</option>
-                <option value="الأحد">الأحد</option>
-                <option value="الاثنين">الاثنين</option>
-                <option value="الثلاثاء">الثلاثاء</option>
-                <option value="الأربعاء">الأربعاء</option>
-                <option value="الخميس">الخميس</option>
-                <option value="الجمعة">الجمعة</option>
-                <option value="السبت">السبت</option>
-            </select>
-        </div>
-    </div>
-    
+
     <!-- Shifts Table -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="overflow-x-auto">
@@ -128,9 +105,7 @@
                                         <a href="{{ route('dashboard.shifts.edit_doctor', $shift->id) }}" class="text-blue-600 hover:text-blue-900" title="تعديل الأطباء والأيام">
                                             <i class="fas fa-user-edit"></i>
                                         </a>
-                                        <a href="{{ route('dashboard.shifts.edit', $shift->id) }}" class="text-yellow-600 hover:text-yellow-900" title="تعديل عام">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
+
                                         <button class="text-red-600 hover:text-red-900" onclick="removeDoctorFromShift({{ $shift->id }}, {{ $doctor->id }})" title="إلغاء ارتباط الطبيب">
                                             <i class="fas fa-unlink"></i>
                                         </button>
