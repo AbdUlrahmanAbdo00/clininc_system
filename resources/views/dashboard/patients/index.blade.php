@@ -64,6 +64,9 @@
                             آخر زيارة
                         </th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            الرصيد
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                             الإجراءات
                         </th>
                     </tr>
@@ -99,18 +102,27 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $patient->appointments_max_date ? \Carbon\Carbon::parse($patient->appointments_max_date)->format('Y-m-d') : 'لا توجد زيارات' }}
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ ($patient->user->balance ?? 0) > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ ($patient->user->balance ?? 0) }} ريال
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex gap-2">
                                 <button onclick="showRechargeModal({{ $patient->id }}, '{{ $patient->user->first_name . ' ' . $patient->user->last_name }}', {{ $patient->user->balance ?? 0 }})" 
                                         class="text-blue-600 hover:text-blue-900" title="شحن الرصيد">
                                     <i class="fas fa-credit-card"></i>
                                 </button>
+                                <a href="{{ route('dashboard.patients.edit', $patient->id) }}" 
+                                   class="text-teal-600 hover:text-teal-900" title="تعديل بيانات المريض">
+                                    <i class="fas fa-edit"></i>
+                                </a>
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                             لا توجد مرضى مسجلين حالياً
                         </td>
                     </tr>
