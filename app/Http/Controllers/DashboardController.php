@@ -44,7 +44,7 @@ class DashboardController extends Controller
         $patientStats = [
             'total' => Patients::count(),
             'new_this_month' => Patients::whereMonth('created_at', now()->month)->count(),
-            'active' => Patients::whereHas('appointments', function($query) {
+            'active' => Patients::whereHas('appointments', function ($query) {
                 $query->where('date', '>=', now()->subMonths(3));
             })->count(),
         ];
@@ -52,7 +52,7 @@ class DashboardController extends Controller
         // إحصائيات الأطباء الحقيقية
         $doctorStats = [
             'total' => Doctors::count(),
-            'with_appointments_today' => Doctors::whereHas('appointments', function($query) {
+            'with_appointments_today' => Doctors::whereHas('appointments', function ($query) {
                 $query->whereDate('date', today());
             })->count(),
             'by_specialization' => Doctors::with('specialization')
@@ -60,13 +60,13 @@ class DashboardController extends Controller
                 ->groupBy('specialization.name')
                 ->map->count(),
             'top_doctors' => Doctors::with(['user', 'specialization'])
-                ->withCount(['appointments' => function($query) {
+                ->withCount(['appointments' => function ($query) {
                     $query->whereMonth('date', now()->month);
                 }])
                 ->orderBy('appointments_count', 'desc')
                 ->limit(5)
                 ->get()
-                ->map(function($doctor) {
+                ->map(function ($doctor) {
                     return [
                         'name' => $doctor->user->first_name . ' ' . $doctor->user->last_name,
                         'specialization' => $doctor->specialization->name ?? 'غير محدد',
@@ -81,7 +81,7 @@ class DashboardController extends Controller
                 ->orderBy('doctors_count', 'desc')
                 ->limit(5)
                 ->get()
-                ->map(function($specialization) {
+                ->map(function ($specialization) {
                     return [
                         'name' => $specialization->name,
                         'doctors_count' => $specialization->doctors_count
@@ -90,9 +90,9 @@ class DashboardController extends Controller
         ];
 
         return view('dashboard.index', compact(
-            'stats', 
-            'appointmentStats', 
-            'patientStats', 
+            'stats',
+            'appointmentStats',
+            'patientStats',
             'doctorStats',
             'specializationStats'
         ));
@@ -102,10 +102,10 @@ class DashboardController extends Controller
      * عرض صفحة الأطباء
      */
     public function doctors()
-    {$doctors = Doctors::with('specialization')->paginate(10);
+    {
+        $doctors = Doctors::with('specialization')->paginate(10);
         $specializations = Specialization::all();
         return view('dashboard.doctors.index', compact('doctors', 'specializations'));
-        
     }
 
     /**
@@ -114,7 +114,7 @@ class DashboardController extends Controller
     public function doctorsCreate()
     {
         $specializations = Specialization::all();
-        $users = User::whereDoesntHave('roles', function($query) {
+        $users = User::whereDoesntHave('roles', function ($query) {
             $query->where('name', 'doctor');
         })->get();
         return view('dashboard.doctors.create', compact('specializations', 'users'));
@@ -173,7 +173,7 @@ class DashboardController extends Controller
     {
         $doctors = Doctors::all();
         $shifts = Shift::all();
-        return view('dashboard.shifts.create', compact('doctors','shifts'));
+        return view('dashboard.shifts.create', compact('doctors', 'shifts'));
     }
 
     /**
@@ -204,7 +204,7 @@ class DashboardController extends Controller
         $doctors = Doctors::with('user', 'specialization')->get();
         $shiftDoctors = $shift->doctors()->with('user', 'specialization')->get();
         $shifts = Shift::all(); // إضافة جميع الشيفتات للاختيار منها
-        
+
         return view('dashboard.shifts.edit_doctor', compact('shift', 'doctors', 'shiftDoctors', 'shifts'));
     }
 
@@ -213,21 +213,43 @@ class DashboardController extends Controller
      */
     public function shiftsUpdateData(Request $request, $id)
     {
-        $request->validate([
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
-            'shift_type' => 'required|string|unique:shifts,shift_type,' . $id,
-            'start_break_time' => 'required|date_format:H:i',
-            'end_break_time' => 'required|date_format:H:i|after:start_break_time',
-        ]);
+        try {
+            $request->validate([
+                'start_time' => 'required|date_format:H:i',
+                'end_time' => 'required|date_format:H:i|after:start_time',
+                'shift_type' => 'required|string|unique:shifts,shift_type,' . $id . ',id',
+                'start_break_time' => 'required|date_format:H:i',
+                'end_break_time' => 'required|date_format:H:i|after:start_break_time',
+            ]);
 
-        $shift = Shift::findOrFail($id);
-        $shift->update($request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time']));
-
-        return response()->json([
-            'success' => true,
-            'message' => 'تم تحديث بيانات الشيفت بنجاح'
-        ]);
+            $shift = Shift::findOrFail($id);
+            
+            // التحقق من أن البيانات تم تغييرها
+            $updated = $shift->update($request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time']));
+            
+            if ($updated) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تحديث بيانات الشيفت بنجاح'
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لم يتم تحديث أي بيانات'
+                ]);
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'خطأ في التحقق من البيانات',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تحديث البيانات: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -258,7 +280,7 @@ class DashboardController extends Controller
         } else {
             // تحديث الأيام
             $existing = $shift->doctors()->where('doctor_id', $doctorId)->first();
-            
+
             if ($existing) {
                 $shift->doctors()->updateExistingPivot($doctorId, ['days' => json_encode($days)]);
                 $message = 'تم تحديث أيام الشيفت للطبيب بنجاح';
@@ -279,14 +301,14 @@ class DashboardController extends Controller
     public function patients()
     {
         $patients = Patients::with('user')->paginate(10);
-        
+
         // إضافة عدد المواعيد وآخر موعد لكل مريض
         foreach ($patients as $patient) {
             $appointments = Appointment::where('patient_id', $patient->id)->get();
             $patient->appointments_count = $appointments->count();
             $patient->appointments_max_date = $appointments->max('date');
         }
-        
+
         return view('dashboard.patients.index', compact('patients'));
     }
 
@@ -417,8 +439,8 @@ class DashboardController extends Controller
      */
     public function createShift(ShiftRequest $request)
     {
-       
-   
+
+
 
         $validated = $request->validated();
 
@@ -441,8 +463,7 @@ class DashboardController extends Controller
      * إسناد شيفت إلى طبيب (مثل API)
      */
     public function assignShiftToDoctor(Request $request)
-    {
- ;
+    {;
 
         $request->validate([
             'doctor_id'   => 'required|exists:doctors,id',
@@ -475,7 +496,7 @@ class DashboardController extends Controller
                 if (!empty(array_intersect($existingDays, $days))) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'الطبيب مسند إليه هذا الشيفت بالفعل في يوم واحد أو أكثر من الأيام المختارة.'   
+                        'message' => 'الطبيب مسند إليه هذا الشيفت بالفعل في يوم واحد أو أكثر من الأيام المختارة.'
                     ], 422);
                 }
             }
@@ -530,7 +551,7 @@ class DashboardController extends Controller
     public function patientsUpdate(Request $request, $id)
     {
         $patient = Patients::with('user')->findOrFail($id);
-        
+
         $request->validate([
             'first_name' => 'required|string|max:255',
             'middle_name' => 'nullable|string|max:255',
@@ -569,7 +590,6 @@ class DashboardController extends Controller
 
             return redirect()->route('dashboard.patients.index')
                 ->with('success', 'تم تحديث بيانات المريض بنجاح');
-
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()

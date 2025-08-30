@@ -84,32 +84,51 @@ document.getElementById('shiftDataForm').addEventListener('submit', function(e) 
     const formData = new FormData(this);
     const shiftId = {{ $shift->id }};
     
+    // تحويل FormData إلى object
+    const data = {
+        shift_type: formData.get('shift_type'),
+        start_time: formData.get('start_time'),
+        end_time: formData.get('end_time'),
+        start_break_time: formData.get('start_break_time'),
+        end_break_time: formData.get('end_break_time')
+    };
+    
     fetch(`/dashboard/shifts/${shiftId}/update-data`, {
         method: 'PUT',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
         },
-        body: JSON.stringify({
-            shift_type: formData.get('shift_type'),
-            start_time: formData.get('start_time'),
-            end_time: formData.get('end_time'),
-            start_break_time: formData.get('start_break_time'),
-            end_break_time: formData.get('end_break_time')
-        })
+        body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            alert(data.message);
-            window.location.href = '{{ route("dashboard.shifts.index") }}';
+            // رسالة نجاح مع تأكيد
+            if (confirm(data.message + '\n\nهل تريد العودة إلى صفحة الشيفتات؟')) {
+                window.location.href = '{{ route("dashboard.shifts.index") }}';
+            }
         } else {
-            alert('حدث خطأ: ' + data.message);
+            // رسالة خطأ مفصلة
+            let errorMessage = 'حدث خطأ: ' + data.message;
+            if (data.errors) {
+                errorMessage += '\n\nتفاصيل الأخطاء:';
+                Object.keys(data.errors).forEach(field => {
+                    errorMessage += '\n- ' + field + ': ' + data.errors[field].join(', ');
+                });
+            }
+            alert(errorMessage);
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('حدث خطأ أثناء حفظ البيانات');
+        alert('حدث خطأ أثناء حفظ البيانات: ' + error.message);
     });
 });
 </script>
