@@ -326,7 +326,7 @@ class PatientsController extends Controller
 
         $medicines = $patient && $patient->medicineSchedule
             ? $patient->medicineSchedule()
-            ->with('medicine') // جلب اسم الدواء
+            ->with('medicine')
             ->get()
             ->filter(fn($record) => $record->quantity > $record->number_of_taken_doses)
             ->map(function ($record) {
@@ -429,7 +429,7 @@ class PatientsController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $translator->translate('💚  Wishing you good health.'),
+                'message' => $translator->translate('💚  Wishing you good health ser .'),
                 'data' => [
                     'current_taken' => $medical->number_of_taken_doses,
                     'total_quantity' => $medical->quantity,
