@@ -12,6 +12,7 @@ use App\Models\Appointment;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Cloudinary\Cloudinary;
 use Stichoza\GoogleTranslate\GoogleTranslate;
 
@@ -214,6 +215,12 @@ class DashboardController extends Controller
     public function shiftsUpdateData(Request $request, $id)
     {
         try {
+            // معالجة _method=PUT إذا كان موجوداً
+            if ($request->has('_method') && $request->_method === 'PUT') {
+                // تجاهل _method من البيانات
+                $request->merge($request->except('_method'));
+            }
+            
             $request->validate([
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
@@ -223,6 +230,12 @@ class DashboardController extends Controller
             ]);
 
             $shift = Shift::findOrFail($id);
+            
+            // تسجيل البيانات الواردة للتأكد
+            \Log::info('Shift Update Request', [
+                'shift_id' => $id,
+                'data' => $request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time'])
+            ]);
             
             // التحقق من أن البيانات تم تغييرها
             $updated = $shift->update($request->only(['start_time', 'end_time', 'shift_type', 'start_break_time', 'end_break_time']));

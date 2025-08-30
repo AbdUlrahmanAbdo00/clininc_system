@@ -84,8 +84,9 @@ document.getElementById('shiftDataForm').addEventListener('submit', function(e) 
     const formData = new FormData(this);
     const shiftId = {{ $shift->id }};
     
-    // تحويل FormData إلى object
+    // تحويل FormData إلى object مع _method=PUT
     const data = {
+        _method: 'PUT',
         shift_type: formData.get('shift_type'),
         start_time: formData.get('start_time'),
         end_time: formData.get('end_time'),
@@ -94,7 +95,7 @@ document.getElementById('shiftDataForm').addEventListener('submit', function(e) 
     };
     
     fetch(`/dashboard/shifts/${shiftId}/update-data`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
             'Content-Type': 'application/json',
@@ -109,6 +110,8 @@ document.getElementById('shiftDataForm').addEventListener('submit', function(e) 
         return response.json();
     })
     .then(data => {
+        console.log('Response:', data); // تسجيل الاستجابة للتأكد
+        
         if (data.success) {
             // رسالة نجاح مع تأكيد
             if (confirm(data.message + '\n\nهل تريد العودة إلى صفحة الشيفتات؟')) {
