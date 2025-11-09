@@ -118,14 +118,15 @@ public function verif(Request $request)
         'fcm'    => 'nullable|string' 
     ]);
 
-    $result = $this->verifyOTP($request->number, $request->otp);
+    // $result = $this->verifyOTP($request->number, $request->otp);
     
-    if (!$result['success']) {
-        return response()->json([
-            'success' => false,
-            'message' => $translator->translate($result['message'] ?? 'Unauthorized'),
-        ], 400);
-    }
+   
+    // if (!$result['success']) {
+    //     return response()->json([
+    //         'success' => false,
+    //         'message' => $translator->translate($result['message'] ?? 'Unauthorized'),
+    //     ], 400);
+    // }
 
     $filled_data = true;
     $user = User::where('number', $request->number)->first();

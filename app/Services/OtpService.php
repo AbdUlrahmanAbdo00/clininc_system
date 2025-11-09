@@ -28,7 +28,7 @@ public function sendOtp( string $phone){
     public function verifyOTP(string $phone ,string $otpMsg){
          $checkotp = Otp::where([
             'phone'=>$phone,
-            'otp'=>"0000"
+            'otp'=>$otpMsg
          
          ])->first();
          if(!$checkotp){
